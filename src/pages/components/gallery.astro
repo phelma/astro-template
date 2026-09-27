@@ -1,0 +1,177 @@
+---
+import after from "@/assets/placeholders/media/after.jpg"
+import before from "@/assets/placeholders/media/before.jpg"
+import portrait1 from "@/assets/placeholders/media/portrait-1.jpg"
+import portrait2 from "@/assets/placeholders/media/portrait-2.jpg"
+import square1 from "@/assets/placeholders/media/square-1.jpg"
+import square2 from "@/assets/placeholders/media/square-2.jpg"
+import wide1 from "@/assets/placeholders/media/wide-1.jpg"
+import wide2 from "@/assets/placeholders/media/wide-2.jpg"
+import wide3 from "@/assets/placeholders/media/wide-3.jpg"
+import wide4 from "@/assets/placeholders/media/wide-4.jpg"
+import Gallery from "@/components/blocks/gallery/Gallery.astro"
+import type { GalleryImage } from "@/components/blocks/gallery/gallery"
+import GalleryGrid from "@/components/blocks/gallery/GalleryGrid.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const photos: GalleryImage[] = [
+  {
+    src: wide1,
+    alt: "Newly laid Indian sandstone patio with a curved lawn edge",
+    caption: "Sandstone patio and lawn, Hove",
+    category: "Patios",
+  },
+  {
+    src: portrait1,
+    alt: "Raised oak sleeper beds planted with lavender",
+    caption: "Raised beds in oak sleepers, Lewes",
+    category: "Planting",
+  },
+  {
+    src: square1,
+    alt: "Close-up of a porcelain paving border",
+    caption: "Porcelain paving detail",
+    category: "Patios",
+  },
+  {
+    src: wide2,
+    alt: "Cedar-clad garden office at the end of a lawn",
+    caption: "Garden office, Brighton",
+    category: "Structures",
+  },
+  {
+    src: portrait2,
+    alt: "Pergola with climbing roses over a gravel path",
+    caption: "Oak pergola and gravel path",
+    category: "Structures",
+  },
+  {
+    src: square2,
+    alt: "Mixed border of grasses and perennials in late summer",
+    caption: "Late-summer border",
+    category: "Planting",
+  },
+  {
+    src: wide3,
+    alt: "Terraced garden with retaining walls on a slope",
+    caption: "Terraced slope, Rottingdean",
+    category: ["Patios", "Structures"],
+  },
+  {
+    src: wide4,
+    alt: "Block-paved driveway with a granite sett border",
+    caption: "Driveway with granite setts",
+    category: "Patios",
+  },
+  {
+    src: before,
+    alt: "Overgrown back garden before work started",
+    caption: "Before: the Kemp Town garden",
+  },
+  {
+    src: after,
+    alt: "The same garden after clearance, with new paving and planting",
+    caption: "After: the Kemp Town garden",
+  },
+]
+---
+
+<Showcase
+  title="Gallery"
+  description="Photo galleries with a native <dialog> lightbox: uniform grid, masonry and featured layouts, optional CSS-only category filter."
+>
+  <Demo
+    title="Grid (default)"
+    description="layout='grid', columns={3}, aspect='square'. Click a photo: arrow keys, swipe, Esc. Without JS thumbnails link to the full image."
+    bleed
+  >
+    <Gallery
+      id="gallery-grid"
+      headingLevel={3}
+      eyebrow="Our work"
+      title="Recent garden projects"
+      lede="A few of the patios, planting schemes and garden buildings we've finished across Brighton and Hove this year."
+      items={photos}
+    />
+  </Demo>
+
+  <Demo
+    title="Grid: landscape cells, 4 columns, overlay captions"
+    description="aspect='landscape', columns={4}, captions='overlay', tone='muted'."
+    bleed
+  >
+    <Gallery
+      id="gallery-landscape"
+      tone="muted"
+      width="wide"
+      headingLevel={3}
+      title="Driveways and paving"
+      items={photos.slice(0, 8)}
+      aspect="landscape"
+      columns={4}
+      captions="overlay"
+    />
+  </Demo>
+
+  <Demo
+    title="Masonry"
+    description="layout='masonry': CSS columns, each photo keeps its shape."
+    bleed
+  >
+    <Gallery
+      id="gallery-masonry"
+      headingLevel={3}
+      title="Around the salon"
+      lede="Our chairs, our team and a few of our favourite cuts."
+      items={photos.slice(0, 8)}
+      layout="masonry"
+    />
+  </Demo>
+
+  <Demo
+    title="Featured"
+    description="layout='featured': the first photo spans two rows and columns on wider screens. Captions default to overlay."
+    bleed
+  >
+    <Gallery
+      id="gallery-featured"
+      headingLevel={3}
+      title="Featured project: a Hove garden"
+      items={photos.slice(0, 5)}
+      layout="featured"
+    />
+  </Demo>
+
+  <Demo
+    title="Category filter"
+    description="filter: radio buttons and CSS :has() hide other categories with no JS; the lightbox only steps through visible photos. Up to 8 categories."
+    bleed
+  >
+    <Gallery
+      id="gallery-filter"
+      headingLevel={3}
+      title="Browse by type of job"
+      align="center"
+      items={photos.slice(0, 8)}
+      filter
+      columns={4}
+      aspect="portrait"
+    />
+  </Demo>
+
+  <Demo
+    title="GalleryGrid on its own, no lightbox"
+    description="GalleryGrid without the Section wrapper; lightbox={false} leaves plain links to the full-size images. columns={2}, captions='hidden' (still read by screen readers)."
+  >
+    <GalleryGrid
+      id="gallery-plain"
+      label="Café interior"
+      items={photos.slice(3, 7)}
+      columns={2}
+      aspect="video"
+      captions="hidden"
+      lightbox={false}
+    />
+  </Demo>
+</Showcase>

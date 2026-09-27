@@ -1,0 +1,246 @@
+---
+/**
+ * Site footer, composed from the Footer* parts. Every piece of data
+ * defaults to siteConfig and can be overridden by props.
+ *
+ * Layouts: `simple` (one row: copyright, links, socials), `columns` (brand,
+ * link columns, contact, opening hours, then a legal bar), `centered`, and
+ * `cta` (`columns` under a call-to-action band). Tones: default, muted,
+ * card, primary, inverted.
+ *
+ *   <Footer layout="cta" tone="inverted" cta={{ title: "Burst pipe? We're on our way." }}>
+ *     <OpeningHoursSummary slot="hours" />
+ *   </Footer>
+ *
+ * Slots: `hours` (replaces the fallback hours list), `brand` (under the
+ * blurb), `legal` (after the copyright), `cta` (replaces the CTA buttons),
+ * default (extra columns in `columns` / `cta`, extra rows in `centered`).
+ * For anything else, compose FooterRoot and the parts directly.
+ */
+import type { ImageMetadata } from "astro"
+import type { HTMLAttributes } from "astro/types"
+
+import {
+  containerVariants,
+  type ContainerVariants,
+  type HeadingLevel,
+} from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+import {
+  siteConfig,
+  type BusinessHours,
+  type NavLink,
+  type SocialLink,
+} from "@/site.config"
+
+import type { FooterAddress, FooterCtaAction, FooterLinkGroup } from "./footer"
+import FooterBrand from "./FooterBrand.astro"
+import FooterColumn from "./FooterColumn.astro"
+import FooterContact from "./FooterContact.astro"
+import FooterCta from "./FooterCta.astro"
+import FooterHours from "./FooterHours.astro"
+import FooterLegal from "./FooterLegal.astro"
+import FooterRoot from "./FooterRoot.astro"
+import FooterSocials from "./FooterSocials.astro"
+import {
+  footerBarVariants,
+  footerLayoutVariants,
+  type FooterCtaVariants,
+  type FooterLayoutVariants,
+  type FooterVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"footer"> &
+  FooterVariants &
+  FooterLayoutVariants &
+  ContainerVariants & {
+    /** Brand name (default siteConfig.name). */
+    name?: string
+    logo?: ImageMetadata
+    hideName?: boolean
+    /** Short line under the brand (`columns`, `cta`, `centered`). */
+    blurb?: string
+    /** Inline link row for `simple` / `centered` (default siteConfig.footer). */
+    links?: NavLink[]
+    /** Link columns for `columns` / `cta` (default: "Explore" = siteConfig.nav). */
+    columns?: FooterLinkGroup[]
+    /** Contact column (default siteConfig.contact); `false` hides it. */
+    contact?:
+      | {
+          address?: FooterAddress | false
+          phone?: string | false
+          email?: string | false
+        }
+      | false
+    contactTitle?: string
+    socials?: SocialLink[]
+    /** Opening-hours column in `columns` / `cta` (default on when hours exist). */
+    hours?: BusinessHours | false
+    hoursTitle?: string
+    /** Copyright holder (default organisation legal name). */
+    owner?: string
+    /** Links in the legal bar (default siteConfig.footer outside `simple`). */
+    legalLinks?: NavLink[]
+    /** Call-to-action band for `layout="cta"`. */
+    cta?: {
+      title: string
+      text?: string
+      actions?: FooterCtaAction[]
+      tone?: FooterCtaVariants["tone"]
+    }
+    /** Level for column headings (and the CTA title). */
+    headingLevel?: HeadingLevel
+    containerClass?: string
+  }
+
+const {
+  layout = "simple",
+  tone,
+  width,
+  name,
+  logo,
+  hideName,
+  blurb = siteConfig.description,
+  links = siteConfig.footer,
+  columns = [{ title: "Explore", links: siteConfig.nav }],
+  contact = {},
+  contactTitle = "Contact",
+  socials,
+  hours = siteConfig.business.hours,
+  hoursTitle,
+  owner,
+  legalLinks = layout === "simple" ? [] : siteConfig.footer,
+  cta = { title: "Need a hand? Get in touch today." },
+  headingLevel = 2,
+  containerClass,
+  class: className,
+  ...rest
+} = Astro.props
+
+const container = cn(containerVariants({ width }), containerClass)
+const grid = layout === "columns" || layout === "cta"
+const hasHoursSlot = Astro.slots.has("hours")
+const showHours = hasHoursSlot || (hours !== false && hours.length > 0)
+---
+
+<FooterRoot tone={tone} data-layout={layout} class={className} {...rest}>
+  {layout === "cta" &&
+    (Astro.slots.has("cta") ? (
+      <FooterCta
+        title={cta.title}
+        text={cta.text}
+        tone={cta.tone}
+        headingLevel={headingLevel}
+      >
+        <slot name="cta" />
+      </FooterCta>
+    ) : (
+      <FooterCta
+        title={cta.title}
+        text={cta.text}
+        actions={cta.actions}
+        tone={cta.tone}
+        headingLevel={headingLevel}
+      />
+    ))}
+
+  {layout === "simple" && (
+    <div class={cn(container, footerLayoutVariants({ layout }))}>
+      <FooterLegal owner={owner} links={legalLinks}>
+        <slot name="legal" />
+      </FooterLegal>
+      <FooterColumn links={links} orientation="horizontal" />
+      <FooterSocials socials={socials} />
+    </div>
+  )}
+
+  {grid && (
+    <>
+      <div class={cn(container, footerLayoutVariants({ layout }))}>
+        <FooterBrand
+          name={name}
+          logo={logo}
+          hideName={hideName}
+          blurb={blurb}
+          class="sm:col-span-2 lg:col-span-1 lg:min-w-56"
+        >
+          <slot name="brand" />
+        </FooterBrand>
+        {columns.map((column) => (
+          <FooterColumn
+            title={column.title}
+            links={column.links}
+            headingLevel={headingLevel}
+          />
+        ))}
+        {contact && (
+          <FooterContact
+            title={contactTitle}
+            headingLevel={headingLevel}
+            address={contact.address}
+            phone={contact.phone}
+            email={contact.email}
+          />
+        )}
+        {showHours &&
+          (hasHoursSlot ? (
+            <FooterHours title={hoursTitle} headingLevel={headingLevel}>
+              <slot name="hours" />
+            </FooterHours>
+          ) : (
+            <FooterHours
+              title={hoursTitle}
+              headingLevel={headingLevel}
+              hours={hours || []}
+            />
+          ))}
+        <slot />
+      </div>
+      <div class={container}>
+        <div data-slot="footer-bar" class={footerBarVariants()}>
+          <FooterLegal owner={owner} links={legalLinks}>
+            <slot name="legal" />
+          </FooterLegal>
+          <FooterSocials socials={socials} />
+        </div>
+      </div>
+    </>
+  )}
+
+  {layout === "centered" && (
+    <>
+      <div class={cn(container, footerLayoutVariants({ layout }))}>
+        <FooterBrand
+          name={name}
+          logo={logo}
+          hideName={hideName}
+          blurb={blurb}
+          class="items-center"
+        >
+          <slot name="brand" />
+        </FooterBrand>
+        <FooterColumn
+          links={links}
+          orientation="horizontal"
+          class="[&_ul]:justify-center"
+        />
+        <FooterSocials socials={socials} class="justify-center" />
+        <slot />
+      </div>
+      <div class={container}>
+        <div
+          data-slot="footer-bar"
+          class={footerBarVariants({ align: "center" })}
+        >
+          <FooterLegal
+            owner={owner}
+            links={legalLinks}
+            class="items-center md:justify-center"
+          >
+            <slot name="legal" />
+          </FooterLegal>
+        </div>
+      </div>
+    </>
+  )}
+</FooterRoot>

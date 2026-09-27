@@ -1,0 +1,26 @@
+---
+/**
+ * The `<footer>` landmark and its colour band (`tone`). Compose the other
+ * Footer* parts inside, in a container (`containerVariants` from
+ * blocks/section), or use `Footer` for the ready-made layouts.
+ *
+ *   <FooterRoot tone="inverted">...</FooterRoot>
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import { footerVariants, type FooterVariants } from "./variants"
+
+type Props = HTMLAttributes<"footer"> & FooterVariants
+
+const { tone, class: className, ...rest } = Astro.props
+---
+
+<footer
+  data-slot="footer"
+  class={cn(footerVariants({ tone }), className)}
+  {...rest}
+>
+  <slot />
+</footer>

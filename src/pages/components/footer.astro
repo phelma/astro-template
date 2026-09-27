@@ -1,0 +1,222 @@
+---
+import Footer from "@/components/blocks/footer/Footer.astro"
+import type { FooterLinkGroup } from "@/components/blocks/footer/footer"
+import FooterColumn from "@/components/blocks/footer/FooterColumn.astro"
+import FooterContact from "@/components/blocks/footer/FooterContact.astro"
+import FooterHours from "@/components/blocks/footer/FooterHours.astro"
+import FooterLegal from "@/components/blocks/footer/FooterLegal.astro"
+import FooterRoot from "@/components/blocks/footer/FooterRoot.astro"
+import FooterSocials from "@/components/blocks/footer/FooterSocials.astro"
+import { containerVariants } from "@/components/blocks/section/variants"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+import { cn } from "@/lib/utils"
+import type { BusinessHours, NavLink, SocialLink } from "@/site.config"
+
+// Demo data passed as props (not siteConfig): a Brighton plumber.
+const name = "Harbour Plumbing & Heating"
+const owner = "Harbour Plumbing & Heating Ltd"
+const blurb =
+  "Family-run Gas Safe plumbers covering Brighton, Hove and Shoreham since 2009. No call-out charge, fixed prices."
+const links: NavLink[] = [
+  { label: "Services", href: "/services" },
+  { label: "Areas we cover", href: "/areas" },
+  { label: "Reviews", href: "/reviews" },
+  { label: "Contact", href: "/contact" },
+]
+const columns: FooterLinkGroup[] = [
+  {
+    title: "Services",
+    links: [
+      { label: "Boiler servicing", href: "/services/boilers" },
+      { label: "Emergency plumbing", href: "/services/emergency" },
+      { label: "Bathroom fitting", href: "/services/bathrooms" },
+      { label: "Power flushing", href: "/services/power-flushing" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About us", href: "/about" },
+      { label: "Reviews", href: "/reviews" },
+      { label: "Areas we cover", href: "/areas" },
+      { label: "Careers", href: "/careers" },
+    ],
+  },
+]
+const legalLinks: NavLink[] = [
+  { label: "Privacy", href: "/privacy" },
+  { label: "Cookies", href: "/cookies" },
+  { label: "Terms", href: "/terms" },
+]
+const contact = {
+  address: {
+    streetAddress: "14 Marine Parade",
+    addressLocality: "Brighton",
+    postalCode: "BN2 1TL",
+    addressCountry: "GB",
+  },
+  phone: "01273 960 123",
+  email: "hello@harbourplumbing.co.uk",
+}
+const socials: SocialLink[] = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/example",
+    icon: "lucide:facebook",
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/example",
+    icon: "lucide:instagram",
+  },
+]
+const hours: BusinessHours = [
+  { days: ["Mo", "Tu", "We", "Th", "Fr"], opens: "08:00", closes: "18:00" },
+  { days: ["Sa"], opens: "09:00", closes: "13:00" },
+]
+const shared = {
+  name,
+  owner,
+  blurb,
+  links,
+  columns,
+  legalLinks,
+  contact,
+  socials,
+  hours,
+  headingLevel: 3 as const,
+}
+const tones = ["default", "muted", "card", "primary", "inverted"] as const
+---
+
+<Showcase
+  title="Footer"
+  description="Composable footer: simple, columns, centered and call-to-action layouts in five tones. All data here comes from props; the site footer defaults to siteConfig."
+>
+  <Demo
+    title="Simple (site default)"
+    description="layout='simple': one row with copyright, links and socials. This is what BaseLayout renders."
+    bleed
+  >
+    <Footer {...shared} layout="simple" />
+  </Demo>
+
+  <Demo
+    title="Columns"
+    description="layout='columns': brand and blurb, link columns, contact (tel: and mailto: links), opening hours, then a legal bar."
+    bleed
+  >
+    <Footer {...shared} layout="columns" />
+  </Demo>
+
+  <Demo
+    title="Centered"
+    description="layout='centered': stacked brand, inline links and socials, centred legal line."
+    bleed
+  >
+    <Footer {...shared} layout="centered" />
+  </Demo>
+
+  <Demo
+    title="Call to action"
+    description="layout='cta': a CTA band above the columns. Buttons from cta.actions (first is emphasised); tone='inverted' footer with a primary band."
+    bleed
+  >
+    <Footer
+      {...shared}
+      layout="cta"
+      tone="inverted"
+      cta={{
+        title: "Boiler playing up? We can be there today.",
+        text: "Call before noon for a same-day visit anywhere in Brighton and Hove.",
+        actions: [
+          { label: "Book a visit", href: "/contact" },
+          {
+            label: "Call 01273 960 123",
+            href: "tel:01273960123",
+            icon: "lucide:phone",
+          },
+        ],
+      }}
+    />
+  </Demo>
+
+  <Demo
+    title="Call to action: secondary band"
+    description="cta.tone='secondary' on a muted footer; `legal` slot adds a registration line."
+    bleed
+  >
+    <Footer
+      {...shared}
+      layout="cta"
+      tone="muted"
+      cta={{
+        title: "Get a free, no-obligation quote",
+        tone: "secondary",
+        actions: [
+          { label: "Request a quote", href: "/contact" },
+          { label: "See our prices", href: "/prices" },
+        ],
+      }}
+    >
+      <span slot="legal">Gas Safe registered no. 123456</span>
+    </Footer>
+  </Demo>
+
+  {tones.map((tone) => (
+    <Demo
+      title={`Tone: ${tone}`}
+      description={`tone='${tone}' with layout='columns'. Muted text, borders and the focus ring are re-pointed for contrast.`}
+      bleed
+    >
+      <Footer {...shared} layout="columns" tone={tone} />
+    </Demo>
+  ))}
+
+  <Demo
+    title="Composed from parts"
+    description="FooterRoot + FooterColumn + FooterContact + FooterHours (slot content replaces the default list) + FooterLegal + FooterSocials, arranged by hand."
+    bleed
+  >
+    <FooterRoot tone="muted">
+      <div class={cn(containerVariants(), "grid gap-8 py-10 sm:grid-cols-3")}>
+        <FooterContact
+          title="Visit the salon"
+          headingLevel={3}
+          address={{
+            streetAddress: "3 Gardner Street",
+            addressLocality: "Brighton",
+            postalCode: "BN1 1UP",
+            addressCountry: "GB",
+          }}
+          phone="01273 960 456"
+          email={false}
+        />
+        <FooterHours title="Opening hours" headingLevel={3}>
+          <p class="text-muted-foreground">
+            Tue to Sat, 9am to 6pm. Late nights Thursday until 8pm.
+          </p>
+        </FooterHours>
+        <FooterColumn
+          title="Salon"
+          headingLevel={3}
+          links={[
+            { label: "Price list", href: "/prices" },
+            { label: "Book online", href: "https://booking.example.com" },
+            { label: "Gift vouchers", href: "/vouchers" },
+          ]}
+        />
+      </div>
+      <div
+        class={cn(
+          containerVariants(),
+          "flex flex-col gap-4 border-t py-6 md:flex-row md:items-center md:justify-between"
+        )}
+      >
+        <FooterLegal owner="Gardner Street Hair" links={legalLinks} />
+        <FooterSocials socials={socials} />
+      </div>
+    </FooterRoot>
+  </Demo>
+</Showcase>

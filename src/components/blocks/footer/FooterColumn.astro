@@ -1,0 +1,85 @@
+---
+/**
+ * A `<nav>` of footer links, optionally under a heading (which names the
+ * nav; without one, `label` does). `orientation="horizontal"` gives an
+ * inline row, as in the `simple` layout. External links open in a new tab.
+ *
+ *   <FooterColumn title="Services" links={[{ label: "Boiler repair", href: "/boilers" }]} />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { isExternal } from "@/lib/nav"
+import { cn } from "@/lib/utils"
+import type { NavLink } from "@/site.config"
+
+import {
+  footerLinksVariants,
+  footerLinkVariants,
+  type FooterLinksVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"nav"> &
+  FooterLinksVariants & {
+    links: NavLink[]
+    title?: string
+    headingLevel?: HeadingLevel
+    /** Accessible name when there's no `title`. */
+    label?: string
+  }
+
+const {
+  links,
+  title,
+  headingLevel = 2,
+  label = "Footer",
+  orientation,
+  id,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+const headingId = title
+  ? `${id ?? `footer-${crypto.randomUUID().slice(0, 8)}`}-heading`
+  : undefined
+---
+
+{links.length > 0 && (
+  <nav
+    id={id}
+    data-slot="footer-column"
+    aria-labelledby={headingId}
+    aria-label={title ? undefined : label}
+    class={cn("flex flex-col gap-4", className)}
+    {...rest}
+  >
+    {title && (
+      <Heading
+        id={headingId}
+        data-slot="footer-heading"
+        class="text-sm font-semibold text-(--footer-foreground)"
+      >
+        {title}
+      </Heading>
+    )}
+    <ul data-slot="footer-links" class={footerLinksVariants({ orientation })}>
+      {links.map((link) => {
+        const external = isExternal(link)
+        return (
+          <li>
+            <a
+              href={link.href}
+              target={external ? "_blank" : undefined}
+              rel={external ? "noopener noreferrer" : undefined}
+              data-slot="footer-link"
+              class={footerLinkVariants()}
+            >
+              {link.label}
+            </a>
+          </li>
+        )
+      })}
+    </ul>
+  </nav>
+)}

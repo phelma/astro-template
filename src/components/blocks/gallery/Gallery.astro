@@ -1,0 +1,105 @@
+---
+/**
+ * Gallery section: optional heading group, then GalleryGrid (filter,
+ * thumbnails, lightbox). Layouts: `grid` (uniform cells, `aspect`),
+ * `masonry` (CSS columns) and `featured` (one large photo + small ones).
+ *
+ *   <Gallery
+ *     title="Recent work"
+ *     items={[{ src: patio, alt: "Sandstone patio", caption: "Patio, Hove", category: "Patios" }]}
+ *     layout="masonry"
+ *     filter
+ *   />
+ *
+ * Extra content (e.g. a "See more on Instagram" link) goes in the default
+ * slot, after the gallery.
+ */
+import type { ComponentProps } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+
+import GalleryGrid from "./GalleryGrid.astro"
+
+type SectionProps = ComponentProps<typeof Section>
+type GridProps = ComponentProps<typeof GalleryGrid>
+
+type Props = Omit<SectionProps, "title"> &
+  Pick<
+    GridProps,
+    | "items"
+    | "layout"
+    | "columns"
+    | "aspect"
+    | "captions"
+    | "filter"
+    | "filterLegend"
+    | "lightbox"
+  > & {
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    align?: "start" | "center"
+    /** Accessible name for the photo list; defaults to `title`. */
+    label?: string
+    gridClass?: string
+  }
+
+const {
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  label,
+  items,
+  layout,
+  columns,
+  aspect,
+  captions,
+  filter,
+  filterLegend,
+  lightbox,
+  gridClass,
+  id,
+  ...rest
+} = Astro.props
+
+const baseId = id ?? `gallery-${crypto.randomUUID().slice(0, 8)}`
+const headingId = `${baseId}-title`
+---
+
+<Section
+  as={title ? "section" : "div"}
+  id={id}
+  aria-labelledby={title ? headingId : undefined}
+  data-block="gallery"
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align}
+    />
+  )}
+  <GalleryGrid
+    id={`${baseId}-grid`}
+    items={items}
+    label={label ?? title}
+    layout={layout}
+    columns={columns}
+    aspect={aspect}
+    captions={captions}
+    filter={filter}
+    filterLegend={filterLegend}
+    lightbox={lightbox}
+    class={gridClass}
+  />
+  <slot />
+</Section>
