@@ -1,0 +1,308 @@
+---
+/**
+ * Photo gallery without a section wrapper: optional category filter, the
+ * thumbnail list (`layout` grid / masonry / featured) and a lightbox.
+ * Use it inside your own layout; `Gallery` wraps it in a Section with a
+ * heading.
+ *
+ *   <GalleryGrid items={photos} layout="masonry" columns={3} label="Our work" />
+ *
+ * Without JS each thumbnail links to the full-size image. With JS a click
+ * opens the lightbox: prev/next buttons, arrow keys, swipe, Esc to close.
+ * The lightbox only steps through photos the filter currently shows.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { getImage } from "astro:assets"
+
+import { cn } from "@/lib/utils"
+
+import {
+  galleryCategories,
+  galleryFilterKeys,
+  type GalleryImage,
+} from "./gallery"
+import GalleryFilter from "./GalleryFilter.astro"
+import GalleryItem from "./GalleryItem.astro"
+import GalleryLightbox from "./GalleryLightbox.astro"
+import {
+  galleryListVariants,
+  type GalleryCaptionVariants,
+  type GalleryFrameVariants,
+  type GalleryListVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"div"> &
+  GalleryListVariants &
+  GalleryFrameVariants &
+  GalleryCaptionVariants & {
+    items: GalleryImage[]
+    /** Accessible name for the list and the lightbox, e.g. "Recent projects". */
+    label?: string
+    /** Show the category filter (items need `category`). */
+    filter?: boolean
+    filterLegend?: string
+    /** Open thumbnails in the lightbox (JS). Off: plain links. */
+    lightbox?: boolean
+    listClass?: string
+  }
+
+const {
+  items,
+  label = "Photo gallery",
+  layout = "grid",
+  columns = 3,
+  aspect,
+  captions: captionsProp,
+  filter = false,
+  filterLegend,
+  lightbox = true,
+  listClass,
+  id,
+  class: className,
+  ...rest
+} = Astro.props
+
+// Captions under a featured tile would break its 2x2 cell.
+const captions = captionsProp ?? (layout === "featured" ? "overlay" : "below")
+const categories = filter ? galleryCategories(items) : []
+const galleryId = id ?? `gallery-${crypto.randomUUID().slice(0, 8)}`
+
+const gridSizes = {
+  2: "(min-width: 1152px) 576px, 50vw",
+  3: "(min-width: 1152px) 384px, (min-width: 768px) 33vw, 50vw",
+  4: "(min-width: 1152px) 288px, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw",
+} as const
+const featuredSizes = {
+  first: "(min-width: 1152px) 576px, (min-width: 768px) 50vw, 100vw",
+  rest: "(min-width: 1152px) 288px, (min-width: 768px) 25vw, 50vw",
+}
+
+const first = items[0]
+const placeholder =
+  lightbox && first
+    ? await getImage({ src: first.src, width: Math.min(first.src.width, 960) })
+    : undefined
+---
+
+<div
+  id={galleryId}
+  data-slot="gallery"
+  data-gallery={lightbox ? "" : undefined}
+  class={cn(className)}
+  {...rest}
+>
+  {categories.length > 0 && (
+    <GalleryFilter
+      categories={categories}
+      name={`${galleryId}-filter`}
+      legend={filterLegend}
+    />
+  )}
+  <ul
+    data-slot="gallery-list"
+    aria-label={label}
+    class={cn(galleryListVariants({ layout, columns }), listClass)}
+  >
+    {items.map((item, i) => {
+      const featured = layout === "featured" && i === 0
+      return (
+        <GalleryItem
+          item={item}
+          aspect={layout === "featured" ? "square" : aspect}
+          natural={layout === "masonry"}
+          captions={captions}
+          filterKeys={galleryFilterKeys(item, categories)}
+          sizes={
+            layout === "featured"
+              ? featured
+                ? featuredSizes.first
+                : featuredSizes.rest
+              : gridSizes[columns ?? 3]
+          }
+          class={featured ? "col-span-2 md:row-span-2" : undefined}
+          frameClass={
+            featured ? "aspect-4/3 md:aspect-auto md:h-full" : undefined
+          }
+        />
+      )
+    })}
+  </ul>
+  {placeholder && <GalleryLightbox src={placeholder.src} aria-label={label} />}
+</div>
+
+<style is:global>
+  /* CSS-only category filter: hide items not in the checked category. One
+     rule per category slot (MAX_GALLERY_CATEGORIES in gallery.ts). */
+  [data-slot="gallery"]:has(
+      [data-slot="gallery-filter-input"][value="c1"]:checked
+    )
+    [data-slot="gallery-item"]:not([data-category~="c1"]),
+  [data-slot="gallery"]:has(
+      [data-slot="gallery-filter-input"][value="c2"]:checked
+    )
+    [data-slot="gallery-item"]:not([data-category~="c2"]),
+  [data-slot="gallery"]:has(
+      [data-slot="gallery-filter-input"][value="c3"]:checked
+    )
+    [data-slot="gallery-item"]:not([data-category~="c3"]),
+  [data-slot="gallery"]:has(
+      [data-slot="gallery-filter-input"][value="c4"]:checked
+    )
+    [data-slot="gallery-item"]:not([data-category~="c4"]),
+  [data-slot="gallery"]:has(
+      [data-slot="gallery-filter-input"][value="c5"]:checked
+    )
+    [data-slot="gallery-item"]:not([data-category~="c5"]),
+  [data-slot="gallery"]:has(
+      [data-slot="gallery-filter-input"][value="c6"]:checked
+    )
+    [data-slot="gallery-item"]:not([data-category~="c6"]),
+  [data-slot="gallery"]:has(
+      [data-slot="gallery-filter-input"][value="c7"]:checked
+    )
+    [data-slot="gallery-item"]:not([data-category~="c7"]),
+  [data-slot="gallery"]:has(
+      [data-slot="gallery-filter-input"][value="c8"]:checked
+    )
+    [data-slot="gallery-item"]:not([data-category~="c8"]) {
+    display: none;
+  }
+</style>
+
+<script>
+  // Lightbox: progressive enhancement of the thumbnail links. One <dialog>
+  // per gallery; any number of galleries per page.
+  const SWIPE_DISTANCE = 50
+
+  function isVisible(el: HTMLElement): boolean {
+    return typeof el.checkVisibility === "function"
+      ? el.checkVisibility()
+      : el.getClientRects().length > 0
+  }
+
+  function enhance(root: HTMLElement) {
+    const dialog = root.querySelector<HTMLDialogElement>(
+      "[data-slot=gallery-lightbox]"
+    )
+    const image = dialog?.querySelector<HTMLImageElement>(
+      "[data-gallery-image]"
+    )
+    const stage = dialog?.querySelector<HTMLElement>("[data-gallery-stage]")
+    const caption = dialog?.querySelector<HTMLElement>("[data-gallery-caption]")
+    const counter = dialog?.querySelector<HTMLElement>("[data-gallery-counter]")
+    const altText = dialog?.querySelector<HTMLElement>("[data-gallery-alt]")
+    const prev = dialog?.querySelector<HTMLButtonElement>(
+      "[data-gallery-previous]"
+    )
+    const next = dialog?.querySelector<HTMLButtonElement>("[data-gallery-next]")
+    if (
+      !dialog ||
+      !image ||
+      !stage ||
+      !caption ||
+      !counter ||
+      !altText ||
+      !prev ||
+      !next
+    )
+      return
+
+    const links = Array.from(
+      root.querySelectorAll<HTMLAnchorElement>("[data-gallery-link]")
+    )
+    let visible: HTMLAnchorElement[] = []
+    let index = 0
+
+    const show = (i: number) => {
+      const count = visible.length
+      index = (i + count) % count
+      const link = visible[index]
+      const thumb = link.querySelector("img")
+      image.loading = "eager"
+      image.removeAttribute("srcset")
+      image.src = link.href
+      if (link.dataset.srcset) image.srcset = link.dataset.srcset
+      image.width = Number(link.dataset.width)
+      image.height = Number(link.dataset.height)
+      image.alt = thumb?.alt ?? ""
+      caption.textContent =
+        link
+          .closest("figure")
+          ?.querySelector("figcaption")
+          ?.textContent?.trim() ?? ""
+      counter.textContent = `${index + 1} of ${count}`
+      altText.textContent = image.alt ? `. ${image.alt}` : ""
+      prev.hidden = next.hidden = count < 2
+      // Warm the cache for the next photo.
+      const upcoming = visible[(index + 1) % count]
+      if (count > 1 && upcoming.dataset.srcset) {
+        const preload = new Image()
+        preload.sizes = "100vw"
+        preload.srcset = upcoming.dataset.srcset
+      }
+    }
+
+    const open = (link: HTMLAnchorElement) => {
+      visible = links.filter(isVisible)
+      show(Math.max(0, visible.indexOf(link)))
+      dialog.showModal()
+    }
+
+    for (const link of links) {
+      link.setAttribute("aria-haspopup", "dialog")
+      link.addEventListener("click", (event) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+          return
+        event.preventDefault()
+        open(link)
+      })
+    }
+
+    prev.addEventListener("click", () => show(index - 1))
+    next.addEventListener("click", () => show(index + 1))
+
+    dialog.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") show(index - 1)
+      else if (event.key === "ArrowRight") show(index + 1)
+      else if (event.key === "Home") show(0)
+      else if (event.key === "End") show(visible.length - 1)
+      else return
+      event.preventDefault()
+    })
+
+    // Return focus to the thumbnail of the photo last shown (after the
+    // browser restores focus to the opener).
+    dialog.addEventListener("close", () => {
+      requestAnimationFrame(() => visible[index]?.focus())
+    })
+
+    // Swipe left/right to navigate; a tap on the empty stage closes.
+    let start: { x: number; y: number } | null = null
+    stage.addEventListener("pointerdown", (event) => {
+      if (!event.isPrimary) return
+      start = { x: event.clientX, y: event.clientY }
+    })
+    stage.addEventListener("pointerup", (event) => {
+      if (!start) return
+      const dx = event.clientX - start.x
+      const dy = event.clientY - start.y
+      start = null
+      if (Math.abs(dx) > SWIPE_DISTANCE && Math.abs(dx) > Math.abs(dy)) {
+        show(dx < 0 ? index + 1 : index - 1)
+      } else if (
+        event.target === stage &&
+        Math.abs(dx) < 10 &&
+        Math.abs(dy) < 10
+      ) {
+        dialog.close()
+      }
+    })
+    stage.addEventListener("pointercancel", () => {
+      start = null
+    })
+  }
+
+  document
+    .querySelectorAll<HTMLElement>("[data-gallery]")
+    .forEach((root) => enhance(root))
+</script>

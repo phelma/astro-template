@@ -1,0 +1,114 @@
+---
+import after from "@/assets/placeholders/media/after.jpg"
+import before from "@/assets/placeholders/media/before.jpg"
+import gardenAfter from "@/assets/placeholders/media/garden-after.jpg"
+import gardenBefore from "@/assets/placeholders/media/garden-before.jpg"
+import type { ComparisonPair } from "@/components/blocks/before-after/before-after"
+import BeforeAfter from "@/components/blocks/before-after/BeforeAfter.astro"
+import BeforeAfterGrid from "@/components/blocks/before-after/BeforeAfterGrid.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const room = {
+  before: {
+    src: before,
+    alt: "Living room before decorating: stained walls, cracked plaster and a worn floor",
+  },
+  after: {
+    src: after,
+    alt: "The same living room after: fresh cream walls, new oak floor and a blue sofa",
+  },
+}
+const garden = {
+  before: {
+    src: gardenBefore,
+    alt: "Overgrown back garden with patchy lawn and weeds",
+  },
+  after: {
+    src: gardenAfter,
+    alt: "The same garden with a new lawn, sandstone patio and clipped shrubs",
+  },
+}
+
+const pairs: ComparisonPair[] = [
+  { ...room, caption: "Living room redecoration, Kemp Town" },
+  { ...garden, caption: "Garden clearance and new patio, Hove" },
+  { ...garden, caption: "Back garden makeover, Portslade" },
+]
+---
+
+<Showcase
+  title="Before and after"
+  description="Comparison slider driven by a native range input: keyboard and screen reader friendly, drag anywhere on the photo, side by side without JS."
+>
+  <Demo
+    title="Horizontal (default)"
+    description="Drag, or Tab to the slider and use arrow keys / Home / End. Screen readers announce e.g. '50% before, 50% after'."
+  >
+    <BeforeAfter
+      {...room}
+      caption="Living room redecoration, Kemp Town"
+      class="mx-auto max-w-3xl"
+    />
+  </Demo>
+
+  <Demo
+    title="Vertical, custom labels and start position"
+    description="orientation='vertical' (before on top; Up/Down arrows follow the divider), position={30}, beforeLabel/afterLabel, labelTone='primary'."
+  >
+    <BeforeAfter
+      {...garden}
+      orientation="vertical"
+      position={30}
+      beforeLabel="March"
+      afterLabel="June"
+      labelTone="primary"
+      caption="Garden clearance and new patio, Hove"
+      class="mx-auto max-w-xl"
+    />
+  </Demo>
+
+  <Demo
+    title="Rounded frame, inverted labels"
+    description="Call-site classes: frameClass='rounded-2xl shadow-lg', labelTone='inverted'."
+  >
+    <BeforeAfter
+      {...room}
+      labelTone="inverted"
+      frameClass="rounded-2xl shadow-lg"
+      label="Before and after: decorating a living room"
+      class="mx-auto max-w-2xl"
+    />
+  </Demo>
+
+  <Demo
+    title="BeforeAfterGrid"
+    description="Section with a heading and a grid of sliders; columns={2} (default)."
+    bleed
+  >
+    <BeforeAfterGrid
+      id="before-after-grid"
+      headingLevel={3}
+      eyebrow="Transformations"
+      title="See the difference"
+      lede="Real jobs from the last few months. Drag the slider to compare."
+      items={pairs.slice(0, 2)}
+    />
+  </Demo>
+
+  <Demo
+    title="BeforeAfterGrid: three columns, muted"
+    description="columns={3}, tone='muted', align='center'."
+    bleed
+  >
+    <BeforeAfterGrid
+      id="before-after-grid-3"
+      tone="muted"
+      headingLevel={3}
+      align="center"
+      title="Recent transformations"
+      items={pairs}
+      columns={3}
+    />
+  </Demo>
+</Showcase>

@@ -1,0 +1,104 @@
+---
+/**
+ * Contact details in an `<address>`: postal address, click-to-call phone
+ * and email, with icons. Each defaults to siteConfig.contact; pass `false`
+ * to leave one out. Extra lines (e.g. WhatsApp) go in the default slot.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import { addressLines, telHref, type FooterAddress } from "./footer"
+import { footerLinkVariants } from "./variants"
+
+type Props = HTMLAttributes<"div"> & {
+  title?: string
+  headingLevel?: HeadingLevel
+  address?: FooterAddress | false
+  phone?: string | false
+  email?: string | false
+  /** Show the leading icons. */
+  icons?: boolean
+}
+
+const {
+  title,
+  headingLevel = 2,
+  address = siteConfig.contact.address,
+  phone = siteConfig.contact.phone,
+  email = siteConfig.contact.email,
+  icons = true,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+const iconClass = "size-4 shrink-0 text-muted-foreground"
+---
+
+<div
+  data-slot="footer-contact"
+  class={cn("flex flex-col gap-4", className)}
+  {...rest}
+>
+  {title && (
+    <Heading
+      data-slot="footer-heading"
+      class="text-sm font-semibold text-(--footer-foreground)"
+    >
+      {title}
+    </Heading>
+  )}
+  <address
+    data-slot="footer-address"
+    class="flex flex-col gap-2 text-sm text-muted-foreground not-italic"
+  >
+    {address && (
+      <p data-slot="footer-address-lines" class="flex gap-2">
+        {icons && (
+          <Icon
+            name="lucide:map-pin"
+            class={cn(iconClass, "mt-0.5")}
+            aria-hidden="true"
+          />
+        )}
+        <span>
+          {addressLines(address).map((line, i) => (
+            <>
+              {i > 0 && <br />}
+              {line}
+            </>
+          ))}
+        </span>
+      </p>
+    )}
+    {phone && (
+      <a
+        href={telHref(phone)}
+        data-slot="footer-phone"
+        class={cn(footerLinkVariants(), "self-start")}
+      >
+        {icons && (
+          <Icon name="lucide:phone" class={iconClass} aria-hidden="true" />
+        )}
+        {phone}
+      </a>
+    )}
+    {email && (
+      <a
+        href={`mailto:${email}`}
+        data-slot="footer-email"
+        class={cn(footerLinkVariants(), "self-start [overflow-wrap:anywhere]")}
+      >
+        {icons && (
+          <Icon name="lucide:mail" class={iconClass} aria-hidden="true" />
+        )}
+        {email}
+      </a>
+    )}
+    <slot />
+  </address>
+</div>

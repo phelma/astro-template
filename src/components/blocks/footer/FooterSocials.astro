@@ -1,0 +1,48 @@
+---
+/**
+ * Icon links to social profiles (defaults to siteConfig.contact.socials).
+ * Each link is named by the profile label (visually hidden) and opens in a
+ * new tab with rel="me".
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+import { siteConfig, type SocialLink } from "@/site.config"
+
+type Props = HTMLAttributes<"ul"> & {
+  socials?: SocialLink[]
+  label?: string
+}
+
+const {
+  socials = siteConfig.contact.socials,
+  label = "Social profiles",
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+{socials.length > 0 && (
+  <ul
+    data-slot="footer-socials"
+    aria-label={label}
+    class={cn("flex flex-wrap items-center gap-1", className)}
+    {...rest}
+  >
+    {socials.map((social) => (
+      <li>
+        <a
+          href={social.href}
+          target="_blank"
+          rel="noopener noreferrer me"
+          data-slot="footer-social-link"
+          class="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-current/10 hover:text-(--footer-foreground)"
+        >
+          <Icon name={social.icon} class="size-4" aria-hidden="true" />
+          <span class="sr-only">{social.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+)}

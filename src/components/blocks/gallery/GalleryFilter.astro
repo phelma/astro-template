@@ -1,0 +1,57 @@
+---
+/**
+ * Category filter for a gallery: a native radio group styled as pills.
+ * Filtering is pure CSS (`:has()` rules in GalleryGrid.astro match the
+ * checked value against each item's `data-category`), so it needs no JS.
+ * Values are "all" and "c1".."c8" in `categories` order.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"fieldset"> & {
+  categories: string[]
+  /** Radio group name; unique per page. */
+  name: string
+  legend?: string
+  allLabel?: string
+}
+
+const {
+  categories,
+  name,
+  legend = "Filter photos",
+  allLabel = "All",
+  class: className,
+  ...rest
+} = Astro.props
+
+const options = [
+  { value: "all", label: allLabel },
+  ...categories.map((label, i) => ({ value: `c${i + 1}`, label })),
+]
+---
+
+<fieldset
+  data-slot="gallery-filter"
+  class={cn("mb-6 flex flex-wrap gap-2", className)}
+  {...rest}
+>
+  <legend class="sr-only">{legend}</legend>
+  {options.map((option) => (
+    <label
+      data-slot="gallery-filter-option"
+      class="inline-flex min-h-10 cursor-pointer items-center rounded-md border bg-background px-4 text-sm font-medium transition-colors select-none hover:bg-accent hover:text-accent-foreground has-checked:border-primary has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring"
+    >
+      <input
+        type="radio"
+        name={name}
+        value={option.value}
+        checked={option.value === "all"}
+        data-slot="gallery-filter-input"
+        class="sr-only"
+      />
+      {option.label}
+    </label>
+  ))}
+</fieldset>

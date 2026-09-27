@@ -1,0 +1,108 @@
+---
+/**
+ * Call-to-action band for the top of the footer: big heading, a line of
+ * text and buttons. `actions` default to siteConfig.header.cta (if set) and
+ * a click-to-call button for siteConfig.contact.phone. Custom buttons can
+ * go in the default slot instead (style them with footerCtaActionVariants).
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { containerVariants } from "@/components/blocks/section/variants"
+import { isExternal } from "@/lib/nav"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import { telHref, type FooterCtaAction } from "./footer"
+import {
+  footerCtaActionVariants,
+  footerCtaVariants,
+  type FooterCtaVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  FooterCtaVariants & {
+    title: string
+    text?: string
+    headingLevel?: HeadingLevel
+    actions?: FooterCtaAction[]
+  }
+
+const { header, contact } = siteConfig
+const defaultActions: FooterCtaAction[] = [
+  ...(header.cta ? [{ label: header.cta.label, href: header.cta.href }] : []),
+  ...(contact.phone
+    ? [
+        {
+          label: `Call ${contact.phone}`,
+          href: telHref(contact.phone),
+          icon: "lucide:phone",
+        },
+      ]
+    : []),
+]
+
+const {
+  title,
+  text,
+  headingLevel = 2,
+  actions = defaultActions,
+  tone,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+const hasSlot = Astro.slots.has("default")
+---
+
+<div
+  data-slot="footer-cta"
+  class={cn(footerCtaVariants({ tone }), className)}
+  {...rest}
+>
+  <div
+    class={cn(
+      containerVariants(),
+      "flex flex-col items-start gap-6 py-12 md:flex-row md:items-center md:justify-between md:py-16"
+    )}
+  >
+    <div class="flex max-w-2xl flex-col gap-3">
+      <Heading data-slot="footer-cta-title" class="text-3xl sm:text-4xl">
+        {title}
+      </Heading>
+      {text && (
+        <p data-slot="footer-cta-text" class="text-lg">
+          {text}
+        </p>
+      )}
+    </div>
+    {(hasSlot || actions.length > 0) && (
+      <div data-slot="footer-cta-actions" class="flex flex-wrap gap-3">
+        {hasSlot ? (
+          <slot />
+        ) : (
+          actions.map((action, i) => {
+            const external = isExternal(action)
+            return (
+              <a
+                href={action.href}
+                target={external ? "_blank" : undefined}
+                rel={external ? "noopener noreferrer" : undefined}
+                data-slot="footer-cta-action"
+                class={footerCtaActionVariants({
+                  tone,
+                  emphasis: i === 0 ? "primary" : "secondary",
+                })}
+              >
+                {action.icon && <Icon name={action.icon} aria-hidden="true" />}
+                {action.label}
+              </a>
+            )
+          })
+        )}
+      </div>
+    )}
+  </div>
+</div>

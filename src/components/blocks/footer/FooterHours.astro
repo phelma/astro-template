@@ -1,0 +1,68 @@
+---
+/**
+ * Opening-hours column: a heading plus whatever you put in the default slot
+ * (e.g. an opening-hours block). Without slot content it falls back to a
+ * plain list of siteConfig.business.hours (or `hours`), and renders nothing
+ * if there are none.
+ *
+ *   <FooterHours title="Opening hours"><OpeningHoursSummary /></FooterHours>
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+import { siteConfig, type BusinessHours } from "@/site.config"
+
+import { simpleHoursRows } from "./footer-hours"
+
+type Props = HTMLAttributes<"div"> & {
+  title?: string
+  headingLevel?: HeadingLevel
+  /** Fallback list data; ignored when the slot has content. */
+  hours?: BusinessHours
+}
+
+const {
+  title = "Opening hours",
+  headingLevel = 2,
+  hours = siteConfig.business.hours,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+const custom = Astro.slots.has("default")
+const rows = custom ? [] : simpleHoursRows(hours)
+---
+
+{(custom || rows.length > 0) && (
+  <div
+    data-slot="footer-hours"
+    class={cn("flex flex-col gap-4 text-sm", className)}
+    {...rest}
+  >
+    {title && (
+      <Heading
+        data-slot="footer-heading"
+        class="text-sm font-semibold text-(--footer-foreground)"
+      >
+        {title}
+      </Heading>
+    )}
+    {custom ? (
+      <slot />
+    ) : (
+      <dl
+        data-slot="footer-hours-list"
+        class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-muted-foreground"
+      >
+        {rows.map((row) => (
+          <>
+            <dt>{row.days}</dt>
+            <dd class="tabular-nums">{row.time}</dd>
+          </>
+        ))}
+      </dl>
+    )}
+  </div>
+)}

@@ -1,0 +1,66 @@
+---
+/**
+ * Brand block: logo and/or name linking home, plus a short blurb. Name
+ * defaults to siteConfig.name. With a wordmark logo, set `hideName` (the
+ * name stays as the link's accessible text). Extra content (badges,
+ * accreditations) goes in the default slot.
+ */
+import type { ImageMetadata } from "astro"
+import type { HTMLAttributes } from "astro/types"
+import { Image } from "astro:assets"
+
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+type Props = HTMLAttributes<"div"> & {
+  name?: string
+  href?: string
+  logo?: ImageMetadata
+  /** Rendered logo height in px (width follows the aspect ratio). */
+  logoHeight?: number
+  hideName?: boolean
+  blurb?: string
+}
+
+const {
+  name = siteConfig.name,
+  href = "/",
+  logo,
+  logoHeight = 32,
+  hideName = false,
+  blurb,
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+<div
+  data-slot="footer-brand"
+  class={cn("flex flex-col items-start gap-3", className)}
+  {...rest}
+>
+  <a
+    href={href}
+    data-slot="footer-brand-link"
+    class="inline-flex min-h-6 items-center gap-2 font-heading text-lg font-semibold tracking-tight text-(--footer-foreground)"
+  >
+    {logo && (
+      <Image
+        src={logo}
+        alt=""
+        height={logoHeight}
+        width={Math.round((logo.width / logo.height) * logoHeight)}
+        layout="fixed"
+        data-slot="footer-logo"
+        class="w-auto"
+      />
+    )}
+    <span class={cn(hideName && "sr-only")}>{name}</span>
+  </a>
+  {blurb && (
+    <p data-slot="footer-blurb" class="max-w-xs text-sm text-muted-foreground">
+      {blurb}
+    </p>
+  )}
+  <slot />
+</div>

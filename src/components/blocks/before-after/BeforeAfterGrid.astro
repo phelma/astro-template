@@ -1,0 +1,108 @@
+---
+/**
+ * Section of before/after comparisons: optional heading group, then a grid
+ * of BeforeAfter sliders (`columns` 1-3).
+ *
+ *   <BeforeAfterGrid
+ *     title="Before and after"
+ *     items={[{ before: { src: b, alt: "..." }, after: { src: a, alt: "..." }, caption: "Kitchen, Hove" }]}
+ *   />
+ *
+ * Extra content (e.g. a "See more projects" link) goes in the default slot.
+ */
+import type { ComponentProps } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import type { ComparisonPair } from "./before-after"
+import BeforeAfter from "./BeforeAfter.astro"
+import {
+  beforeAfterGridVariants,
+  type BeforeAfterGridVariants,
+} from "./variants"
+
+type SectionProps = ComponentProps<typeof Section>
+type SliderProps = ComponentProps<typeof BeforeAfter>
+
+type Props = Omit<SectionProps, "title"> &
+  BeforeAfterGridVariants &
+  Pick<
+    SliderProps,
+    "orientation" | "beforeLabel" | "afterLabel" | "labelTone"
+  > & {
+    items: ComparisonPair[]
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    align?: "start" | "center"
+    gridClass?: string
+  }
+
+const {
+  items,
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  columns = 2,
+  orientation,
+  beforeLabel,
+  afterLabel,
+  labelTone,
+  gridClass,
+  id,
+  ...rest
+} = Astro.props
+
+const headingId = `${id ?? `before-after-${crypto.randomUUID().slice(0, 8)}`}-title`
+const sizes = {
+  1: "(min-width: 1152px) 1152px, 100vw",
+  2: "(min-width: 1152px) 576px, (min-width: 768px) 50vw, 100vw",
+  3: "(min-width: 1152px) 384px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw",
+}[columns ?? 2]
+---
+
+<Section
+  as={title ? "section" : "div"}
+  id={id}
+  aria-labelledby={title ? headingId : undefined}
+  data-block="before-after-grid"
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align}
+    />
+  )}
+  <ul
+    data-slot="before-after-grid"
+    class={cn(beforeAfterGridVariants({ columns }), gridClass)}
+  >
+    {items.map((item) => (
+      <li data-slot="before-after-grid-item">
+        <BeforeAfter
+          before={item.before}
+          after={item.after}
+          caption={item.caption}
+          label={item.label}
+          orientation={orientation}
+          beforeLabel={beforeLabel}
+          afterLabel={afterLabel}
+          labelTone={labelTone}
+          sizes={sizes}
+        />
+      </li>
+    ))}
+  </ul>
+  <slot />
+</Section>

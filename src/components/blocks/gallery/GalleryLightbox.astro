@@ -1,0 +1,120 @@
+---
+/**
+ * Full-screen image viewer: one native modal `<dialog>` per gallery, driven
+ * by the script in GalleryGrid.astro (which fills in the image, caption and
+ * counter). Esc and the close button dismiss it; focus returns to the
+ * thumbnail of the image last shown. Inert until opened, so without JS it
+ * never appears and thumbnails simply link to the full image.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+
+import { galleryControlVariants } from "./variants"
+
+type Props = HTMLAttributes<"dialog"> & {
+  /** Placeholder `src` for the viewer image (loaded lazily, replaced on open). */
+  src: string
+  closeLabel?: string
+  previousLabel?: string
+  nextLabel?: string
+}
+
+const {
+  src,
+  closeLabel = "Close",
+  previousLabel = "Previous image",
+  nextLabel = "Next image",
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+<dialog
+  data-slot="gallery-lightbox"
+  class={cn(
+    "fixed inset-0 m-0 size-full max-h-none max-w-none flex-col bg-background/95 p-0 text-foreground backdrop-blur-sm backdrop:bg-transparent open:flex motion-safe:open:animate-in motion-safe:open:fade-in-0",
+    className
+  )}
+  {...rest}
+>
+  <div
+    data-slot="gallery-lightbox-bar"
+    class="flex items-center justify-between gap-4 p-3 sm:p-4"
+  >
+    <p
+      data-slot="gallery-lightbox-counter"
+      aria-live="polite"
+      aria-atomic="true"
+      class="text-sm font-medium text-muted-foreground tabular-nums"
+    >
+      <span data-gallery-counter></span>
+      <span data-gallery-alt class="sr-only"></span>
+    </p>
+    <form method="dialog">
+      <button
+        type="submit"
+        data-slot="gallery-lightbox-close"
+        class={galleryControlVariants()}
+      >
+        <Icon name="lucide:x" class="size-5" aria-hidden="true" />
+        <span class="sr-only">{closeLabel}</span>
+      </button>
+    </form>
+  </div>
+
+  <div
+    data-slot="gallery-lightbox-stage"
+    data-gallery-stage
+    class="relative flex min-h-0 flex-1 touch-pan-y items-center justify-center px-3 select-none sm:px-20"
+  >
+    <img
+      src={src}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      sizes="100vw"
+      data-slot="gallery-lightbox-image"
+      data-gallery-image
+      class="h-auto max-h-full w-auto max-w-full rounded-lg object-contain shadow-lg"
+    />
+    <button
+      type="button"
+      data-slot="gallery-lightbox-previous"
+      data-gallery-previous
+      class={cn(
+        galleryControlVariants(),
+        "absolute bottom-3 left-3 sm:top-1/2 sm:bottom-auto sm:left-4 sm:-translate-y-1/2"
+      )}
+    >
+      <Icon name="lucide:chevron-left" class="size-5" aria-hidden="true" />
+      <span class="sr-only">{previousLabel}</span>
+    </button>
+    <button
+      type="button"
+      data-slot="gallery-lightbox-next"
+      data-gallery-next
+      class={cn(
+        galleryControlVariants(),
+        "absolute right-3 bottom-3 sm:top-1/2 sm:right-4 sm:bottom-auto sm:-translate-y-1/2"
+      )}
+    >
+      <Icon name="lucide:chevron-right" class="size-5" aria-hidden="true" />
+      <span class="sr-only">{nextLabel}</span>
+    </button>
+  </div>
+
+  <p
+    data-slot="gallery-lightbox-caption"
+    data-gallery-caption
+    class="mx-auto min-h-16 max-w-prose px-4 pt-3 pb-4 text-center text-sm sm:text-base"
+  ></p>
+</dialog>
+
+<style is:global>
+  /* Stop the page scrolling behind an open lightbox. */
+  :root:has([data-slot="gallery-lightbox"][open]) {
+    overflow: hidden;
+  }
+</style>

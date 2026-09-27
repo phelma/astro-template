@@ -1,0 +1,113 @@
+---
+/**
+ * One gallery thumbnail: a link to the full-size image (so it works without
+ * JS) wrapping a responsive thumbnail, plus an optional caption. The link
+ * carries the large `srcset` the lightbox script swaps in. Used by
+ * GalleryGrid; render it inside a `<ul>`.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Image, getImage } from "astro:assets"
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+
+import type { GalleryImage } from "./gallery"
+import {
+  galleryCaptionVariants,
+  galleryFrameVariants,
+  type GalleryCaptionVariants,
+  type GalleryFrameVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"li"> &
+  GalleryFrameVariants &
+  GalleryCaptionVariants & {
+    item: GalleryImage
+    /** `sizes` for the thumbnail srcset (depends on the layout). */
+    sizes: string
+    /** Let the photo keep its own shape (masonry). Overrides `aspect`. */
+    natural?: boolean
+    /** Filter keys from `galleryFilterKeys`. */
+    filterKeys?: string
+    frameClass?: string
+  }
+
+const {
+  item,
+  sizes,
+  natural = false,
+  aspect,
+  captions,
+  filterKeys,
+  frameClass,
+  class: className,
+  ...rest
+} = Astro.props
+
+// Candidate widths below the original (Astro never upscales).
+const below = (widths: number[]) => {
+  const fit = widths.filter((w) => w < item.src.width)
+  return fit.length > 0 ? fit : [item.src.width]
+}
+const largeWidth = Math.min(item.src.width, 2048)
+const large = await getImage({
+  src: item.src,
+  width: largeWidth,
+  widths: [
+    ...new Set(
+      [...below([960, 1280, 1600]), largeWidth].filter((w) => w <= largeWidth)
+    ),
+  ],
+  sizes: "100vw",
+})
+---
+
+<li
+  data-slot="gallery-item"
+  data-category={filterKeys || undefined}
+  class={cn(className) || undefined}
+  {...rest}
+>
+  <figure data-slot="gallery-figure" class="relative h-full">
+    <a
+      href={large.src}
+      data-slot="gallery-link"
+      data-gallery-link
+      data-srcset={large.srcSet.attribute || undefined}
+      data-width={large.attributes.width}
+      data-height={large.attributes.height}
+      class={cn(
+        galleryFrameVariants({ aspect: natural ? "auto" : aspect }),
+        frameClass
+      )}
+    >
+      <Image
+        src={item.src}
+        alt={item.alt}
+        layout="none"
+        widths={below([320, 480, 640, 800, 1024])}
+        sizes={sizes}
+        data-slot="gallery-image"
+        class={cn(
+          "motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover/gallery-link:scale-105",
+          natural ? "h-auto w-full" : "absolute inset-0 size-full object-cover"
+        )}
+      />
+      <span
+        data-slot="gallery-zoom"
+        aria-hidden="true"
+        class="absolute top-2 right-2 inline-flex size-8 items-center justify-center rounded-md bg-background/90 text-foreground opacity-0 shadow-sm transition-opacity group-hover/gallery-link:opacity-100 group-focus-visible/gallery-link:opacity-100"
+      >
+        <Icon name="lucide:expand" class="size-4" />
+      </span>
+    </a>
+    {item.caption && (
+      <figcaption
+        data-slot="gallery-caption"
+        class={galleryCaptionVariants({ captions })}
+      >
+        {item.caption}
+      </figcaption>
+    )}
+  </figure>
+</li>
