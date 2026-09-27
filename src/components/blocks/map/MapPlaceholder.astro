@@ -1,0 +1,99 @@
+---
+/**
+ * Token-drawn "map" backdrop for the map facade when no static map image is
+ * configured: a street grid, two main roads and a park, all from CSS
+ * gradients over `--muted`, `--border`, `--background` and `--primary`, so it
+ * follows every theme and colour mode. Decorative (aria-hidden).
+ *
+ * Restyle by overriding the custom properties on it or an ancestor:
+ * `--map-ground`, `--map-street`, `--map-road`, `--map-road-edge`,
+ * `--map-park`, `--map-grid`
+ * (street spacing), e.g. `**:data-[slot=map-placeholder]:[--map-grid:32px]`.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"div">
+
+const { class: className, ...rest } = Astro.props
+---
+
+<div
+  data-slot="map-placeholder"
+  aria-hidden="true"
+  class={cn("map-placeholder size-full", className)}
+  {...rest}
+></div>
+
+<style>
+  .map-placeholder {
+    /* Private copies so the public --map-* can be set on any ancestor. */
+    --_ground: var(--map-ground, var(--muted));
+    --_street: var(
+      --map-street,
+      color-mix(in oklch, var(--border) 45%, var(--muted))
+    );
+    --_road: var(--map-road, var(--background));
+    --_road-edge: var(
+      --map-road-edge,
+      color-mix(in oklch, var(--border) 60%, var(--muted))
+    );
+    --_park: var(
+      --map-park,
+      color-mix(in oklch, var(--primary) 14%, var(--muted))
+    );
+    --_grid: var(--map-grid, 44px);
+
+    background-color: var(--_ground);
+    background-image:
+      /* Main road, horizontal, with kerbs. */
+      linear-gradient(
+        to bottom,
+        transparent calc(58% - 9px),
+        var(--_road-edge) calc(58% - 9px),
+        var(--_road) calc(58% - 7px),
+        var(--_road) calc(58% + 7px),
+        var(--_road-edge) calc(58% + 7px),
+        transparent calc(58% + 9px)
+      ),
+      /* Main road, diagonal. */
+      linear-gradient(
+          112deg,
+          transparent calc(38% - 7px),
+          var(--_road-edge) calc(38% - 7px),
+          var(--_road) calc(38% - 5px),
+          var(--_road) calc(38% + 5px),
+          var(--_road-edge) calc(38% + 5px),
+          transparent calc(38% + 7px)
+        ),
+      /* Parks. */
+      radial-gradient(
+          ellipse 9% 13% at 80% 22%,
+          var(--_park) 98%,
+          transparent 100%
+        ),
+      radial-gradient(
+        ellipse 7% 9% at 16% 82%,
+        var(--_park) 98%,
+        transparent 100%
+      ),
+      /* Street grid. */
+      linear-gradient(to right, var(--_street) 2px, transparent 2px),
+      linear-gradient(to bottom, var(--_street) 2px, transparent 2px);
+    background-size:
+      100% 100%,
+      100% 100%,
+      100% 100%,
+      100% 100%,
+      var(--_grid) var(--_grid),
+      var(--_grid) var(--_grid);
+    background-position: center;
+  }
+
+  @media (forced-colors: active) {
+    .map-placeholder {
+      background-image: none;
+    }
+  }
+</style>

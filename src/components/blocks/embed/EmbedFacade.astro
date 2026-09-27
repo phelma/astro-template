@@ -1,0 +1,303 @@
+---
+/**
+ * Click-to-load facade for third-party iframes (maps, booking widgets,
+ * videos). Nothing from the provider loads until the visitor clicks "Load":
+ * no cookies or tracking before consent (UK GDPR / PECR) and no heavy iframe
+ * on first paint. The click swaps the facade for the iframe (built with
+ * createElement, so it works under the site's Trusted Types CSP) and moves
+ * focus into it.
+ *
+ *   <EmbedFacade
+ *     src="https://calendly.com/acme/visit"
+ *     title="Book a visit with Acme"
+ *     provider="calendly"
+ *     fallbackHref="https://calendly.com/acme/visit"
+ *     aspect="tall"
+ *   />
+ *
+ * Props: `src` and `title` (the iframe's accessible name) are required.
+ * `provider` picks name + privacy link from ./providers.ts; override with
+ * `providerName` / `privacyUrl`. `fallbackHref` is a plain link that opens
+ * the content in a new tab: the only control without JS, a secondary one with
+ * it. `allow`, `referrerPolicy`, `allowFullscreen` go on the iframe.
+ * `remember` (default true) shows "Always load <provider> content", stored
+ * in localStorage (`embed-consent:<provider>`), which then loads every embed
+ * from that provider on the site straight away (lazily).
+ *
+ * Customise: `variant` / `aspect` (./variants.ts, or `--embed-aspect` /
+ * `--embed-height` via a class: `[--embed-height:36rem]`), `panelClass` for the notice card, the `poster`
+ * slot or `posterSrc` for the background, the default slot for extra panel
+ * content (an address, a price list). Parts carry `data-slot="embed-*"`.
+ * Listen for the `embed:load` event on the root to react to loading.
+ *
+ * Privacy: `posterSrc` pointing at a third-party URL is itself a request to
+ * that party before consent; prefer a local image or the slot.
+ */
+import type { ImageMetadata } from "astro"
+import { Image } from "astro:assets"
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+import { embedProviders, type EmbedProviderId } from "./providers"
+import { embedVariants, type EmbedVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  EmbedVariants & {
+    /** iframe URL. */
+    src: string
+    /** iframe title: its accessible name, e.g. "Map of Acme Plumbing, Leeds". */
+    title: string
+    /** Heading shown on the facade; defaults to `title`. */
+    label?: string
+    provider?: EmbedProviderId
+    /** Overrides for providers not in ./providers.ts. */
+    providerName?: string
+    privacyUrl?: string
+    /** Link that opens the content without embedding. Defaults to `src`. */
+    fallbackHref?: string
+    fallbackLabel?: string
+    loadLabel?: string
+    /** Lucide icon name (without "lucide:") shown above the label. */
+    icon?: string
+    /** Background image: local import (optimised) or URL. Decorative by default. */
+    posterSrc?: ImageMetadata | string
+    posterAlt?: string
+    allow?: string
+    referrerPolicy?: HTMLAttributes<"iframe">["referrerpolicy"]
+    allowFullscreen?: boolean
+    /** Offer "Always load <provider> content" (localStorage). */
+    remember?: boolean
+    panelClass?: string
+  }
+
+const {
+  src,
+  title,
+  label = title,
+  provider,
+  providerName,
+  privacyUrl,
+  fallbackHref = src,
+  fallbackLabel = "Open in a new tab",
+  loadLabel = "Load",
+  icon,
+  posterSrc,
+  posterAlt = "",
+  allow,
+  referrerPolicy = "strict-origin-when-cross-origin",
+  allowFullscreen = false,
+  remember = true,
+  variant,
+  aspect,
+  class: className,
+  panelClass,
+  // Blocks built on the facade (BookingEmbed) rename the root slot.
+  "data-slot": dataSlot = "embed",
+  ...rest
+} = Astro.props
+
+const known = provider ? embedProviders[provider] : undefined
+const name = providerName ?? known?.name ?? new URL(src).hostname
+const policy = privacyUrl ?? known?.privacyUrl
+const consentId = provider ?? new URL(src).hostname
+const hasPosterSlot = Astro.slots.has("poster")
+---
+
+<div
+  data-slot={dataSlot}
+  data-embed
+  data-embed-provider={consentId}
+  data-embed-src={src}
+  data-embed-title={title}
+  data-embed-allow={allow}
+  data-embed-referrer-policy={referrerPolicy}
+  data-embed-allow-fullscreen={allowFullscreen ? "" : undefined}
+  class={cn(embedVariants({ variant, aspect }), className)}
+  {...rest}
+>
+  {(hasPosterSlot || posterSrc) && (
+    <div
+      data-slot="embed-poster"
+      data-embed-facade
+      class="absolute inset-0 -z-10 overflow-hidden rounded-[inherit]"
+    >
+      {hasPosterSlot ? (
+        <slot name="poster" />
+      ) : typeof posterSrc === "string" ? (
+        <img
+          src={posterSrc}
+          alt={posterAlt}
+          loading="lazy"
+          decoding="async"
+          class="size-full object-cover"
+        />
+      ) : (
+        posterSrc && (
+          <Image
+            src={posterSrc}
+            alt={posterAlt}
+            class="size-full object-cover"
+          />
+        )
+      )}
+    </div>
+  )}
+
+  <div
+    data-slot="embed-panel"
+    data-embed-facade
+    class={cn(
+      "m-4 flex max-w-sm flex-col items-center gap-3 rounded-lg border bg-card p-5 text-center text-card-foreground shadow-md",
+      panelClass
+    )}
+  >
+    {icon && (
+      <span
+        data-slot="embed-icon"
+        class="grid size-10 place-items-center rounded-full bg-primary text-primary-foreground"
+      >
+        <Icon name={`lucide:${icon}`} class="size-5" aria-hidden="true" />
+      </span>
+    )}
+    <p data-slot="embed-label" class="font-heading text-lg font-semibold">
+      {label}
+    </p>
+    <slot />
+    <p data-slot="embed-notice" class="text-xs text-muted-foreground">
+      Loads content from {name}.
+      {policy ? (
+        <>
+          <a
+            href={policy}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="underline underline-offset-2 hover:text-foreground"
+          >
+            {name}'s privacy policy
+            <span class="sr-only"> (opens in a new tab)</span>
+          </a>{" "}
+          applies.
+        </>
+      ) : (
+        `${name}'s privacy policy applies.`
+      )}
+    </p>
+    <div
+      data-slot="embed-actions"
+      class="flex flex-wrap items-center justify-center gap-2"
+    >
+      <button
+        type="button"
+        data-embed-load
+        hidden
+        class={buttonVariants({ size: "lg" })}
+      >
+        <Icon name="lucide:play" aria-hidden="true" />
+        {loadLabel}
+        <span class="sr-only">: {title}</span>
+      </button>
+      <a
+        href={fallbackHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-slot="embed-fallback"
+        class={buttonVariants({ variant: "outline", size: "lg" })}
+      >
+        <Icon name="lucide:external-link" aria-hidden="true" />
+        {fallbackLabel}
+        <span class="sr-only"> (opens in a new tab)</span>
+      </a>
+    </div>
+    {remember && (
+      <label
+        data-slot="embed-remember"
+        data-embed-remember
+        hidden
+        class="flex min-h-6 cursor-pointer items-center gap-2 text-xs text-muted-foreground"
+      >
+        <input type="checkbox" class="size-4 accent-primary" />
+        Always load {name} content on this site
+      </label>
+    )}
+  </div>
+</div>
+
+<script>
+  import { embedConsentKey } from "./providers"
+
+  const hasConsent = (provider: string) => {
+    try {
+      return localStorage.getItem(embedConsentKey(provider)) === "1"
+    } catch {
+      return false
+    }
+  }
+
+  const saveConsent = (provider: string) => {
+    try {
+      localStorage.setItem(embedConsentKey(provider), "1")
+    } catch {
+      // Storage blocked: the choice just isn't remembered.
+    }
+  }
+
+  // Swap the facade for the iframe. Built with createElement and property
+  // assignment: iframe.src is not a Trusted Types sink, so this runs under
+  // `require-trusted-types-for 'script'` with no policy.
+  function load(root: HTMLElement, focus: boolean) {
+    if (root.dataset.embedState === "loaded") return
+    const data = root.dataset
+    if (!data.embedSrc) return
+    const iframe = document.createElement("iframe")
+    iframe.title = data.embedTitle ?? ""
+    iframe.loading = focus ? "eager" : "lazy"
+    iframe.referrerPolicy = (data.embedReferrerPolicy ??
+      "strict-origin-when-cross-origin") as ReferrerPolicy
+    if (data.embedAllow) iframe.allow = data.embedAllow
+    if (data.embedAllowFullscreen !== undefined) iframe.allowFullscreen = true
+    iframe.dataset.slot = "embed-frame"
+    iframe.className = "absolute inset-0 size-full rounded-[inherit] border-0"
+    iframe.src = data.embedSrc
+    for (const el of root.querySelectorAll("[data-embed-facade]")) el.remove()
+    root.append(iframe)
+    root.dataset.embedState = "loaded"
+    if (focus) iframe.focus()
+    root.dispatchEvent(new CustomEvent("embed:load", { bubbles: true }))
+  }
+
+  const roots = document.querySelectorAll<HTMLElement>("[data-embed]")
+
+  for (const root of roots) {
+    if (root.dataset.embedState) continue
+    root.dataset.embedState = "ready"
+    const provider = root.dataset.embedProvider ?? ""
+
+    if (hasConsent(provider)) {
+      load(root, false)
+      continue
+    }
+
+    const button = root.querySelector<HTMLButtonElement>("[data-embed-load]")
+    const remember = root.querySelector<HTMLLabelElement>(
+      "[data-embed-remember]"
+    )
+    if (!button) continue
+    button.hidden = false
+    if (remember) remember.hidden = false
+
+    button.addEventListener("click", () => {
+      if (remember?.querySelector("input")?.checked) {
+        saveConsent(provider)
+        for (const other of roots) {
+          if (other !== root && other.dataset.embedProvider === provider) {
+            load(other, false)
+          }
+        }
+      }
+      load(root, true)
+    })
+  }
+</script>

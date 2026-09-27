@@ -2,7 +2,7 @@ import react from "@astrojs/react"
 import sitemap from "@astrojs/sitemap"
 import tailwindcss from "@tailwindcss/vite"
 import icon from "astro-icon"
-import { defineConfig, fontProviders } from "astro/config"
+import { defineConfig, envField, fontProviders } from "astro/config"
 
 import { cspHashes } from "./src/lib/csp"
 import { markdownExport } from "./src/lib/markdown-export"
@@ -48,7 +48,16 @@ export default defineConfig({
         "base-uri 'self'",
         "object-src 'none'",
         "form-action 'self'",
-        "img-src 'self' data:",
+        // Google Maps Static API poster images (blocks/map), only requested
+        // when PUBLIC_GOOGLE_MAPS_STATIC_KEY is set. Drop it if unused.
+        "img-src 'self' data: https://maps.googleapis.com",
+        // Click-to-load iframes (blocks/embed facades): nothing loads until
+        // the visitor clicks. Google Maps (keyed Embed API and keyless
+        // fallback) and Calendly (blocks/booking). Adding another provider
+        // (Fresha, OpenTable, SimplyBook.me, YouTube...)? Add its iframe
+        // origin here and to src/components/blocks/embed/providers.ts.
+        // Remove origins you don't use.
+        "frame-src 'self' https://www.google.com https://calendly.com",
         "font-src 'self'",
         "connect-src 'self'",
         "manifest-src 'self'",
@@ -63,6 +72,29 @@ export default defineConfig({
       ],
       scriptDirective: { hashes: cspHashes.scripts },
       styleDirective: { hashes: cspHashes.styles },
+    },
+  },
+
+  // Typed environment variables (astro:env). Set them in `.env` locally and
+  // in the host's build settings; see .env.example.
+  env: {
+    schema: {
+      // Google Maps Embed API key for blocks/map. Public: it ends up in the
+      // HTML, so restrict it to your domain in Google Cloud. Without it,
+      // maps use Google's keyless embed URL.
+      PUBLIC_GOOGLE_MAPS_EMBED_KEY: envField.string({
+        context: "client",
+        access: "public",
+        optional: true,
+      }),
+      // Optional Maps Static API key for a real map image behind the
+      // click-to-load facade. Billed per view, and the image request goes to
+      // Google before consent; leave unset for the token-drawn placeholder.
+      PUBLIC_GOOGLE_MAPS_STATIC_KEY: envField.string({
+        context: "client",
+        access: "public",
+        optional: true,
+      }),
     },
   },
 

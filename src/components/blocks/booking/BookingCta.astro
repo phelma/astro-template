@@ -1,0 +1,158 @@
+---
+/**
+ * Booking call-to-action card: heading, short copy, a "Book online" button
+ * to the booking page and an optional "or call" phone link. For providers
+ * that only allow linking (most Fresha, Treatwell, OpenTable and
+ * ResDiary setups) or when an embedded widget is overkill. Loads nothing
+ * third-party.
+ *
+ *   <BookingCta />
+ *   <BookingCta provider="Fresha" variant="primary" layout="centered" />
+ *
+ * Data: `href` defaults to `business.bookingUrl`, `phone` to
+ * `contact.phone` (siteConfig); `phone={false}` hides the call link.
+ * `provider` adds "Secure booking via <provider>". External links open in a
+ * new tab (announced to screen readers).
+ *
+ * Customise: `variant` (card | primary | muted | inline), `layout` (row |
+ * stacked | centered), `headingLevel`, `icon`, `label`, the default slot
+ * (extra copy, e.g. a cancellation policy) and `actions` slot (replaces the
+ * buttons). Parts: `data-slot="booking-cta"`, `booking-cta-body`,
+ * `booking-cta-title`, `booking-cta-description`, `booking-cta-actions`,
+ * `booking-cta-button`, `booking-cta-phone`, `booking-cta-note`.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import { bookingCtaVariants, type BookingCtaVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  BookingCtaVariants & {
+    /** Booking page; `false` for phone-only. */
+    href?: string | false
+    title?: string
+    description?: string
+    label?: string
+    /** Booking provider name for the "Secure booking via ..." note. */
+    provider?: string
+    phone?: string | false
+    headingLevel?: HeadingLevel
+    /** Lucide icon (without "lucide:") on the button; `false` for none. */
+    icon?: string | false
+  }
+
+const {
+  href = siteConfig.business.bookingUrl,
+  title = "Book your appointment",
+  description = "Choose a time online in under a minute. We'll confirm by email.",
+  label = "Book online",
+  provider,
+  phone = siteConfig.contact.phone ?? false,
+  headingLevel = 2,
+  icon = "calendar-check",
+  variant,
+  layout,
+  class: className,
+  ...rest
+} = Astro.props
+
+if (!href && !phone) {
+  throw new Error(
+    "BookingCta: pass href or phone, or set business.bookingUrl / contact.phone in site.config.ts"
+  )
+}
+
+const Heading = `h${headingLevel}` as const
+const external = href ? /^https?:\/\//.test(href) : false
+const tel = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : undefined
+const onPrimary = variant === "primary"
+---
+
+<div
+  data-slot="booking-cta"
+  class={cn(bookingCtaVariants({ variant, layout }), className)}
+  {...rest}
+>
+  <div
+    data-slot="booking-cta-body"
+    class={cn(
+      "flex max-w-prose flex-col gap-2",
+      layout === "centered" && "items-center"
+    )}
+  >
+    <Heading data-slot="booking-cta-title" class="text-2xl">
+      {title}
+    </Heading>
+    {description && (
+      <p data-slot="booking-cta-description" class="text-muted-foreground">
+        {description}
+      </p>
+    )}
+    <slot />
+  </div>
+
+  <div
+    data-slot="booking-cta-actions"
+    class={cn(
+      "flex shrink-0 flex-col gap-2",
+      layout === "centered" ? "items-center" : "items-start"
+    )}
+  >
+    {Astro.slots.has("actions") ? (
+      <slot name="actions" />
+    ) : (
+      <>
+        <div class="flex flex-wrap items-center gap-2">
+          {href && (
+            <a
+              href={href}
+              target={external ? "_blank" : undefined}
+              rel={external ? "noopener noreferrer" : undefined}
+              data-slot="booking-cta-button"
+              class={buttonVariants({
+                size: "lg",
+                variant: onPrimary ? "secondary" : "default",
+              })}
+            >
+              {icon && <Icon name={`lucide:${icon}`} aria-hidden="true" />}
+              {label}
+              {external && <span class="sr-only"> (opens in a new tab)</span>}
+            </a>
+          )}
+          {phone && (
+            <a
+              href={tel}
+              data-slot="booking-cta-phone"
+              class={cn(
+                buttonVariants({
+                  size: "lg",
+                  variant: href ? "ghost" : onPrimary ? "secondary" : "default",
+                }),
+                onPrimary &&
+                  href &&
+                  "hover:bg-primary-foreground/10 hover:text-primary-foreground"
+              )}
+            >
+              <Icon name="lucide:phone" aria-hidden="true" />
+              {href ? `or call ${phone}` : `Call ${phone}`}
+            </a>
+          )}
+        </div>
+        {provider && href && (
+          <p
+            data-slot="booking-cta-note"
+            class="flex items-center gap-1.5 text-xs text-muted-foreground"
+          >
+            <Icon name="lucide:lock" class="size-3" aria-hidden="true" />
+            Secure booking via {provider}
+          </p>
+        )}
+      </>
+    )}
+  </div>
+</div>

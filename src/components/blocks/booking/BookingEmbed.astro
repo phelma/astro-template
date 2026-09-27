@@ -1,0 +1,114 @@
+---
+/**
+ * Online booking widget (Calendly or any provider that offers an iframe)
+ * behind a click-to-load facade. Without JS, or before the visitor opts in,
+ * a plain "Open booking page" link goes to the provider in a new tab.
+ *
+ *   <BookingEmbed provider="calendly" src="https://calendly.com/acme/visit" />
+ *   <BookingEmbed
+ *     src="https://widget.example-provider.com/acme"
+ *     providerName="Example Provider"
+ *     privacyUrl="https://example-provider.com/privacy"
+ *   />
+ *
+ * Props: `src` defaults to `business.bookingUrl` (siteConfig). `provider`
+ * ("calendly") sets the notice name and privacy link from
+ * blocks/embed/providers.ts; for others pass `providerName` + `privacyUrl`.
+ * Calendly URLs get `embed_type=Inline&embed_domain=<site host>`, as
+ * Calendly's own inline widget sends. `fallbackHref` (default: `src`) is the
+ * no-JS / "open in new tab" link. `title` names the iframe.
+ *
+ * CSP: the provider's iframe origin must be in `frame-src` in
+ * astro.config.ts (Calendly is; add others there). Providers that forbid
+ * framing (many only offer a link or a script widget) need BookingCta.
+ *
+ * Customise: `variant`, `aspect` (default "tall"; set the height with
+ * `class="[--embed-height:50rem]"`), `label`, `description` (panel text),
+ * `icon`. Parts: `data-slot="booking-embed"`, `booking-embed-description`
+ * and the `embed-*` slots.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import EmbedFacade from "@/components/blocks/embed/EmbedFacade.astro"
+import type { EmbedProviderId } from "@/components/blocks/embed/providers"
+import type { EmbedVariants } from "@/components/blocks/embed/variants"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  EmbedVariants & {
+    src?: string
+    provider?: EmbedProviderId
+    providerName?: string
+    privacyUrl?: string
+    title?: string
+    label?: string
+    description?: string
+    fallbackHref?: string
+    loadLabel?: string
+    icon?: string
+    remember?: boolean
+  }
+
+const {
+  src: srcProp = siteConfig.business.bookingUrl,
+  provider,
+  providerName,
+  privacyUrl,
+  title = `Online booking for ${siteConfig.name}`,
+  label = "Book online",
+  description = "Pick a time that suits you and get instant confirmation.",
+  fallbackHref,
+  loadLabel = "Show booking calendar",
+  icon = "calendar-days",
+  remember = true,
+  variant,
+  aspect = "tall",
+  class: className,
+  ...rest
+} = Astro.props
+
+if (!srcProp) {
+  throw new Error(
+    "BookingEmbed: pass src or set business.bookingUrl in site.config.ts"
+  )
+}
+
+let src = srcProp
+if (provider === "calendly") {
+  const url = new URL(srcProp)
+  url.searchParams.set("embed_type", "Inline")
+  if (Astro.site) url.searchParams.set("embed_domain", Astro.site.hostname)
+  src = url.toString()
+}
+---
+
+<EmbedFacade
+  data-slot="booking-embed"
+  src={src}
+  title={title}
+  label={label}
+  provider={provider}
+  providerName={providerName}
+  privacyUrl={privacyUrl}
+  fallbackHref={fallbackHref ?? srcProp}
+  fallbackLabel="Open booking page"
+  loadLabel={loadLabel}
+  icon={icon}
+  allow="payment"
+  remember={remember}
+  variant={variant}
+  aspect={aspect}
+  class={cn(className)}
+  {...rest}
+>
+  {Astro.slots.has("poster") && <slot name="poster" slot="poster" />}
+  {description && (
+    <p
+      data-slot="booking-embed-description"
+      class="text-sm text-muted-foreground"
+    >
+      {description}
+    </p>
+  )}
+</EmbedFacade>
