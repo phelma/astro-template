@@ -1,0 +1,20 @@
+---
+import { Icon } from "astro-icon/components"
+
+import { Button } from "@/components/ui/button"
+import Layout from "@/layouts/main.astro"
+---
+
+<Layout>
+  <main class="flex min-h-dvh flex-col items-start gap-4 p-6">
+    <h1 class="text-2xl font-semibold">Astro template</h1>
+    <p class="text-muted-foreground">
+      This button is a React component rendered at build time with zero client
+      JavaScript.
+    </p>
+    <Button>
+      <Icon name="lucide:sparkles" aria-hidden="true" />
+      Button
+    </Button>
+  </main>
+</Layout>

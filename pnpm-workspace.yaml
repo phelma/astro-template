@@ -1,0 +1,12 @@
+packages: []
+
+allowBuilds:
+  esbuild: true
+  sharp: true
+  msw: false
+
+# eslint-plugin-jsx-a11y 6.10.2 has not widened its peer range to ESLint 10 yet,
+# but works fine with it (eslint-plugin-astro's jsx-a11y configs require it).
+peerDependencyRules:
+  allowedVersions:
+    eslint-plugin-jsx-a11y>eslint: "10"

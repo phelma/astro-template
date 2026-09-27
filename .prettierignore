@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+coverage/
+.pnpm-store/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+# agent tooling (managed externally)
+.agents/
+.claude/
+skills-lock.json
