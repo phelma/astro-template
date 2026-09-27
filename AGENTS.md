@@ -31,6 +31,9 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 - Visual options are cva variants (`variant`, `size`, `layout`, `tone`...) with defaults, exported from `variants.ts` for reuse like `buttonVariants`.
 - Compose from small parts; the top-level component is the default composition. Content via props and slots. Site data (contact, hours, address) defaults from `siteConfig` and can be overridden by props, so blocks work with any data.
 - Section-level blocks render inside `Section` / `SectionHeader` (`blocks/section`) and accept `headingLevel` (default 2) plus section props (`tone`, `spacing`, `width`).
+- Default ids come from `uniqueId(Astro, "<block>")` (`src/lib/ids.ts`) so two instances on a page don't clash; an explicit `id` prop wins.
+- Contact URLs (`tel:`, `mailto:`, WhatsApp, Google Maps directions) come from `src/lib/contact-links.ts`; opening-hours logic from `src/lib/hours.ts`. Don't reimplement them in a block.
+- Coloured bands set `data-tone` (`Section` does it for you). Adjust children for a band with `in-data-[tone=primary]:`, not by matching `.bg-primary`.
 - Inline `style` attributes are blocked by the CSP: set custom properties with classes (`[--gallery-gap:1rem]`).
 - A block's own JSON-LD builder may live in its folder (`blocks/faq/schema.ts`); site-wide nodes stay in `src/lib/seo.ts`.
 - Every block has a showcase page `src/pages/components/<block>.astro` using `Showcase` + `Demo` (`src/components/showcase`) showing each variant; nest block headings under the demo `<h2>` with `headingLevel={3}`. Check in both themes, light and dark.

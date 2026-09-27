@@ -175,7 +175,10 @@ src/
     sections/                   Prose, plus thin wrappers over blocks (Hero, Features, CtaBand, PageHeader)
     ui/                         shadcn/ui components (button, card, badge, input, field, native-select, ...)
   lib/
-    seo.ts                      Title, URL and JSON-LD helpers
+    seo.ts                      Title, URL and JSON-LD helpers (LocalBusiness, WebSite, BreadcrumbList)
+    hours.ts                    Opening hours: weekly table, special hours, summaries, "open now"
+    contact-links.ts            tel:, mailto:, WhatsApp and Google Maps directions URLs
+    ids.ts                      Deterministic, page-unique element ids for blocks
     theme-script.ts             Blocking head script (colour mode + theme)
     csp.ts                      CSP hashes for the inline head script/style
     sitemap.ts                  noindexPaths (sitemap exclusions)
@@ -210,27 +213,28 @@ IDEAS.md                        Possible future improvements
 
 Validated with zod at build time, so a typo fails the build.
 
-| Field               | Purpose                                                                                                                |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `name`, `shortName` | Brand name (titles, OG, JSON-LD); short name (manifest, mobile header, max 12 chars).                                  |
-| `description`       | Default meta description.                                                                                              |
-| `titleTemplate`     | e.g. `"%s \| Acme Studio"`. The home page (no `title`) gets just `name`.                                               |
-| `locale`, `lang`    | `og:locale` / JSON-LD (`en-GB`) and `<html lang>` (`en`).                                                              |
-| `organisation`      | JSON-LD business node: `name`, `legalName`, `logo`, `sameAs` (defaults to social URLs).                                |
-| `contact`           | `email`, `phone`, `address`, `socials` (label, URL, `lucide:*` icon). Used by contact page, footer, JSON-LD, llms.txt. |
-| `nav`, `footer`     | Header and footer links. External links open in a new tab.                                                             |
-| `header`            | `layout`, `variant`, `sticky`, `bordered`, `mobileMenu`, `showPhone`, `cta`, `topBar`.                                 |
-| `announcement`      | Optional banner: `message`, `link`, `from`/`until` dates, `dismissible`.                                               |
-| `business`          | `type` (schema.org subtype), `hours`, `specialHours`, `timeZone`, `geo`, `areaServed`, `whatsapp`, `bookingUrl`, ...   |
-| `mobileActions`     | Sticky bottom bar on phones: `enabled`, `actions` (call, whatsapp, email, directions, book).                           |
-| `seo`               | Default `ogImage` (+ `ogImageAlt`) and `twitterHandle`.                                                                |
-| `robots`            | `allowAiCrawlers`, `disallowAll`, `contentSignals` (see [SEO](#seo)).                                                  |
-| `tdm`               | TDMRep text and data mining `reservation` (0/1) and optional `policy` URL.                                             |
-| `security`          | security.txt `contact`, `expiresInMonths`, `preferredLanguages`, `policy`.                                             |
-| `theme`             | `default` theme, `available` themes, `switcher` (show runtime theme picker).                                           |
-| `colorMode.default` | `"light"` (default), `"dark"` or `"system"`.                                                                           |
-| `viewTransitions`   | Native cross-document view transitions (`@view-transition`). Off by default.                                           |
-| `speculationRules`  | Prerender internal links on hover in Chromium (Speculation Rules). On by default.                                      |
+| Field               | Purpose                                                                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`, `shortName` | Brand name (titles, OG, JSON-LD); short name (manifest, mobile header, max 12 chars).                                                         |
+| `description`       | Default meta description.                                                                                                                     |
+| `titleTemplate`     | e.g. `"%s \| Acme Studio"`. The home page (no `title`) gets just `name`.                                                                      |
+| `locale`, `lang`    | `og:locale` / JSON-LD (`en-GB`) and `<html lang>` (`en`).                                                                                     |
+| `organisation`      | JSON-LD business node: `name`, `legalName`, `logo`, `sameAs` (defaults to social URLs).                                                       |
+| `contact`           | `email`, `phone`, `address`, `socials` (label, URL, `lucide:*` icon). Used by contact page, footer, JSON-LD, llms.txt.                        |
+| `nav`, `footer`     | Header and footer links (nav items with `children` become dropdowns). External links open in a new tab.                                       |
+| `footerOptions`     | Footer `layout` (simple, columns, centered, cta), `tone`, `blurb`, link `columns`, `legalLinks`, `cta` copy.                                  |
+| `header`            | `layout`, `variant`, `sticky`, `bordered`, `mobileMenu`, `showPhone`, `cta`, `topBar`.                                                        |
+| `announcement`      | Optional banner: `message`, `link`, `from`/`until` dates, `dismissible`.                                                                      |
+| `business`          | `type` (schema.org LocalBusiness subtype, validated), `hours`, `specialHours`, `timeZone`, `geo`, `areaServed`, `whatsapp`, `bookingUrl`, ... |
+| `mobileActions`     | Sticky bottom bar on phones: `enabled`, `actions` (call, whatsapp, email, directions, book).                                                  |
+| `seo`               | Default `ogImage` (+ `ogImageAlt`) and `twitterHandle`.                                                                                       |
+| `robots`            | `allowAiCrawlers`, `disallowAll`, `contentSignals` (see [SEO](#seo)).                                                                         |
+| `tdm`               | TDMRep text and data mining `reservation` (0/1) and optional `policy` URL.                                                                    |
+| `security`          | security.txt `contact`, `expiresInMonths`, `preferredLanguages`, `policy`.                                                                    |
+| `theme`             | `default` theme, `available` themes, `switcher` (show runtime theme picker).                                                                  |
+| `colorMode.default` | `"light"` (default), `"dark"` or `"system"`.                                                                                                  |
+| `viewTransitions`   | Native cross-document view transitions (`@view-transition`). Off by default.                                                                  |
+| `speculationRules`  | Prerender internal links on hover in Chromium (Speculation Rules). On by default.                                                             |
 
 ## Themes
 
