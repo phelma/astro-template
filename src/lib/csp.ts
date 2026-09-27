@@ -3,8 +3,8 @@
  *
  * Astro's `security.csp` only auto-hashes scripts/styles it processes
  * (bundled `<script>`, component `<style>`, `<Font />` CSS). Our blocking
- * head script and optional view-transition style are `is:inline`, so their
- * hashes must be supplied via config:
+ * head script, optional speculation rules and optional view-transition style
+ * are `is:inline`, so their hashes must be supplied via config:
  *
  *   security: {
  *     csp: {
@@ -18,6 +18,7 @@
 import { createHash } from "node:crypto"
 
 import { siteConfig } from "../site.config"
+import { speculationRules } from "./speculation-rules"
 import { themeScript } from "./theme-script"
 import { viewTransitionStyle } from "./view-transitions"
 
@@ -28,6 +29,9 @@ export function sha256(content: string): Sha256 {
 }
 
 export const cspHashes: { scripts: Sha256[]; styles: Sha256[] } = {
-  scripts: [sha256(themeScript)],
+  scripts: [
+    sha256(themeScript),
+    ...(siteConfig.speculationRules ? [sha256(speculationRules)] : []),
+  ],
   styles: siteConfig.viewTransitions ? [sha256(viewTransitionStyle)] : [],
 }

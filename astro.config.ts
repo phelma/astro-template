@@ -5,6 +5,7 @@ import icon from "astro-icon"
 import { defineConfig, fontProviders } from "astro/config"
 
 import { cspHashes } from "./src/lib/csp"
+import { markdownExport } from "./src/lib/markdown-export"
 import { sitemapFilter } from "./src/lib/sitemap"
 
 // https://docs.astro.build/en/reference/configuration-reference/
@@ -30,6 +31,8 @@ export default defineConfig({
     // marked noindex are excluded via src/lib/sitemap.ts.
     sitemap({ filter: sitemapFilter }),
     icon(),
+    // After the build: /about.md etc. and /llms-full.txt for agents.
+    markdownExport(),
   ],
 
   // Content Security Policy, emitted as a <meta http-equiv> tag per page
@@ -49,6 +52,14 @@ export default defineConfig({
         "font-src 'self'",
         "connect-src 'self'",
         "manifest-src 'self'",
+        // Rewrite any stray http:// subresource to https://.
+        "upgrade-insecure-requests",
+        // Trusted Types: DOM XSS sinks (innerHTML, script.src, eval, ...)
+        // reject plain strings, and no policies may be created. A library
+        // that needs one will throw: allow it by name, e.g.
+        // "trusted-types dompurify", rather than dropping these lines.
+        "require-trusted-types-for 'script'",
+        "trusted-types 'none'",
       ],
       scriptDirective: { hashes: cspHashes.scripts },
       styleDirective: { hashes: cspHashes.styles },
@@ -64,7 +75,8 @@ export default defineConfig({
 
   // Prefetch internal links on hover/focus. Opt a link out with
   // data-astro-prefetch="false", or pick a strategy per link
-  // (data-astro-prefetch="viewport").
+  // (data-astro-prefetch="viewport"). Chromium also prerenders on hover via
+  // Speculation Rules (siteConfig.speculationRules).
   prefetch: {
     prefetchAll: true,
     defaultStrategy: "hover",

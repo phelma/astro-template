@@ -157,7 +157,7 @@ Headers, transport, and policies that keep visitors safe.
       Serve every page over HTTPS using TLS 1.2 or 1.3, redirect plain HTTP to HTTPS, and disable obsolete SSL and early TLS versions on every host you control.
 - [x] [HSTS (Strict-Transport-Security)](https://specification.website/spec/security/hsts/) — Required
       HSTS tells browsers to only ever use HTTPS for your domain. Send max-age with includeSubDomains — but skip the preload list, which its own operator now discourages.
-- [ ] [Mixed content and upgrade-insecure-requests](https://specification.website/spec/security/mixed-content/) — Recommended
+- [x] [Mixed content and upgrade-insecure-requests](https://specification.website/spec/security/mixed-content/) — Recommended
       An HTTPS page that loads any subresource over HTTP is mixed content. Serve every subresource over HTTPS, and send the upgrade-insecure-requests CSP directive as a safety net.
 - [x] [Content Security Policy (CSP)](https://specification.website/spec/security/content-security-policy/) — Recommended
       A CSP tells browsers which sources of script, style, image, and frame content to trust. A good policy stops most XSS and data-exfiltration attacks dead.
@@ -171,7 +171,7 @@ Headers, transport, and policies that keep visitors safe.
       Tell browsers who is allowed to embed your pages in an iframe. Use CSP frame-ancestors. X-Frame-Options is the legacy fallback.
 - [ ] [Fetch Metadata request headers](https://specification.website/spec/security/fetch-metadata/) — Recommended
       Read Sec-Fetch-Site, Sec-Fetch-Mode and Sec-Fetch-Dest to reject unwanted cross-site browser requests before a handler runs. Keep ordinary inbound links working and retain other CSRF defences.
-- [ ] [Cross-origin isolation (COOP / COEP / CORP)](https://specification.website/spec/security/cross-origin-isolation/) — Recommended
+- [x] [Cross-origin isolation (COOP / COEP / CORP)](https://specification.website/spec/security/cross-origin-isolation/) — Recommended
       Three response headers — Cross-Origin-Opener-Policy, Cross-Origin-Embedder-Policy, and Cross-Origin-Resource-Policy — that sever risky cross-window and cross-origin links and defend against side-channel leaks.
 - [x] [Referrer-Policy](https://specification.website/spec/security/referrer-policy/) — Recommended
       Referrer-Policy controls how much URL information your site leaks when users follow a link or load a subresource. strict-origin-when-cross-origin is the sensible default.
@@ -181,7 +181,7 @@ Headers, transport, and policies that keep visitors safe.
       SRI adds a cryptographic hash to every third-party script and stylesheet so the browser refuses to run modified files. Essential for any external JS or CSS you depend on.
 - [ ] [Digest Fields (Content-Digest, Repr-Digest and Unencoded-Digest)](https://specification.website/spec/security/digest-fields/) — Optional
       Digest Fields let clients check received bytes. Unencoded-Digest works after decompression, with limited browser support.
-- [ ] [Trusted Types](https://specification.website/spec/security/trusted-types/) — Recommended
+- [x] [Trusted Types](https://specification.website/spec/security/trusted-types/) — Recommended
       Trusted Types make the browser reject plain strings at DOM injection sinks like innerHTML, demanding a vetted typed value instead. Switched on with two CSP directives, it neutralises a whole class of DOM-based XSS.
 - [x] [X-XSS-Protection](https://specification.website/spec/security/x-xss-protection/) — Avoid
       A dead header that roughly a third of major sites still send. No shipping browser reads it, it was never standardised, and the values people copy-paste were the dangerous ones. Stop sending it and rely on CSP.
@@ -233,15 +233,15 @@ Things that make a site legible to AI agents and crawlers.
       Agent readiness is the set of choices that make a site legible to AI agents and LLMs: stable URLs, structured data, clean semantics, robots controls, and machine-readable endpoints.
 - [x] [/llms.txt](https://specification.website/spec/agent-readiness/llms-txt/) — Recommended
       A markdown file at the site root that gives LLMs a curated index of your most important content. Now at v2, which makes it discoverable by link relation instead of by guessing the path. Still a convention, not a ratified standard.
-- [ ] [/llms-full.txt](https://specification.website/spec/agent-readiness/llms-full-txt/) — Optional
+- [x] [/llms-full.txt](https://specification.website/spec/agent-readiness/llms-full-txt/) — Optional
       An extended companion to /llms.txt that concatenates the full markdown content of your key pages into a single file. Useful for small sites, costly for large ones.
-- [ ] [Per-page Markdown source endpoints](https://specification.website/spec/agent-readiness/markdown-source-endpoints/) — Recommended
+- [x] [Per-page Markdown source endpoints](https://specification.website/spec/agent-readiness/markdown-source-endpoints/) — Recommended
       Expose every documentation page's raw Markdown source at a predictable URL — via a .md suffix on the canonical URL, content negotiation, or both. Agents pull source instead of parsing HTML.
 - [x] [robots.txt for AI crawlers](https://specification.website/spec/agent-readiness/robots-for-ai-crawlers/) — Recommended
       Major AI vendors publish named user-agents for their crawlers. Setting an explicit allow or disallow per agent is the clearest way to control how your content is used.
-- [ ] [Content Signals in robots.txt](https://specification.website/spec/agent-readiness/content-signals/) — Optional
+- [x] [Content Signals in robots.txt](https://specification.website/spec/agent-readiness/content-signals/) — Optional
       Add Content-Signal directives to robots.txt to declare whether AI crawlers may search, ingest, or train on your content. An emerging IETF AI Preferences / IAB Tech Lab proposal that some validators already check.
-- [ ] [TDM reservation (TDMRep)](https://specification.website/spec/agent-readiness/tdmrep/) — Optional
+- [x] [TDM reservation (TDMRep)](https://specification.website/spec/agent-readiness/tdmrep/) — Optional
       Declare in machine-readable form whether you reserve the right to object to text and data mining, using the `tdm-reservation` HTTP header, a `\<meta\>` element, or `/.well-known/tdmrep.json`. Its force is legal, not technical.
 - [ ] [Web Bot Auth — verifiable bot identity](https://specification.website/spec/agent-readiness/web-bot-auth/) — Optional
       Web Bot Auth lets a bot prove who it is by signing each HTTP request with a key it controls. Sites can then allow or block specific bots without IP allow-lists, user-agent strings, or guesswork. Built on RFC 9421 HTTP Message Signatures.
@@ -251,7 +251,7 @@ Things that make a site legible to AI agents and crawlers.
       JSON-LD with schema.org types gives agents typed facts about your page. It is the same markup search engines use, and agents lean on it just as heavily.
 - [x] [Machine-readable formats](https://specification.website/spec/agent-readiness/machine-readable-formats/) — Recommended
       Offer JSON, RSS, or plain markdown endpoints alongside HTML where it makes sense. Agents and feed readers prefer typed data over scraped HTML.
-- [ ] [HTTP Link headers for discovery](https://specification.website/spec/agent-readiness/link-headers/) — Recommended
+- [x] [HTTP Link headers for discovery](https://specification.website/spec/agent-readiness/link-headers/) — Recommended
       Use the HTTP Link header to advertise machine-readable resources — llms.txt, sitemap, api-catalog, RSS — directly in the response. Agents that never parse your HTML can still find what they need.
 - [ ] [MCP and tool discovery](https://specification.website/spec/agent-readiness/mcp-and-tool-discovery/) — Optional
       The Model Context Protocol is an emerging way for sites to expose queryable tools to agents over JSON-RPC. Relevant whenever your content has structure worth filtering — even for a static reference site like this one.
@@ -292,7 +292,7 @@ Core Web Vitals, caching, images, fonts, network behaviour.
       Vary lists the request headers your server branched on when it chose this representation. Get it wrong and a cache hands one visitor's response to another; list too much and the cache stops working at all.
 - [x] [Conditional requests (ETag, Last-Modified, 304)](https://specification.website/spec/performance/conditional-requests/) — Recommended
       Send a validator — ETag or Last-Modified — on every cacheable response, and honour If-None-Match / If-Modified-Since so unchanged resources return an empty 304 instead of the full body.
-- [ ] [No-Vary-Search response header](https://specification.website/spec/performance/no-vary-search/) — Recommended
+- [x] [No-Vary-Search response header](https://specification.website/spec/performance/no-vary-search/) — Recommended
       The `No-Vary-Search` response header tells browsers and caches that some URL query parameters (tracking, UTM, sort order) do not change the response. The cached entry for the canonical URL is reused for variants — fewer fetches, better prefetch hits, less duplicate work.
 - [x] [Compression (gzip, brotli, zstd)](https://specification.website/spec/performance/compression/) — Required
       Compress text responses with brotli where supported, gzip everywhere else. zstd is emerging. Don't compress already-compressed media.
@@ -306,7 +306,7 @@ Core Web Vitals, caching, images, fonts, network behaviour.
       Serve over HTTP/2 at minimum and HTTP/3 where you can. Multiplexing eliminates head-of-line blocking; QUIC removes TCP handshake delays.
 - [x] [HTTP/1.1 workarounds: sharding, sprites, and bundling](https://specification.website/spec/performance/http1-workarounds/) — Avoid
       Domain sharding and image sprites were workarounds for HTTP/1.1's connection limit; under HTTP/2 and HTTP/3 they hurt — drop them. Bundling is the nuanced one: stop concatenating to cut requests, start doing it to cut bytes.
-- [ ] [Speculation Rules](https://specification.website/spec/performance/speculation-rules/) — Recommended
+- [x] [Speculation Rules](https://specification.website/spec/performance/speculation-rules/) — Recommended
       Tell the browser which links to prefetch or prerender before the user clicks. Done well, navigations feel instant; done carelessly, you burn bandwidth on pages nobody visits.
 - [x] [Resource hints overview](https://specification.website/spec/performance/resource-hints/) — Recommended
       Five resource hints — dns-prefetch, preconnect, preload, modulepreload, prefetch — cover every stage of the request lifecycle. Pick the right one for the job.

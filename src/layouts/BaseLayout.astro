@@ -19,12 +19,14 @@ import {
   absoluteUrl,
   formatTitle,
   jsonLdGraph,
+  markdownPath,
   ogLocale,
   pagePath,
   organizationSchema,
   websiteSchema,
   type BreadcrumbItem,
 } from "@/lib/seo"
+import { speculationRules } from "@/lib/speculation-rules"
 import { themeScript } from "@/lib/theme-script"
 import { viewTransitionStyle } from "@/lib/view-transitions"
 import { siteConfig } from "@/site.config"
@@ -42,7 +44,7 @@ export interface Props {
   imageAlt?: string
   /** Canonical URL override (absolute, or path resolved against `site`). */
   canonical?: string | URL
-  /** Emit `noindex` (also exclude the page from the sitemap in astro.config.ts). */
+  /** Emit `noindex` (also exclude the page from the sitemap in astro.config.ts). No Markdown copy is generated. */
   noindex?: boolean
   /** Open Graph type. */
   type?: "website" | "article"
@@ -63,9 +65,10 @@ const {
 
 const site = Astro.site
 const fullTitle = formatTitle(title)
+const path = pagePath(Astro.url.pathname)
 const canonicalUrl = canonical
   ? absoluteUrl(canonical.toString(), site)
-  : absoluteUrl(pagePath(Astro.url.pathname), site)
+  : absoluteUrl(path, site)
 
 // Social image: optimise imported images; resolve strings against `site`.
 let ogImage: { url: string; width?: number; height?: number }
@@ -93,6 +96,11 @@ const robots = siteConfig.robots.disallowAll
   : noindex
     ? "noindex, follow"
     : "index, follow, max-image-preview:large"
+
+// Indexable pages get a Markdown copy after the build (src/lib/markdown-export.ts).
+const markdownUrl = robots.startsWith("index")
+  ? absoluteUrl(markdownPath(path), site)
+  : undefined
 
 // Dev only: warn in the browser console when a page doesn't have exactly one <h1>.
 const h1Check = `addEventListener("DOMContentLoaded",function(){var n=document.querySelectorAll("h1").length;if(n!==1)console.warn("[template] Expected exactly one <h1> on "+location.pathname+", found "+n+".")})`
@@ -148,6 +156,18 @@ const structuredData = jsonLdGraph(
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
     <meta name="robots" content={robots} />
+    <meta name="tdm-reservation" content={String(siteConfig.tdm.reservation)} />
+    {siteConfig.tdm.policy && (
+      <meta name="tdm-policy" content={siteConfig.tdm.policy} />
+    )}
+    {markdownUrl && (
+      <link
+        rel="alternate"
+        type="text/markdown"
+        href={markdownUrl}
+        title={`${fullTitle} (Markdown)`}
+      />
+    )}
 
     {fontVariables.map((cssVariable) => (
       <Font cssVariable={cssVariable} preload={preload.has(cssVariable)} />
@@ -184,6 +204,10 @@ const structuredData = jsonLdGraph(
     <meta name="twitter:image:alt" content={ogImageAlt} />
 
     <JsonLd data={structuredData} />
+
+    {siteConfig.speculationRules && (
+      <script is:inline type="speculationrules" set:html={speculationRules} />
+    )}
 
     {siteConfig.viewTransitions && (
       <style is:inline set:html={viewTransitionStyle} />

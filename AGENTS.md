@@ -39,7 +39,7 @@ Use pnpm only. Fix formatting with `pnpm format` (Prettier: no semicolons, doubl
 
 - Brand, contact, nav, footer, SEO, robots, security.txt, theme and colour-mode settings: `src/site.config.ts` (zod-validated). Read values from it; keep copy out of components.
 - Canonical origin: `site` in `astro.config.ts` (`Astro.site` / `context.site`).
-- `src/site.config.ts`, `src/styles/themes/index.ts` and `src/lib/{csp,sitemap,theme-script,view-transitions}.ts` are imported by `astro.config.ts`: use relative imports there (no `@/`, no `astro:*`).
+- `src/site.config.ts`, `src/styles/themes/index.ts` and `src/lib/{csp,markdown-export,sitemap,speculation-rules,theme-script,view-transitions}.ts` are imported by `astro.config.ts`: use relative imports there (no `@/`, no `astro:*`).
 
 ## Security
 

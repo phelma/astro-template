@@ -23,9 +23,9 @@ It's a base, not a design. Replace the placeholder copy, pick or build a theme, 
 - **Zero JavaScript by default.** shadcn/ui components are React, but they render to HTML at build time. The only client JS is a tiny theme script. Hydrate a component only when it needs real interactivity.
 - **Themes that go beyond colour.** Each theme sets shadcn tokens plus fonts, radius, shadows, tracking and heading weight. Switch `data-theme` and the whole site changes, with no rebuild.
 - **Light, dark and system modes.** Light is the default, and one config value changes it. The theme is applied before first paint, so there's no flash of the wrong theme.
-- **SEO handled.** Meta tags, Open Graph and Twitter cards, canonical URLs, JSON-LD (Organization, WebSite, BreadcrumbList), a sitemap, and `robots.txt` with an AI-crawler toggle.
-- **Secure by default.** A hash-based CSP plus HSTS, frame, referrer, permissions and COOP headers for Cloudflare, and a generated `security.txt`.
-- **Ready for AI agents.** A generated `/llms.txt`, and an `AGENTS.md` that tells coding agents the project's conventions.
+- **SEO handled.** Meta tags, Open Graph and Twitter cards, canonical URLs, JSON-LD (Organization, WebSite, BreadcrumbList), a sitemap, and `robots.txt` with an AI-crawler toggle and Content Signals.
+- **Secure by default.** A hash-based CSP with Trusted Types, plus HSTS, frame, referrer, permissions, COOP and CORP headers for Cloudflare, and a generated `security.txt`.
+- **Ready for AI agents.** Generated `/llms.txt` and `/llms-full.txt`, a Markdown copy of every page (`/about.md`), `Link` discovery headers, TDMRep, and an `AGENTS.md` that tells coding agents the project's conventions.
 - **Accessible.** Skip link, landmarks, visible focus, targets of at least 24px, reduced-motion and forced-colours support, and AA-contrast tokens.
 - **One config file.** Brand, contact, nav, footer, SEO, robots and theme settings live in `src/site.config.ts`. The file is zod-validated, so a typo fails the build.
 
@@ -104,10 +104,12 @@ src/
     theme-script.ts             Blocking head script (colour mode + theme)
     csp.ts                      CSP hashes for the inline head script/style
     sitemap.ts                  noindexPaths (sitemap exclusions)
+    markdown-export.ts          Build step: page .md copies + llms-full.txt
+    speculation-rules.ts        Prerender rules (Chromium)
     ai-crawlers.ts              AI crawler user agents for robots.txt
   pages/
     index, about, contact, privacy, 404, styleguide (.astro)
-    robots.txt.ts, llms.txt.ts, site.webmanifest.ts, .well-known/security.txt.ts
+    robots.txt.ts, llms.txt.ts, site.webmanifest.ts, .well-known/{security.txt,tdmrep.json}.ts
   styles/
     global.css                  Tailwind, shadcn base, token mapping, base styles
     themes/<name>.css           One file per theme
@@ -140,11 +142,13 @@ Validated with zod at build time, so a typo fails the build.
 | `contact`           | `email`, `phone`, `address`, `socials` (label, URL, `lucide:*` icon). Used by contact page, footer, JSON-LD, llms.txt. |
 | `nav`, `footer`     | Header and footer links. External links open in a new tab.                                                             |
 | `seo`               | Default `ogImage` (+ `ogImageAlt`) and `twitterHandle`.                                                                |
-| `robots`            | `allowAiCrawlers`, `disallowAll` (see [SEO](#seo)).                                                                    |
+| `robots`            | `allowAiCrawlers`, `disallowAll`, `contentSignals` (see [SEO](#seo)).                                                  |
+| `tdm`               | TDMRep text and data mining `reservation` (0/1) and optional `policy` URL.                                             |
 | `security`          | security.txt `contact`, `expiresInMonths`, `preferredLanguages`, `policy`.                                             |
 | `theme`             | `default` theme, `available` themes, `switcher` (show runtime theme picker).                                           |
 | `colorMode.default` | `"light"` (default), `"dark"` or `"system"`.                                                                           |
 | `viewTransitions`   | Native cross-document view transitions (`@view-transition`). Off by default.                                           |
+| `speculationRules`  | Prerender internal links on hover in Chromium (Speculation Rules). On by default.                                      |
 
 ## Themes
 
@@ -226,15 +230,20 @@ What you get:
 - **Sitemap** (`@astrojs/sitemap`). Caveat: `noindex` pages must **also** be listed in `noindexPaths` in `src/lib/sitemap.ts`, or they will appear in the sitemap.
 - **robots.txt** from config: `robots.disallowAll: true` blocks everything (staging); `robots.allowAiCrawlers: false` disallows AI training and assistant crawlers (`src/lib/ai-crawlers.ts`) while leaving search engines alone.
 - **/llms.txt** summarising the site from config (nav under "Pages", other footer links under "Optional").
+- **Markdown for agents**: after the build, every indexable page's `<main>` is converted to Markdown at `/about.md` (home: `/index.md`), advertised with `<link rel="alternate" type="text/markdown">`, and concatenated into **/llms-full.txt**. Breadcrumbs, icons and anything marked `data-markdown-ignore` are dropped. Build-only (not served by `astro dev`). The `.md` files are `noindex` via `_headers`.
+- **AI usage signals**: `robots.contentSignals` adds `Content-Signal: search=…, ai-input=…, ai-train=…` to robots.txt; `tdm` emits `tdm-reservation` meta tags and `/.well-known/tdmrep.json`. Both are declarations, not blocks (use `allowAiCrawlers` for that); the config refuses a TDM reservation alongside `aiTrain: true`.
+- **`Link` header** on every response pointing at `/llms.txt` (`describedby`) and the sitemap.
 - **/.well-known/security.txt** (RFC 9116). Caveat: `Expires` is computed at **build time** (build date + `expiresInMonths`, max 12). Rebuild and redeploy at least that often, or it goes stale.
 - `text-wrap: balance` on headings; dev-only console warning when a page doesn't have exactly one `<h1>`.
 - `/styleguide` is `noindex` and excluded from the sitemap.
 
 ## Security
 
-- **CSP** via Astro's `security.csp` (`astro.config.ts`): hash-based, emitted as a `<meta http-equiv>` tag per page. Astro hashes the scripts and styles it bundles; the inline head script (and optional view-transition style) are hashed in `src/lib/csp.ts`.
+- **CSP** via Astro's `security.csp` (`astro.config.ts`): hash-based, emitted as a `<meta http-equiv>` tag per page. Astro hashes the scripts and styles it bundles; the inline head script, speculation rules and optional view-transition style are hashed in `src/lib/csp.ts`. Includes `upgrade-insecure-requests`.
+- **Trusted Types** (`require-trusted-types-for 'script'; trusted-types 'none'`): `innerHTML`, `eval` and other DOM XSS sinks throw on plain strings. If a library needs a policy, allow it by name (`trusted-types dompurify`) rather than removing the directives.
 - **Adding a third-party origin** (analytics, embeds, fonts, images, forms): add it to the matching directive in `security.csp.directives`, e.g. `"img-src 'self' data: https://images.example.com"`, `"frame-src https://www.youtube-nocookie.com"`, or `"form-action 'self' https://forms.example.com"`.
-- **`public/_headers`** (Cloudflare): HSTS, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, a locked-down `Permissions-Policy`, `Cross-Origin-Opener-Policy`, and a header CSP holding only `frame-ancestors 'none'` (not allowed in a meta CSP). Don't put other directives in the header CSP: both policies are enforced, so it would override what the meta CSP allows.
+- **`public/_headers`** (Cloudflare): HSTS, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, a locked-down `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy: same-site`, and a header CSP holding only `frame-ancestors 'none'` (not allowed in a meta CSP). Don't put other directives in the header CSP: both policies are enforced, so it would override what the meta CSP allows.
+- **Reporting API**: a commented-out `Reporting-Endpoints` block in `_headers`. The meta CSP can't send reports; the header CSP and COOP can.
 - **HSTS preload**: `preload` is deliberately not set. Only add it (and submit to hstspreload.org) once every subdomain serves HTTPS; removal takes months.
 - Markdown code blocks use Prism (class-based) because Shiki's inline styles are blocked by the CSP.
 
@@ -243,7 +252,8 @@ What you get:
 - Static HTML; shadcn components ship no JS. The only client JS is the tiny theme script and toggle handlers.
 - `astro:assets` `<Image>` / `<Picture>` with responsive `srcset` (`image.layout: "constrained"`); hero image uses `priority`.
 - Self-hosted, subsetted fonts via the Fonts API with metric-matched fallbacks; the default theme's fonts are preloaded.
-- Prefetch on hover for internal links.
+- Prefetch on hover for internal links; in Chromium, Speculation Rules prerender them on hover (`speculationRules`). Before adding analytics, count page views on `prerenderingchange` when `document.prerendering` is true.
+- `No-Vary-Search` so URLs with UTM and click-ID parameters reuse cached and prerendered pages.
 - `/_astro/*` cached for a year (immutable, hashed); HTML revalidated on every request.
 - `scrollbar-gutter: stable`, `dvh` units, `prefers-reduced-motion` respected. Optional native view transitions (`viewTransitions: true`).
 

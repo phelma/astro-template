@@ -97,6 +97,33 @@ const siteConfigSchema = z
       allowAiCrawlers: z.boolean(),
       /** When true, robots.txt disallows everything (e.g. staging). */
       disallowAll: z.boolean(),
+      /**
+       * `Content-Signal` line in robots.txt (contentsignals.org, an IETF
+       * aipref draft): what crawlers may do with pages they fetch. Omit to
+       * leave it out. Advisory only; `allowAiCrawlers` is the gate.
+       */
+      contentSignals: z
+        .object({
+          /** Index for search results. */
+          search: z.boolean(),
+          /** Use as live input to AI answers (RAG, summaries). */
+          aiInput: z.boolean(),
+          /** Include in AI training data. */
+          aiTrain: z.boolean(),
+        })
+        .optional(),
+    }),
+
+    /**
+     * TDMRep (W3C CG): whether you reserve text and data mining rights (EU
+     * DSM Directive Art. 4). Emitted as <meta> tags and
+     * /.well-known/tdmrep.json. A legal notice, not a crawler block.
+     */
+    tdm: z.object({
+      /** 1 = reserved (miners need permission), 0 = mining allowed. */
+      reservation: z.union([z.literal(0), z.literal(1)]),
+      /** Licensing policy URL for would-be miners; set it when reserving. */
+      policy: z.url().optional(),
     }),
 
     /** Values for /.well-known/security.txt (RFC 9116). */
@@ -125,11 +152,26 @@ const siteConfigSchema = z
 
     /** Enable native cross-document view transitions (@view-transition). */
     viewTransitions: z.boolean(),
+
+    /**
+     * Speculation Rules: Chromium prerenders internal links on hover
+     * ("moderate" eagerness) for near-instant navigations. Rules live in
+     * src/lib/speculation-rules.ts.
+     */
+    speculationRules: z.boolean(),
   })
   .refine((c) => c.theme.available.includes(c.theme.default), {
     message: "theme.available must include theme.default",
     path: ["theme", "available"],
   })
+  .refine(
+    (c) => !(c.tdm.reservation === 1 && c.robots.contentSignals?.aiTrain),
+    {
+      message:
+        "tdm.reservation 1 contradicts robots.contentSignals.aiTrain: true",
+      path: ["tdm", "reservation"],
+    }
+  )
 
 export type SiteConfig = z.output<typeof siteConfigSchema>
 export type SiteConfigInput = z.input<typeof siteConfigSchema>
@@ -195,6 +237,11 @@ const config = {
   robots: {
     allowAiCrawlers: true,
     disallowAll: false,
+    contentSignals: { search: true, aiInput: true, aiTrain: true },
+  },
+
+  tdm: {
+    reservation: 0,
   },
 
   security: {
@@ -214,6 +261,7 @@ const config = {
   },
 
   viewTransitions: false,
+  speculationRules: true,
 } satisfies SiteConfigInput
 
 export const siteConfig: SiteConfig = siteConfigSchema.parse(config)

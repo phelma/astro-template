@@ -4,6 +4,8 @@
  * - `disallowAll: true` blocks every crawler (use on staging/previews).
  * - `allowAiCrawlers: false` adds a Disallow group for AI crawlers
  *   (see src/lib/ai-crawlers.ts).
+ * - `contentSignals` adds a `Content-Signal` line (contentsignals.org) to
+ *   the catch-all group, saying how fetched pages may be used.
  */
 import type { APIRoute } from "astro"
 
@@ -12,7 +14,7 @@ import { absoluteUrl } from "@/lib/seo"
 import { siteConfig } from "@/site.config"
 
 export const GET: APIRoute = ({ site }) => {
-  const { allowAiCrawlers, disallowAll } = siteConfig.robots
+  const { allowAiCrawlers, disallowAll, contentSignals } = siteConfig.robots
   const groups: string[] = []
 
   if (disallowAll) {
@@ -27,7 +29,18 @@ export const GET: APIRoute = ({ site }) => {
         ].join("\n")
       )
     }
-    groups.push(["User-agent: *", "Allow: /"].join("\n"))
+    const signal = (value: boolean) => (value ? "yes" : "no")
+    groups.push(
+      [
+        "User-agent: *",
+        "Allow: /",
+        ...(contentSignals
+          ? [
+              `Content-Signal: search=${signal(contentSignals.search)}, ai-input=${signal(contentSignals.aiInput)}, ai-train=${signal(contentSignals.aiTrain)}`,
+            ]
+          : []),
+      ].join("\n")
+    )
   }
 
   const body = [

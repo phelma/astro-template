@@ -15,20 +15,17 @@ Possible future improvements, deliberately left out of the base template.
 - **Blog content collection**: Markdown/MDX posts with RSS (`@astrojs/rss`) and `Article` / `BlogPosting` JSON-LD.
 - **i18n**: Astro's i18n routing with `hreflang` alternates and per-locale config.
 - **Generated OG images**: per-page social cards with satori at build time, reading theme fonts via `experimental_getFontFileURL`.
-- **Cookieless analytics**: Cloudflare Web Analytics (CSP entries included); add a consent banner only if something sets cookies.
+- **Cookieless analytics**: Cloudflare Web Analytics (CSP entries included); add a consent banner only if something sets cookies; honour `Sec-GPC` and publish `/.well-known/gpc.json` if anything is sold or shared.
 - **Service worker / offline page**: offline fallback and asset precaching for repeat visits.
 
 ## SEO and agents
 
 - **IndexNow**: ping search engines with changed URLs on deploy for faster re-crawling.
-- **Per-page Markdown endpoints** (`/about.md`): clean content for LLMs and agents without HTML noise.
-- **`llms-full.txt`**: the full site content in one Markdown file for agent context.
+- **Markdown content negotiation**: serve the `.md` copy for `Accept: text/markdown` requests to the HTML URL (needs a Worker; add `Vary: Accept`).
 - **Auto-derive `noindexPaths`**: collect `noindex` pages at build time so the sitemap can't drift from page props.
-- **Speculation rules / `clientPrerender`**: prerender likely next pages for near-instant navigations in Chromium.
 
 ## Security
 
-- **Trusted Types**: `require-trusted-types-for 'script'` to lock down DOM XSS sinks.
 - **HSTS preload**: add `preload` and submit to hstspreload.org once every subdomain is HTTPS-only.
 - **CAA and DNSSEC**: restrict which CAs can issue certificates and sign DNS records (DNS settings, outside the repo).
 
