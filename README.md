@@ -56,16 +56,86 @@ pnpm dev          # http://localhost:4321
 
 Open [`/styleguide`](http://localhost:4321/styleguide) to see every token, both themes in light and dark, and the installed components.
 
-The screenshots in `.github/assets/` are for this README; delete them in your site.
-
 Requires Node `>=22.12` (`.nvmrc` pins 24) and **pnpm**.
 
-Then, at minimum:
+Then work through the [launch checklist](#launch-checklist).
 
-1. Set `site` in `astro.config.ts` to your production origin.
-2. Edit `src/site.config.ts` (name, description, contact, nav, security contact).
-3. Replace `public/icon.svg` and run `pnpm icons`; replace `public/og-default.png` (1200x630).
-4. Replace the placeholder copy in `src/pages/` and write a real `/privacy` policy.
+## Launch checklist
+
+Copy this into an issue and tick as you go. Links point to the section that explains each step.
+
+### Make it yours
+
+- [ ] Set `site` in `astro.config.ts` to your production origin ([config](#astroconfigts)).
+- [ ] Set `name` in `package.json`.
+- [ ] Remove template-only files: `.github/assets/` (README screenshots), `CHECKLIST.md` (an audit of the template, not your site; keep it as a to-do list if useful) and `IDEAS.md`. Rewrite this README for your project.
+- [ ] Review `AGENTS.md` and keep the rules that still apply.
+
+### Brand and config (`src/site.config.ts`)
+
+- [ ] `name`, `shortName` (max 12 chars), `description` and `titleTemplate` ([fields](#srcsiteconfigts)).
+- [ ] `locale` and `lang` (the template uses `en-GB` / `en`).
+- [ ] `organisation`: `name`, `legalName`, `logo`.
+- [ ] `contact`: email, phone, address, and `socials`. Remove the `example` GitHub and LinkedIn entries rather than leaving them.
+- [ ] `nav` and `footer` links.
+- [ ] `seo`: `ogImageAlt` and `twitterHandle` (or remove the handle).
+- [ ] `security.contact`: a monitored address for vulnerability reports.
+
+### Look and feel
+
+- [ ] Pick a theme or [add your own](#add-a-theme), then set `theme.default`, `theme.available` and `theme.switcher`.
+- [ ] Remove unused themes (CSS file, `global.css` import and variant, registry entry, fonts in `astro.config.ts`) so their fonts aren't built.
+- [ ] Choose `colorMode.default` ([light / dark mode](#light--dark-mode)).
+- [ ] Check AA contrast in light and dark at `/styleguide`.
+- [ ] Replace `public/icon.svg`, set `BACKGROUND` in `scripts/generate-icons.mjs` to your logo's background colour, then run `pnpm icons` ([icons](#icons)).
+- [ ] Replace `public/og-default.png` (1200x630).
+
+### Content
+
+- [ ] Replace the placeholder copy in `src/pages/` (home, about, contact, 404).
+- [ ] Replace `src/assets/hero-placeholder.jpg`, with real `alt` text.
+- [ ] Write a real `/privacy` policy for your jurisdiction. Revisit it whenever you add analytics, forms, embeds or cookies.
+- [ ] Decide whether to ship `/styleguide`. It is `noindex` but still public; delete the page (and its `noindexPaths` entry) if you don't want it live.
+- [ ] Give new pages `title`, `description` and `breadcrumbs`, and add any `noindex` page to `noindexPaths` ([SEO](#seo)).
+
+### Policy decisions
+
+The defaults allow everything. Make these choices on purpose ([SEO](#seo)):
+
+- [ ] `robots.allowAiCrawlers`: allow or block AI training and assistant crawlers.
+- [ ] `robots.contentSignals`: `search`, `aiInput` and `aiTrain` preferences.
+- [ ] `tdm.reservation` and `tdm.policy`: text and data mining rights.
+- [ ] `viewTransitions` and `speculationRules`.
+
+### Third parties
+
+Only if you add them ([security](#security)):
+
+- [ ] Add every new origin (analytics, embeds, fonts, images, form targets) to `security.csp.directives` in `astro.config.ts`.
+- [ ] Analytics: add consent if you need it, and count prerendered page views on `prerenderingchange` ([performance](#performance)).
+- [ ] Forms: pick a form service (add it to `form-action`) or add an adapter ([adding an adapter](#adding-an-adapter-later)).
+
+### Deploy
+
+- [ ] Create the Cloudflare project (for Workers, add `wrangler.jsonc` with your `name`) ([deploying](#deploying-to-cloudflare-static)).
+- [ ] In `public/_headers`, uncomment the `X-Robots-Tag: noindex` rules and set your `*.pages.dev` / `*.workers.dev` hostnames.
+- [ ] Use `robots.disallowAll: true` for staging builds, and make sure production has it `false`.
+- [ ] Add the custom domain and redirect the other of apex / `www` to the one in `site`.
+- [ ] If you're replacing an existing site, add `301`s for its old URLs to `public/_redirects`.
+- [ ] DNS: CAA records and DNSSEC. Consider HSTS `preload` only once every subdomain serves HTTPS.
+- [ ] Optionally set up the Reporting API endpoint in `_headers`.
+- [ ] Run `pnpm format:check && pnpm lint && pnpm check && pnpm build`.
+
+### After launch
+
+- [ ] An unknown URL returns the 404 page with a `404` status.
+- [ ] Headers and CSP are live with no console violations (securityheaders.com, browser devtools).
+- [ ] Social previews render (Open Graph and Twitter card debuggers).
+- [ ] JSON-LD passes Google's Rich Results Test.
+- [ ] `/robots.txt`, `/sitemap-index.xml`, `/llms.txt` and `/.well-known/security.txt` show your origin and details.
+- [ ] Submit the sitemap to Google Search Console and Bing Webmaster Tools.
+- [ ] Run Lighthouse and an accessibility checker (axe) on the main pages.
+- [ ] Schedule a rebuild and redeploy before `security.txt` expires (`security.expiresInMonths`, max 12).
 
 ## Scripts
 
@@ -116,6 +186,7 @@ src/
     themes/index.ts             Theme registry (labels, theme-color, fonts)
 astro.config.ts                 site, CSP, fonts, sitemap, prefetch, images
 AGENTS.md                       Rules for AI coding agents (CLAUDE.md is a symlink)
+CHECKLIST.md                    Website specification checklist, audited against the template
 IDEAS.md                        Possible future improvements
 ```
 
@@ -298,4 +369,4 @@ In components, use `astro-icon` with Lucide: `<Icon name="lucide:arrow-right" ar
 
 ## Checklist coverage
 
-The template targets the foundations, SEO, accessibility, security, performance, privacy and agent sections of the [website specification checklist](https://specification.website/checklist.md). Things it deliberately leaves to you or to [IDEAS.md](./IDEAS.md): CI and automated tests, analytics and consent, contact forms, i18n, blog/RSS, generated OG images, DNS-level settings (CAA, DNSSEC) and HSTS preload.
+The template targets the foundations, SEO, accessibility, security, performance, privacy and agent sections of the [website specification checklist](https://specification.website/checklist.md). [CHECKLIST.md](./CHECKLIST.md) records which items the template covers; the unticked ones are yours to decide. Things it deliberately leaves to you or to [IDEAS.md](./IDEAS.md): CI and automated tests, analytics and consent, contact forms, i18n, blog/RSS, generated OG images, DNS-level settings (CAA, DNSSEC) and HSTS preload.
