@@ -1,0 +1,77 @@
+---
+/**
+ * Optional runtime theme picker (native <select>). Renders nothing unless
+ * `siteConfig.theme.switcher` is true and more than one theme is available.
+ * Persists to localStorage via `window.siteTheme` (see src/lib/theme-script.ts).
+ */
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+import { themes } from "@/styles/themes"
+
+interface Props {
+  class?: string
+  /** Element id; must be unique per instance on a page. */
+  id?: string
+}
+
+const { class: className, id = "theme-switcher" } = Astro.props
+const { switcher, available, default: defaultTheme } = siteConfig.theme
+const enabled = switcher && available.length > 1
+---
+
+{enabled && (
+  <div
+    data-theme-switcher
+    class={cn("relative inline-flex items-center", className)}
+  >
+    <label for={id} class="sr-only">
+      Theme
+    </label>
+    <Icon
+      name="lucide:palette"
+      class="pointer-events-none absolute left-2 size-4 text-muted-foreground"
+      aria-hidden="true"
+    />
+    <select
+      id={id}
+      class="h-9 appearance-none rounded-md border border-input bg-background py-1 pr-3 pl-8 text-sm text-foreground shadow-xs"
+    >
+      {available.map((name) => (
+        <option value={name} selected={name === defaultTheme}>
+          {themes[name].label}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
+<style>
+  :global(:root:not([data-color-mode])) [data-theme-switcher] {
+    display: none;
+  }
+</style>
+
+<script>
+  const SELECTOR = "[data-theme-switcher] select"
+
+  function sync() {
+    const theme = window.siteTheme?.getTheme()
+    if (!theme) return
+    for (const select of document.querySelectorAll<HTMLSelectElement>(
+      SELECTOR
+    )) {
+      select.value = theme
+    }
+  }
+
+  document.addEventListener("change", (event) => {
+    const target = event.target
+    if (target instanceof HTMLSelectElement && target.matches(SELECTOR)) {
+      window.siteTheme?.setTheme(target.value)
+    }
+  })
+  document.addEventListener("site-theme-change", sync)
+  sync()
+</script>

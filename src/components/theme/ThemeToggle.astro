@@ -1,0 +1,102 @@
+---
+/**
+ * Three-state colour mode control (light / dark / system).
+ *
+ * Native radio group: keyboard (arrow keys), screen readers and forms
+ * semantics come for free. State lives in localStorage and is applied by the
+ * blocking head script (`src/lib/theme-script.ts`) via `window.siteTheme`.
+ * The active option is styled from `<html data-color-mode>` so it is correct
+ * on first paint. Hidden when JS is unavailable (it couldn't do anything).
+ *
+ * Safe to render more than once; pass a unique `name` per instance.
+ */
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+interface Props {
+  class?: string
+  /** Radio group name; must be unique per instance on a page. */
+  name?: string
+}
+
+const { class: className, name = "color-mode" } = Astro.props
+
+const options = [
+  { value: "light", label: "Light", icon: "lucide:sun" },
+  { value: "dark", label: "Dark", icon: "lucide:moon" },
+  { value: "system", label: "System", icon: "lucide:monitor" },
+] as const
+---
+
+<fieldset
+  data-color-mode-toggle
+  class={cn(
+    "inline-flex items-center gap-0.5 rounded-lg border bg-muted p-0.5",
+    className
+  )}
+>
+  <legend class="sr-only">Colour mode</legend>
+  {options.map((option) => (
+    <label
+      data-option={option.value}
+      title={option.label}
+      class="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-ring"
+    >
+      <input
+        type="radio"
+        name={name}
+        value={option.value}
+        checked={option.value === siteConfig.colorMode.default}
+        class="sr-only"
+      />
+      <Icon name={option.icon} class="size-4" aria-hidden="true" />
+      <span class="sr-only">{option.label}</span>
+    </label>
+  ))}
+</fieldset>
+
+<style>
+  :global(:root:not([data-color-mode])) [data-color-mode-toggle] {
+    display: none;
+  }
+
+  :global(:root[data-color-mode="light"]) [data-option="light"],
+  :global(:root[data-color-mode="dark"]) [data-option="dark"],
+  :global(:root[data-color-mode="system"]) [data-option="system"] {
+    background-color: var(--background);
+    color: var(--foreground);
+    box-shadow: var(--shadow-xs);
+  }
+
+  @media (forced-colors: active) {
+    :global(:root[data-color-mode="light"]) [data-option="light"],
+    :global(:root[data-color-mode="dark"]) [data-option="dark"],
+    :global(:root[data-color-mode="system"]) [data-option="system"] {
+      outline: 2px solid Highlight;
+    }
+  }
+</style>
+
+<script>
+  import type { ColorModePreference } from "@/lib/theme-script"
+
+  const SELECTOR = "[data-color-mode-toggle] input[type=radio]"
+
+  function sync() {
+    const mode = window.siteTheme?.getMode()
+    for (const input of document.querySelectorAll<HTMLInputElement>(SELECTOR)) {
+      input.checked = input.value === mode
+    }
+  }
+
+  document.addEventListener("change", (event) => {
+    const target = event.target
+    if (target instanceof HTMLInputElement && target.matches(SELECTOR)) {
+      window.siteTheme?.setMode(target.value as ColorModePreference)
+    }
+  })
+  document.addEventListener("site-theme-change", sync)
+  sync()
+</script>

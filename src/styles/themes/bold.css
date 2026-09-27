@@ -1,0 +1,119 @@
+/*
+ * Theme: bold
+ *
+ * A deliberately loud neo-brutalist theme to prove the token system: sharp
+ * corners, hard offset shadows, full-contrast borders, a grotesque display
+ * face, heavy headings and a saturated primary. All text/background pairs
+ * meet WCAG AA (>= 4.5:1) in light and dark; borders/rings meet 3:1.
+ *
+ * Scope: `[data-theme="bold"]` on <html> (light) and `[data-theme="bold"].dark`
+ * (dark). Structural tweaks that tokens can't express can use the
+ * `theme-bold:` Tailwind variant.
+ */
+
+[data-theme="bold"] {
+  --background: oklch(0.975 0.018 95);
+  --foreground: oklch(0.17 0.02 275);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.17 0.02 275);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.17 0.02 275);
+  --primary: oklch(0.5 0.25 275);
+  --primary-foreground: oklch(0.99 0.005 95);
+  --secondary: oklch(0.88 0.17 95);
+  --secondary-foreground: oklch(0.17 0.02 275);
+  --muted: oklch(0.93 0.025 95);
+  --muted-foreground: oklch(0.42 0.03 275);
+  --accent: oklch(0.84 0.11 350);
+  --accent-foreground: oklch(0.17 0.02 275);
+  --destructive: oklch(0.53 0.22 27);
+  --border: oklch(0.17 0.02 275);
+  --input: oklch(0.17 0.02 275);
+  --ring: oklch(0.5 0.25 275);
+  --chart-1: oklch(0.5 0.25 275);
+  --chart-2: oklch(0.8 0.17 95);
+  --chart-3: oklch(0.65 0.2 350);
+  --chart-4: oklch(0.65 0.15 180);
+  --chart-5: oklch(0.6 0.2 40);
+  --sidebar: oklch(0.95 0.03 95);
+  --sidebar-foreground: oklch(0.17 0.02 275);
+  --sidebar-primary: oklch(0.5 0.25 275);
+  --sidebar-primary-foreground: oklch(0.99 0.005 95);
+  --sidebar-accent: oklch(0.88 0.17 95);
+  --sidebar-accent-foreground: oklch(0.17 0.02 275);
+  --sidebar-border: oklch(0.17 0.02 275);
+  --sidebar-ring: oklch(0.5 0.25 275);
+
+  --radius: 0rem;
+
+  /* Fonts: `--font-space-*` come from the Astro Fonts API (astro.config.ts). */
+  --font-sans: var(--font-space-grotesk, ui-sans-serif, system-ui, sans-serif);
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: var(
+    --font-space-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace
+  );
+
+  --heading-font: var(--font-sans);
+  --heading-weight: 700;
+  --heading-tracking: -0.04em;
+
+  --tracking-normal: -0.01em;
+  --spacing: 0.25rem;
+
+  /* Hard, unblurred offset shadows. */
+  --shadow-color: oklch(0.17 0.02 275);
+  --shadow-opacity: 1;
+  --shadow-offset-x: 4px;
+  --shadow-offset-y: 4px;
+  --shadow-blur: 0px;
+  --shadow-spread: 0px;
+  --shadow-2xs: 1px 1px 0 0 var(--shadow-color);
+  --shadow-xs: 2px 2px 0 0 var(--shadow-color);
+  --shadow-sm: 3px 3px 0 0 var(--shadow-color);
+  --shadow: var(--shadow-sm);
+  --shadow-md: 4px 4px 0 0 var(--shadow-color);
+  --shadow-lg: 6px 6px 0 0 var(--shadow-color);
+  --shadow-xl: 8px 8px 0 0 var(--shadow-color);
+  --shadow-2xl: 12px 12px 0 0 var(--shadow-color);
+}
+
+[data-theme="bold"].dark {
+  --background: oklch(0.17 0.02 275);
+  --foreground: oklch(0.97 0.015 95);
+  --card: oklch(0.22 0.025 275);
+  --card-foreground: oklch(0.97 0.015 95);
+  --popover: oklch(0.22 0.025 275);
+  --popover-foreground: oklch(0.97 0.015 95);
+  --primary: oklch(0.88 0.17 95);
+  --primary-foreground: oklch(0.17 0.02 275);
+  --secondary: oklch(0.72 0.15 275);
+  --secondary-foreground: oklch(0.17 0.02 275);
+  --muted: oklch(0.27 0.025 275);
+  --muted-foreground: oklch(0.8 0.03 95);
+  --accent: oklch(0.75 0.14 350);
+  --accent-foreground: oklch(0.17 0.02 275);
+  --destructive: oklch(0.7 0.19 22);
+  --border: oklch(0.85 0.02 95);
+  --input: oklch(0.85 0.02 95);
+  --ring: oklch(0.88 0.17 95);
+  --chart-1: oklch(0.88 0.17 95);
+  --chart-2: oklch(0.72 0.15 275);
+  --chart-3: oklch(0.75 0.14 350);
+  --chart-4: oklch(0.75 0.13 180);
+  --chart-5: oklch(0.72 0.17 40);
+  --sidebar: oklch(0.2 0.025 275);
+  --sidebar-foreground: oklch(0.97 0.015 95);
+  --sidebar-primary: oklch(0.88 0.17 95);
+  --sidebar-primary-foreground: oklch(0.17 0.02 275);
+  --sidebar-accent: oklch(0.72 0.15 275);
+  --sidebar-accent-foreground: oklch(0.17 0.02 275);
+  --sidebar-border: oklch(0.85 0.02 95);
+  --sidebar-ring: oklch(0.88 0.17 95);
+
+  --shadow-color: oklch(0.88 0.17 95);
+}
