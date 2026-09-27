@@ -1,0 +1,31 @@
+---
+/**
+ * Decorative icon tile for a feature. A muted square in grid, list and
+ * cards; a small primary disc with a tick in checklist (stays visible on
+ * the primary tone, where the disc blends in but the tick does not).
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"span"> & {
+  /** astro-icon name, e.g. "lucide:shield-check". */
+  name: string
+}
+
+const { name, class: className, ...rest } = Astro.props
+---
+
+<span
+  data-slot="features-icon"
+  aria-hidden="true"
+  class={cn(
+    "inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground [&_svg]:size-5",
+    "group-data-[variant=checklist]/features:mt-0.5 group-data-[variant=checklist]/features:size-5 group-data-[variant=checklist]/features:rounded-full group-data-[variant=checklist]/features:bg-primary group-data-[variant=checklist]/features:text-primary-foreground group-data-[variant=checklist]/features:[&_svg]:size-3.5",
+    className
+  )}
+  {...rest}
+>
+  <Icon name={name} />
+</span>

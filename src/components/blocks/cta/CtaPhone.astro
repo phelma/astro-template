@@ -1,0 +1,45 @@
+---
+/**
+ * Click-to-call line under the actions: "Or call us on 020 7946 0000".
+ * The number defaults to `siteConfig.contact.phone`; renders nothing when
+ * there is no number.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import { telHref } from "./phone"
+
+type Props = HTMLAttributes<"p"> & {
+  /** Display format, e.g. "0113 496 0000". */
+  phone?: string
+  /** Text before the number. */
+  label?: string
+}
+
+const {
+  phone = siteConfig.contact.phone,
+  label = "Or call us on",
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+{phone && (
+  <p
+    data-slot="cta-phone"
+    class={cn("flex flex-wrap items-center gap-x-2 gap-y-1", className)}
+    {...rest}
+  >
+    <Icon name="lucide:phone" aria-hidden="true" class="size-4 shrink-0" />
+    <span>{label}</span>
+    <a
+      href={telHref(phone)}
+      class="inline-flex min-h-6 items-center font-semibold whitespace-nowrap underline underline-offset-4 hover:decoration-2"
+    >
+      {phone}
+    </a>
+  </p>
+)}

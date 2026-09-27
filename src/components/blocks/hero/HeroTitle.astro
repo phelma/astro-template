@@ -1,0 +1,33 @@
+---
+/**
+ * The hero heading: the page's single <h1> by default. Use `headingLevel`
+ * for heroes that are not the page title (showcases, secondary heroes).
+ * Scales with the root's `size`.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import type { HeroHeadingLevel } from "./variants"
+
+type Props = HTMLAttributes<"h1"> & {
+  headingLevel?: HeroHeadingLevel
+}
+
+const { headingLevel = 1, class: className, ...rest } = Astro.props
+
+const Heading = `h${headingLevel}` as const
+---
+
+<Heading
+  data-slot="hero-title"
+  class={cn(
+    "text-4xl sm:text-5xl",
+    "group-data-[size=sm]/hero:text-3xl sm:group-data-[size=sm]/hero:text-4xl",
+    "lg:group-data-[size=lg]/hero:text-6xl lg:group-data-[size=screen]/hero:text-6xl",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</Heading>

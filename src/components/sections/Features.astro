@@ -1,23 +1,12 @@
 ---
 /**
- * Features grid: a section heading plus shadcn Cards with astro-icon icons.
- * Cards are React components rendered at build time (no client JS).
+ * Deprecated: use `@/components/blocks/features/Features.astro`. Kept as a
+ * thin wrapper (cards variant) so existing pages keep working.
  */
-import { Icon } from "astro-icon/components"
+import FeaturesBlock from "@/components/blocks/features/Features.astro"
+import type { FeatureItem } from "@/components/blocks/features/variants"
 
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-
-export interface Feature {
-  /** astro-icon name, e.g. "lucide:zap". Decorative. */
-  icon: string
-  title: string
-  description: string
-}
+export type Feature = FeatureItem
 
 interface Props {
   id?: string
@@ -26,34 +15,13 @@ interface Props {
   features: Feature[]
 }
 
-const { id = "features", title, intro, features } = Astro.props
+const { id, title, intro, features } = Astro.props
 ---
 
-<section
-  aria-labelledby={`${id}-title`}
-  class="mx-auto max-w-6xl px-4 py-16 sm:px-6"
->
-  <div class="mb-10 flex max-w-2xl flex-col gap-3">
-    <h2 id={`${id}-title`} class="text-3xl">
-      {title}
-    </h2>
-    {intro && <p class="text-muted-foreground">{intro}</p>}
-  </div>
-  <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    {features.map((feature) => (
-      <li class="flex">
-        <Card className="w-full">
-          <CardHeader>
-            <span class="mb-2 inline-flex size-10 items-center justify-center rounded-lg bg-muted text-foreground">
-              <Icon name={feature.icon} class="size-5" aria-hidden="true" />
-            </span>
-            <CardTitle>
-              <h3 class="text-lg">{feature.title}</h3>
-            </CardTitle>
-            <CardDescription>{feature.description}</CardDescription>
-          </CardHeader>
-        </Card>
-      </li>
-    ))}
-  </ul>
-</section>
+<FeaturesBlock
+  id={id}
+  title={title}
+  lede={intro}
+  items={features}
+  variant="cards"
+/>

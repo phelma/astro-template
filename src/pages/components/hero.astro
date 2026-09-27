@@ -1,0 +1,242 @@
+---
+import HeroActions from "@/components/blocks/hero/HeroActions.astro"
+import HeroContent from "@/components/blocks/hero/HeroContent.astro"
+import HeroEyebrow from "@/components/blocks/hero/HeroEyebrow.astro"
+import HeroLede from "@/components/blocks/hero/HeroLede.astro"
+import HeroMedia from "@/components/blocks/hero/HeroMedia.astro"
+import HeroRoot from "@/components/blocks/hero/HeroRoot.astro"
+import HeroTitle from "@/components/blocks/hero/HeroTitle.astro"
+import HeroTrust from "@/components/blocks/hero/HeroTrust.astro"
+import Hero from "@/components/blocks/hero/Hero.astro"
+import { heroOverlayOutline } from "@/components/blocks/hero/variants"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+import { buttonVariants } from "@/components/ui/button"
+import heroImage from "@/assets/hero-placeholder.jpg"
+import warmImage from "@/assets/placeholders/hero/warm.jpg"
+import wideImage from "@/assets/placeholders/hero/wide.jpg"
+
+const plumberActions = [
+  { label: "Get a free quote", href: "/contact", icon: "lucide:arrow-right" },
+  {
+    label: "Call 0113 496 0000",
+    href: "tel:+441134960000",
+    variant: "outline" as const,
+    icon: "lucide:phone",
+    iconPosition: "start" as const,
+  },
+]
+
+const plumberTrust = [
+  { label: "4.9 on Google (212 reviews)", icon: "lucide:star" },
+  { label: "Gas Safe registered", icon: "lucide:shield-check" },
+  { label: "25 years in Leeds", icon: "lucide:calendar-check" },
+]
+
+const sizes = ["sm", "md", "lg", "screen"] as const
+---
+
+<Showcase
+  title="Hero"
+  description="Page hero with split, centred, overlay, stacked and minimal layouts, four heights, an eyebrow, actions and a trust line."
+>
+  <Demo
+    title="Layout: split"
+    description="Default. Text beside the image; the image is the LCP element and loads with priority (the only one on this page)."
+    bleed
+  >
+    <Hero
+      id="hero-split"
+      headingLevel={3}
+      eyebrow="Plumbing & heating in Leeds"
+      title="Boiler broken? We can be there today."
+      lede="Gas Safe engineers for repairs, servicing and new installations. Fixed prices agreed before we start, and no call-out charge."
+      image={heroImage}
+      imageAlt="Wireframe of a web page layout with a headline, two buttons and content cards."
+      actions={plumberActions}
+      trust={plumberTrust}
+    />
+  </Demo>
+
+  <Demo
+    title="Layout: centered"
+    description="Centred text with the image below. Good for salons and studios with one strong photo."
+    bleed
+  >
+    <Hero
+      id="hero-centered"
+      layout="centered"
+      headingLevel={3}
+      eyebrow="Hair & beauty, Harrogate"
+      title="Cuts, colour and calm on Cheltenham Parade"
+      lede="Relaxed appointments with senior stylists, organic colour and free consultations for new clients."
+      image={warmImage}
+      imageAlt="Warmly lit salon interior with a round mirror and a wooden counter."
+      priority={false}
+      actions={[
+        { label: "Book online", href: "/contact" },
+        { label: "See prices", href: "/about", variant: "outline" },
+      ]}
+      trust={["Free consultations", "Open late Thursdays"]}
+    />
+  </Demo>
+
+  <Demo
+    title="Layout: overlay (scrim: dim)"
+    description="Default scrim: a dark wash with light text in both modes (70% foreground in light, 80% background in dark), at least 4.5:1 over any pixel. Outline actions switch to a transparent outline. size='lg'."
+    bleed
+  >
+    <Hero
+      id="hero-overlay"
+      layout="overlay"
+      size="lg"
+      headingLevel={3}
+      eyebrow="Family builders since 1998"
+      title="Extensions and loft conversions across North Yorkshire"
+      lede="One team from drawings to decorating. Fully insured, NHBC registered and happy to show you our recent work."
+      image={wideImage}
+      imageAlt="Bright kitchen extension with a large window and dark wooden floor."
+      priority={false}
+      actions={[
+        { label: "Arrange a site visit", href: "/contact" },
+        { label: "View our projects", href: "/about", variant: "outline" },
+      ]}
+      trust={[
+        { label: "4.8 on Checkatrade", icon: "lucide:star" },
+        "NHBC registered",
+        "10-year guarantee",
+      ]}
+    />
+  </Demo>
+
+  <Demo
+    title="Layout: overlay (scrim: background), centred"
+    description="scrim='background' washes the photo with the page background (80%) and keeps foreground text; align='center'."
+    bleed
+  >
+    <Hero
+      id="hero-overlay-bg"
+      layout="overlay"
+      scrim="background"
+      align="center"
+      headingLevel={3}
+      eyebrow="Independent café, York"
+      title="Good coffee, slow mornings"
+      lede="Local roasts, homemade bakes and breakfast until 2pm, seven days a week."
+      image={warmImage}
+      imageAlt=""
+      priority={false}
+      actions={[
+        { label: "See the menu", href: "/about" },
+        { label: "Find us", href: "/contact", variant: "outline" },
+      ]}
+    />
+  </Demo>
+
+  <Demo
+    title="Layout: stacked"
+    description="Text, then a wide image cropped to 16:9 on phones and 21:9 from md."
+    bleed
+  >
+    <Hero
+      id="hero-stacked"
+      layout="stacked"
+      headingLevel={3}
+      eyebrow="Dental practice, Chorlton"
+      title="Gentle, modern dentistry for the whole family"
+      lede="Accepting new NHS and private patients. Evening and Saturday appointments available."
+      image={wideImage}
+      imageAlt="Bright, modern treatment room with a large window."
+      priority={false}
+      actions={[
+        { label: "Register as a patient", href: "/contact" },
+        { label: "Emergency appointments", href: "/about", variant: "outline" },
+      ]}
+      trust={["CQC rated Good", "Nervous patients welcome"]}
+    />
+  </Demo>
+
+  <Demo
+    title="Layout: minimal"
+    description="Text only, e.g. landing pages or when there is no good photo yet. align='center' also works."
+    bleed
+  >
+    <Hero
+      id="hero-minimal"
+      layout="minimal"
+      headingLevel={3}
+      eyebrow="Electrician, Bristol"
+      title="Rewires, fuse boards and EV chargers"
+      lede="NICEIC approved. Clear written quotes and a tidy finish, every time."
+      actions={[{ label: "Get a quote", href: "/contact" }]}
+      trust={["NICEIC approved", "OZEV approved installer"]}
+    />
+  </Demo>
+
+  {sizes.map((size) => (
+    <Demo
+      title={`Size: ${size}`}
+      description="Vertical padding and title scale; 'screen' fills the viewport below the header."
+      bleed
+    >
+      <Hero
+        id={`hero-size-${size}`}
+        layout="minimal"
+        align="center"
+        size={size}
+        headingLevel={3}
+        title={`A ${size} hero`}
+        lede="Pick the height that suits the photo and how much the page needs to say up front."
+        actions={[{ label: "Call now", href: "tel:+441134960000" }]}
+      />
+    </Demo>
+  ))}
+
+  <Demo
+    title="Composed from parts (scrim: foreground)"
+    description="HeroRoot plus parts, with custom links in the HeroActions slot. heroOverlayOutline keeps a slotted outline button legible on the scrim. scrim='foreground' follows the token, so it turns light in dark mode."
+    bleed
+  >
+    <HeroRoot
+      layout="overlay"
+      scrim="foreground"
+      aria-labelledby="hero-parts-title"
+    >
+      <HeroContent>
+        <HeroEyebrow>Emergency locksmith</HeroEyebrow>
+        <HeroTitle id="hero-parts-title" headingLevel={3}>
+          Locked out? 30-minute response across Sheffield
+        </HeroTitle>
+        <HeroLede>
+          Non-destructive entry, lock changes and uPVC repairs. Available 24
+          hours, including bank holidays.
+        </HeroLede>
+        <HeroActions>
+          <a
+            href="tel:+441144960000"
+            class={buttonVariants({ size: "lg", variant: "secondary" })}
+          >
+            Call 0114 496 0000
+          </a>
+          <a
+            href="/contact"
+            class={`${buttonVariants({ size: "lg", variant: "outline" })} ${heroOverlayOutline}`}
+          >
+            Send a message
+          </a>
+        </HeroActions>
+        <HeroTrust
+          items={[
+            {
+              label: "Read our reviews",
+              icon: "lucide:star",
+              href: "/about",
+            },
+            "Police-vetted",
+          ]}
+        />
+      </HeroContent>
+      <HeroMedia image={wideImage} alt="" priority={false} sizes="100vw" />
+    </HeroRoot>
+  </Demo>
+</Showcase>

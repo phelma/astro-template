@@ -1,0 +1,28 @@
+---
+/**
+ * The features list (`<ul>`). Sets the variant and columns for the
+ * FeaturesItem children through `data-variant`.
+ *
+ *   <FeaturesList variant="list" columns={2}>
+ *     <FeaturesItem>...</FeaturesItem>
+ *   </FeaturesList>
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import { featuresVariants, type FeaturesVariants } from "./variants"
+
+type Props = HTMLAttributes<"ul"> & FeaturesVariants
+
+const { variant = "grid", columns = 3, class: className, ...rest } = Astro.props
+---
+
+<ul
+  data-slot="features"
+  data-variant={variant}
+  class={cn(featuresVariants({ variant, columns }), className)}
+  {...rest}
+>
+  <slot />
+</ul>

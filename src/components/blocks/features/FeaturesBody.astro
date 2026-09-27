@@ -1,0 +1,23 @@
+---
+/**
+ * Text column of a feature: FeaturesTitle and FeaturesDescription.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"div">
+
+const { class: className, ...rest } = Astro.props
+---
+
+<div
+  data-slot="features-body"
+  class={cn(
+    "flex min-w-0 flex-col gap-2 group-data-[variant=checklist]/features:gap-0.5",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</div>

@@ -1,0 +1,104 @@
+---
+/**
+ * Page hero, the default composition of the Hero* parts: the page's single
+ * <h1>, eyebrow, lede, actions, a trust line and an optional image.
+ *
+ *   <Hero
+ *     layout="overlay"
+ *     eyebrow="Plumbing & heating in Leeds"
+ *     title="Boiler broken? We'll be there today."
+ *     lede="Gas Safe engineers, fixed prices, no call-out charge."
+ *     image={photo}
+ *     imageAlt="Engineer servicing a boiler"
+ *     actions={[{ label: "Get a free quote", href: "/contact" }]}
+ *     trust={[{ label: "4.9 on Google", icon: "lucide:star" }, "Gas Safe registered"]}
+ *   />
+ *
+ * Layouts: split (default), centered, overlay (needs `image`), stacked,
+ * minimal. Sizes: sm, md, lg, screen. Extra actions go in the default slot;
+ * the `media` slot replaces the image (map, video poster, form...). For
+ * anything else, compose HeroRoot and the parts directly.
+ */
+import type { ImageMetadata } from "astro"
+import type { HTMLAttributes } from "astro/types"
+
+import type { ActionLink } from "./actions"
+import HeroActions from "./HeroActions.astro"
+import HeroContent from "./HeroContent.astro"
+import HeroEyebrow from "./HeroEyebrow.astro"
+import HeroLede from "./HeroLede.astro"
+import HeroMedia from "./HeroMedia.astro"
+import HeroRoot from "./HeroRoot.astro"
+import HeroTitle from "./HeroTitle.astro"
+import HeroTrust, { type HeroTrustItem } from "./HeroTrust.astro"
+import { heroMediaSizing } from "./media"
+import type { HeroAlign, HeroHeadingLevel, HeroVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  HeroVariants & {
+    title: string
+    lede?: string
+    eyebrow?: string
+    image?: ImageMetadata
+    /** Required when `image` is set. Describe the image; "" only if purely decorative. */
+    imageAlt?: string
+    /** Load the image as the LCP element. Set false below the fold. */
+    priority?: boolean
+    actions?: ActionLink[]
+    trust?: HeroTrustItem[]
+    headingLevel?: HeroHeadingLevel
+    align?: HeroAlign
+    containerClass?: string
+  }
+
+const {
+  id = "hero",
+  title,
+  lede,
+  eyebrow,
+  image,
+  imageAlt = "",
+  priority = true,
+  actions = [],
+  trust = [],
+  headingLevel = 1,
+  layout = "split",
+  ...rest
+} = Astro.props
+
+const titleId = `${id}-title`
+const hasActions = actions.length > 0 || Astro.slots.has("default")
+const hasMedia =
+  layout !== "minimal" && (image !== undefined || Astro.slots.has("media"))
+const sizing = image ? heroMediaSizing(layout ?? "split", image) : undefined
+---
+
+<HeroRoot id={id} layout={layout} aria-labelledby={titleId} {...rest}>
+  <HeroContent>
+    {eyebrow && <HeroEyebrow>{eyebrow}</HeroEyebrow>}
+    <HeroTitle id={titleId} headingLevel={headingLevel}>
+      {title}
+    </HeroTitle>
+    {lede && <HeroLede>{lede}</HeroLede>}
+    {hasActions && (
+      <HeroActions actions={actions}>
+        <slot />
+      </HeroActions>
+    )}
+    {trust.length > 0 && <HeroTrust items={trust} />}
+  </HeroContent>
+  {hasMedia &&
+    (Astro.slots.has("media") ? (
+      <HeroMedia>
+        <slot name="media" />
+      </HeroMedia>
+    ) : (
+      <HeroMedia
+        image={image}
+        alt={imageAlt}
+        priority={priority}
+        width={sizing?.width}
+        sizes={sizing?.sizes}
+      />
+    ))}
+</HeroRoot>

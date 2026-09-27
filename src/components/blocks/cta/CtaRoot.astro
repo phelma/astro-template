@@ -1,0 +1,79 @@
+---
+/**
+ * Call-to-action root: a `Section` band plus the layout panel. Compose with
+ * CtaContent, CtaTitle, CtaText, CtaAside, CtaActions, CtaPhone and CtaMedia;
+ * they read the variant from `data-variant` on this element.
+ *
+ * `tone` colours the band, or the box itself for `variant="card"` (the band
+ * around a card uses `sectionTone`, default "default"). `class` styles the
+ * section, `panelClass` the panel.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import {
+  sectionVariants,
+  type ContainerVariants,
+  type SectionVariants,
+} from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import {
+  ctaDefaultTone,
+  ctaVariants,
+  type CtaTone,
+  type CtaVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"section"> &
+  CtaVariants &
+  ContainerVariants &
+  Pick<SectionVariants, "spacing" | "bordered"> & {
+    tone?: CtaTone
+    /** Band colour around a card. */
+    sectionTone?: CtaTone
+    containerClass?: string
+    panelClass?: string
+  }
+
+const {
+  variant = "band",
+  tone: toneProp,
+  sectionTone = "default",
+  spacing = "md",
+  bordered: borderedProp,
+  width,
+  class: className,
+  containerClass,
+  panelClass,
+  ...rest
+} = Astro.props
+
+const tone = toneProp ?? ctaDefaultTone[variant ?? "band"]
+const isCard = variant === "card"
+const bordered = borderedProp ?? (!isCard && tone === "muted")
+---
+
+<Section
+  data-slot="cta"
+  tone={isCard ? sectionTone : tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width}
+  class={cn("group/cta", className)}
+  containerClass={containerClass}
+  data-variant={variant}
+  data-tone={tone}
+  {...rest}
+>
+  <div
+    data-slot="cta-panel"
+    class={cn(
+      ctaVariants({ variant }),
+      isCard && sectionVariants({ tone, spacing: "none" }),
+      panelClass
+    )}
+  >
+    <slot />
+  </div>
+</Section>

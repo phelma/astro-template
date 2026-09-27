@@ -1,0 +1,26 @@
+---
+/**
+ * Text column of a hero: eyebrow, title, lede, actions and trust line.
+ * Aligns itself from the root's `data-align`; sits above the overlay photo.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"div">
+
+const { class: className, ...rest } = Astro.props
+---
+
+<div
+  data-slot="hero-content"
+  class={cn(
+    "relative flex flex-col items-start gap-6",
+    "group-data-[layout=centered]/hero:max-w-3xl group-data-[layout=minimal]/hero:max-w-3xl group-data-[layout=overlay]/hero:max-w-2xl group-data-[layout=stacked]/hero:max-w-3xl",
+    "group-data-[align=center]/hero:mx-auto group-data-[align=center]/hero:items-center group-data-[align=center]/hero:text-center",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</div>

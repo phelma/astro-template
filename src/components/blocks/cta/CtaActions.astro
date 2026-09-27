@@ -1,0 +1,63 @@
+---
+/**
+ * Row of call-to-action buttons. Pass `actions` for button links and/or put
+ * your own links in the default slot (rendered after `actions`).
+ *
+ * `onPrimary` adapts `actions` for the primary tone: unset variants become
+ * "secondary" and outline buttons turn transparent in the band's text colour
+ * (see `ctaOnPrimaryOutline`). Cta sets it from its tone.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import type { ActionLink } from "@/components/blocks/hero/actions"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+import { ctaOnPrimaryOutline } from "./variants"
+
+type Props = HTMLAttributes<"div"> & {
+  actions?: ActionLink[]
+  size?: "default" | "lg"
+  onPrimary?: boolean
+}
+
+const {
+  actions = [],
+  size = "lg",
+  onPrimary = false,
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+<div
+  data-slot="cta-actions"
+  class={cn(
+    "flex flex-wrap gap-3 group-data-[variant=centered]/cta:justify-center",
+    className
+  )}
+  {...rest}
+>
+  {actions.map(({ label, href, variant, icon, iconPosition = "end" }) => (
+    <a
+      href={href}
+      class={cn(
+        buttonVariants({
+          size,
+          variant: variant ?? (onPrimary ? "secondary" : "default"),
+        }),
+        onPrimary && variant === "outline" && ctaOnPrimaryOutline
+      )}
+    >
+      {icon && iconPosition === "start" && (
+        <Icon name={icon} aria-hidden="true" />
+      )}
+      {label}
+      {icon && iconPosition === "end" && (
+        <Icon name={icon} aria-hidden="true" />
+      )}
+    </a>
+  ))}
+  <slot />
+</div>

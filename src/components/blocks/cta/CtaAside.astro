@@ -1,0 +1,26 @@
+---
+/**
+ * Holds CtaActions and CtaPhone: right-aligned beside the text in band and
+ * card variants, centred in `centered`, under the text in `split`.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"div">
+
+const { class: className, ...rest } = Astro.props
+---
+
+<div
+  data-slot="cta-aside"
+  class={cn(
+    "flex flex-col items-start gap-3",
+    "md:group-data-[variant=band]/cta:shrink-0 md:group-data-[variant=band]/cta:items-end md:group-data-[variant=card]/cta:shrink-0 md:group-data-[variant=card]/cta:items-end",
+    "group-data-[variant=centered]/cta:items-center group-data-[variant=split]/cta:mt-3",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</div>

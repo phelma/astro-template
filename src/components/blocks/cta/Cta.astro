@@ -1,0 +1,116 @@
+---
+/**
+ * Call to action, the default composition of the Cta* parts: a heading,
+ * supporting text, button links and an optional click-to-call line.
+ *
+ *   <Cta
+ *     variant="card"
+ *     title="Need a plumber today?"
+ *     text="Free, no-obligation quotes. Most jobs booked within 24 hours."
+ *     actions={[{ label: "Get a free quote", href: "/contact" }]}
+ *     phone
+ *   />
+ *
+ * Variants: band (default), card, split (with `image`), centered. `tone` is
+ * a Section tone; defaults per variant (`ctaDefaultTone`). `phone`: true for
+ * `siteConfig.contact.phone`, or a number string. Extra actions go in the
+ * default slot.
+ */
+import type { ImageMetadata } from "astro"
+import type { HTMLAttributes } from "astro/types"
+
+import type { ActionLink } from "@/components/blocks/hero/actions"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+
+import CtaActions from "./CtaActions.astro"
+import CtaAside from "./CtaAside.astro"
+import CtaContent from "./CtaContent.astro"
+import CtaMedia from "./CtaMedia.astro"
+import CtaPhone from "./CtaPhone.astro"
+import CtaRoot from "./CtaRoot.astro"
+import CtaText from "./CtaText.astro"
+import CtaTitle from "./CtaTitle.astro"
+import { ctaDefaultTone, type CtaTone, type CtaVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  CtaVariants &
+  ContainerVariants &
+  Pick<SectionVariants, "spacing" | "bordered"> & {
+    title: string
+    text?: string
+    actions?: ActionLink[]
+    /** Click-to-call line: true uses siteConfig.contact.phone. */
+    phone?: boolean | string
+    phoneLabel?: string
+    /** Image for `variant="split"`. */
+    image?: ImageMetadata
+    /** Required when `image` is set. */
+    imageAlt?: string
+    tone?: CtaTone
+    sectionTone?: CtaTone
+    headingLevel?: HeadingLevel
+    containerClass?: string
+    panelClass?: string
+  }
+
+const {
+  id = "cta",
+  variant = "band",
+  tone: toneProp,
+  title,
+  text,
+  actions = [],
+  phone = false,
+  phoneLabel,
+  image,
+  imageAlt = "",
+  headingLevel = 2,
+  ...rest
+} = Astro.props
+
+const tone = toneProp ?? ctaDefaultTone[variant ?? "band"]
+const titleId = `${id}-title`
+const hasActions = actions.length > 0 || Astro.slots.has("default")
+const phoneNumber = typeof phone === "string" ? phone : undefined
+const isSplit = variant === "split"
+---
+
+<CtaRoot
+  id={id}
+  variant={variant}
+  tone={tone}
+  aria-labelledby={titleId}
+  {...rest}
+>
+  <CtaContent>
+    <CtaTitle id={titleId} headingLevel={headingLevel}>
+      {title}
+    </CtaTitle>
+    {text && <CtaText>{text}</CtaText>}
+    {isSplit && (
+      <CtaAside>
+        {hasActions && (
+          <CtaActions actions={actions} onPrimary={tone === "primary"}>
+            <slot />
+          </CtaActions>
+        )}
+        {phone && <CtaPhone phone={phoneNumber} label={phoneLabel} />}
+      </CtaAside>
+    )}
+  </CtaContent>
+  {!isSplit && (hasActions || phone) && (
+    <CtaAside>
+      {hasActions && (
+        <CtaActions actions={actions} onPrimary={tone === "primary"}>
+          <slot />
+        </CtaActions>
+      )}
+      {phone && <CtaPhone phone={phoneNumber} label={phoneLabel} />}
+    </CtaAside>
+  )}
+  {isSplit && image && <CtaMedia image={image} alt={imageAlt} />}
+</CtaRoot>
