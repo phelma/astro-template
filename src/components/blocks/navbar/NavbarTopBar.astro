@@ -4,10 +4,12 @@
  * hours and social links. Every value defaults from siteConfig (contact,
  * business.hours) and can be overridden or switched off (`false`).
  *
- * Hours render as a weekly summary at build time ("Mon–Fri 09:00–17:30 ·
- * Sat 10:00–14:00"); a small script swaps in today's hours in the business
- * time zone ("Today 09:00–17:30" / "Closed today"), honouring specialHours.
- * Replace the hours entirely with the `hours` slot; add items with `end`.
+ * Hours use OpeningHoursStatus: the weekly summary at build time ("Mon–Fri
+ * 9am–5:30pm, Sat 10am–2pm"), replaced after load by the live status in the
+ * business time zone ("Open now · closes 5:30pm"), honouring specialHours.
+ * Replace the hours entirely with the `hours` slot (e.g.
+ * `<OpeningHoursSummary slot="hours" as="span" icon={false} />`); add items
+ * with `end`.
  *
  * `tone`: muted (default) | default | primary | secondary; `bordered`.
  * Email and socials are hidden on small screens to keep the bar to one line.
@@ -19,7 +21,9 @@ import {
   containerVariants,
   type ContainerVariants,
 } from "@/components/blocks/section/variants"
-import { telHref } from "@/lib/nav"
+import OpeningHoursStatus from "@/components/blocks/opening-hours/OpeningHoursStatus.astro"
+import { mailtoHref, telHref } from "@/lib/contact-links"
+import type { HoursLabels } from "@/lib/hours"
 import { cn } from "@/lib/utils"
 import {
   siteConfig,
@@ -28,7 +32,6 @@ import {
   type SpecialHours,
 } from "@/site.config"
 
-import { hoursSchedule, summariseHours } from "./hours"
 import { navbarTopBarVariants, type NavbarTopBarVariants } from "./variants"
 
 type Props = HTMLAttributes<"section"> &
@@ -38,16 +41,16 @@ type Props = HTMLAttributes<"section"> &
     email?: string | false
     hours?: BusinessHours | false
     specialHours?: SpecialHours
-    /** IANA zone for "today" (defaults to business.timeZone). */
+    /** IANA zone for the live status (defaults to business.timeZone). */
     timeZone?: string
+    /** Status/summary copy (see `HoursLabels` in lib/hours). */
+    hoursLabels?: Partial<HoursLabels>
     socials?: readonly SocialLink[] | false
     /** Landmark name. */
     label?: string
     callLabel?: string
     emailLabel?: string
     hoursLabel?: string
-    todayLabel?: string
-    closedTodayLabel?: string
     containerClass?: string
   }
 
@@ -62,8 +65,7 @@ const {
   callLabel = "Call",
   emailLabel = "Email",
   hoursLabel = "Opening hours",
-  todayLabel = "Today",
-  closedTodayLabel = "Closed today",
+  hoursLabels,
   tone,
   bordered,
   width,
@@ -72,8 +74,7 @@ const {
   ...rest
 } = Astro.props
 
-const summary = hours ? summariseHours(hours, siteConfig.locale) : ""
-const schedule = hours ? hoursSchedule(hours, specialHours) : undefined
+const hasHours = hours !== false && hours.length > 0
 const hasHoursSlot = Astro.slots.has("hours")
 const itemClass =
   "inline-flex min-h-6 items-center gap-1.5 underline-offset-4 hover:underline"
@@ -82,6 +83,7 @@ const itemClass =
 <section
   aria-label={label}
   data-slot="navbar-topbar"
+  data-tone={tone ?? "muted"}
   class={cn(navbarTopBarVariants({ tone, bordered }), className)}
   {...rest}
 >
@@ -110,7 +112,7 @@ const itemClass =
       {email && (
         <li class="hidden sm:block">
           <a
-            href={`mailto:${email}`}
+            href={mailtoHref(email)}
             data-slot="navbar-topbar-email"
             class={itemClass}
           >
@@ -120,25 +122,29 @@ const itemClass =
           </a>
         </li>
       )}
-      {(hasHoursSlot || summary) && (
+      {(hasHoursSlot || hasHours) && (
         <li
           data-slot="navbar-topbar-hours"
           class="inline-flex min-h-6 items-center gap-1.5"
         >
-          <Icon name="lucide:clock" class="size-3.5" aria-hidden="true" />
+          {hasHoursSlot && (
+            <Icon name="lucide:clock" class="size-3.5" aria-hidden="true" />
+          )}
           <span class="sr-only">{`${hoursLabel}: `}</span>
-          <slot name="hours">
-            <span
-              data-hours-today
-              data-schedule={JSON.stringify(schedule)}
-              data-time-zone={timeZone}
-              data-today-label={todayLabel}
-              data-closed-label={closedTodayLabel}
-              title={summary}
-            >
-              {summary}
-            </span>
-          </slot>
+          {hasHoursSlot ? (
+            <slot name="hours" />
+          ) : (
+            <OpeningHoursStatus
+              as="span"
+              hours={hours || []}
+              specialHours={specialHours}
+              timeZone={timeZone}
+              labels={hoursLabels}
+              variant="plain"
+              size={null}
+              class="font-normal **:data-[slot=opening-hours-status-icon]:size-3.5"
+            />
+          )}
         </li>
       )}
     </ul>
@@ -169,43 +175,3 @@ const itemClass =
     </div>
   </div>
 </section>
-
-<script>
-  import type { HoursSchedule } from "./hours"
-
-  // Replace the weekly summary with today's hours in the business time zone.
-  function isoDate(date: Date, timeZone: string): string {
-    // en-CA formats dates as YYYY-MM-DD.
-    return new Intl.DateTimeFormat("en-CA", { timeZone }).format(date)
-  }
-
-  function weekday(date: Date, timeZone: string): number {
-    const name = new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      weekday: "short",
-    }).format(date)
-    return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(name)
-  }
-
-  for (const el of document.querySelectorAll<HTMLElement>(
-    "[data-hours-today]"
-  )) {
-    try {
-      const schedule = JSON.parse(el.dataset.schedule ?? "") as HoursSchedule
-      const timeZone = el.dataset.timeZone ?? "UTC"
-      const now = new Date()
-      const today = isoDate(now, timeZone)
-      const special = schedule.special.find(
-        (s) => s.from <= today && today <= s.until
-      )
-      const range = special
-        ? special.range
-        : schedule.week[weekday(now, timeZone)]
-      el.textContent = range
-        ? `${el.dataset.todayLabel} ${range}`
-        : (el.dataset.closedLabel ?? "")
-    } catch {
-      // Keep the build-time weekly summary.
-    }
-  }
-</script>

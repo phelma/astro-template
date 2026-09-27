@@ -1,19 +1,18 @@
 ---
 /**
  * Opening-hours column: a heading plus whatever you put in the default slot
- * (e.g. an opening-hours block). Without slot content it falls back to a
- * plain list of siteConfig.business.hours (or `hours`), and renders nothing
- * if there are none.
+ * (e.g. an opening-hours block). Without slot content it renders the compact
+ * OpeningHoursList ("Mon–Fri 9am–5:30pm", today highlighted after load) of
+ * siteConfig.business.hours (or `hours`), and nothing if there are none.
  *
  *   <FooterHours title="Opening hours"><OpeningHoursSummary /></FooterHours>
  */
 import type { HTMLAttributes } from "astro/types"
 
+import OpeningHoursList from "@/components/blocks/opening-hours/OpeningHoursList.astro"
 import type { HeadingLevel } from "@/components/blocks/section/variants"
 import { cn } from "@/lib/utils"
 import { siteConfig, type BusinessHours } from "@/site.config"
-
-import { simpleHoursRows } from "./footer-hours"
 
 type Props = HTMLAttributes<"div"> & {
   title?: string
@@ -23,7 +22,7 @@ type Props = HTMLAttributes<"div"> & {
 }
 
 const {
-  title = "Opening hours",
+  title = siteConfig.footerOptions.hoursTitle,
   headingLevel = 2,
   hours = siteConfig.business.hours,
   class: className,
@@ -32,10 +31,9 @@ const {
 
 const Heading = `h${headingLevel}` as const
 const custom = Astro.slots.has("default")
-const rows = custom ? [] : simpleHoursRows(hours)
 ---
 
-{(custom || rows.length > 0) && (
+{(custom || hours.length > 0) && (
   <div
     data-slot="footer-hours"
     class={cn("flex flex-col gap-4 text-sm", className)}
@@ -52,17 +50,11 @@ const rows = custom ? [] : simpleHoursRows(hours)
     {custom ? (
       <slot />
     ) : (
-      <dl
-        data-slot="footer-hours-list"
-        class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-muted-foreground"
-      >
-        {rows.map((row) => (
-          <>
-            <dt>{row.days}</dt>
-            <dd class="tabular-nums">{row.time}</dd>
-          </>
-        ))}
-      </dl>
+      <OpeningHoursList
+        hours={hours}
+        density="compact"
+        class="text-muted-foreground **:data-[slot=opening-hours-row]:border-b-0 **:data-[slot=opening-hours-row]:px-0 **:data-[slot=opening-hours-row]:py-1 **:data-today:bg-transparent **:data-today:text-(--footer-foreground)"
+      />
     )}
   </div>
 )}
