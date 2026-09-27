@@ -50,7 +50,7 @@ const label = `Rated ${clamped} out of ${max}`
   <span class="sr-only">{label}</span>
   <span
     data-slot="star-rating-stars"
-    class="inline-flex gap-0.5 text-primary in-[.bg-primary]:text-primary-foreground"
+    class="inline-flex gap-0.5 text-primary in-data-[tone=primary]:text-primary-foreground"
   >
     {stars.map((star) =>
       star === "half" ? (

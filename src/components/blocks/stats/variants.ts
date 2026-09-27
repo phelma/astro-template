@@ -11,7 +11,7 @@ export const statsListVariants = cva("", {
       cards: "grid gap-4 md:gap-6",
       band: "grid gap-x-8 gap-y-10",
       dividers:
-        "flex flex-col divide-y in-[.bg-primary]:divide-current/30 sm:flex-row sm:divide-x sm:divide-y-0",
+        "flex flex-col divide-y in-data-[tone=primary]:divide-current/30 sm:flex-row sm:divide-x sm:divide-y-0",
     },
     columns: {
       2: "",

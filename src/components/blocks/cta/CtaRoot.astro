@@ -63,11 +63,11 @@ const bordered = borderedProp ?? (!isCard && tone === "muted")
   class={cn("group/cta", className)}
   containerClass={containerClass}
   data-variant={variant}
-  data-tone={tone}
   {...rest}
 >
   <div
     data-slot="cta-panel"
+    data-tone={isCard ? tone : undefined}
     class={cn(
       ctaVariants({ variant }),
       isCard && sectionVariants({ tone, spacing: "none" }),

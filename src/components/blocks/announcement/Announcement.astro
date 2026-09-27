@@ -84,6 +84,7 @@ const key = storageKey ?? announcementKey(message ?? slotHtml)
       role="region"
       aria-label={label}
       data-slot="announcement"
+      data-tone={tone ?? "primary"}
       data-key={key}
       data-dismissible={dismissible ? "" : undefined}
       class={cn(announcementVariants({ tone }), className)}

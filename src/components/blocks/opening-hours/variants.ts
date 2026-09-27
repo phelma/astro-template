@@ -91,9 +91,13 @@ export const openingHoursStatusVariants = cva(
   }
 )
 
-/** Status dot: token colours per state (primary open, destructive closed). */
+/**
+ * Status dot: token colours per state (primary open, destructive closed).
+ * On a primary band (`data-tone="primary"`) the open dot uses the band's
+ * foreground so it stays visible.
+ */
 export const openingHoursStatusDotVariants = cva(
-  "inline-block size-2 shrink-0 rounded-full bg-muted-foreground group-data-[state=closed]/status:bg-destructive group-data-[state=closing-soon]/status:bg-primary group-data-[state=open]/status:bg-primary group-data-[state=unknown]/status:hidden motion-safe:group-data-[state=closing-soon]/status:animate-pulse forced-colors:bg-[CanvasText]"
+  "inline-block size-2 shrink-0 rounded-full bg-muted-foreground group-data-[state=closed]/status:bg-destructive group-data-[state=closing-soon]/status:bg-primary group-data-[state=open]/status:bg-primary group-data-[state=unknown]/status:hidden in-data-[tone=primary]:group-data-[state=closing-soon]/status:bg-primary-foreground in-data-[tone=primary]:group-data-[state=open]/status:bg-primary-foreground motion-safe:group-data-[state=closing-soon]/status:animate-pulse forced-colors:bg-[CanvasText]"
 )
 
 export type OpeningHoursVariants = VariantProps<typeof openingHoursVariants>

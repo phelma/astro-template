@@ -51,8 +51,8 @@ export const stepItemVariants = cva("relative flex", {
 })
 
 /**
- * The step number. On a primary band (`in-[.bg-primary]:`) it switches to
- * the foreground colour, where `primary` would be invisible.
+ * The step number. On a primary band (`in-data-[tone=primary]:`) it
+ * switches to the foreground colour, where `primary` would be invisible.
  */
 export const stepNumberVariants = cva(
   "relative z-10 inline-flex shrink-0 items-center justify-center font-heading font-semibold tabular-nums",
@@ -60,9 +60,9 @@ export const stepNumberVariants = cva(
     variants: {
       variant: {
         horizontal:
-          "size-11 rounded-full bg-primary text-lg text-primary-foreground in-[.bg-primary]:bg-primary-foreground in-[.bg-primary]:text-primary",
+          "size-11 rounded-full bg-primary text-lg text-primary-foreground in-data-[tone=primary]:bg-primary-foreground in-data-[tone=primary]:text-primary",
         timeline:
-          "size-11 rounded-full border-2 border-primary text-lg text-primary in-[.bg-primary]:border-current in-[.bg-primary]:text-current",
+          "size-11 rounded-full border-2 border-primary text-lg text-primary in-data-[tone=primary]:border-current in-data-[tone=primary]:text-current",
         cards: "text-4xl text-primary",
       },
     },

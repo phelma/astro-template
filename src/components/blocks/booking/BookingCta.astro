@@ -26,6 +26,7 @@ import { Icon } from "astro-icon/components"
 
 import type { HeadingLevel } from "@/components/blocks/section/variants"
 import { buttonVariants } from "@/components/ui/button"
+import { telHref } from "@/lib/contact-links"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
@@ -69,12 +70,13 @@ if (!href && !phone) {
 
 const Heading = `h${headingLevel}` as const
 const external = href ? /^https?:\/\//.test(href) : false
-const tel = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : undefined
+const tel = phone ? telHref(phone) : undefined
 const onPrimary = variant === "primary"
 ---
 
 <div
   data-slot="booking-cta"
+  data-tone={onPrimary ? "primary" : undefined}
   class={cn(bookingCtaVariants({ variant, layout }), className)}
   {...rest}
 >

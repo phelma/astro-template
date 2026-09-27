@@ -4,6 +4,11 @@
  * `bordered`) around a centred container (`width`). Most blocks render inside
  * one; pass `class` to style the band and `containerClass` for the column.
  *
+ * The root carries `data-tone` so parts can adapt to the band without
+ * knowing its classes: `in-data-[tone=primary]:text-current`. Blocks with
+ * their own coloured root (CtaRoot card, FooterRoot, NavbarTopBar...) set
+ * `data-tone` too.
+ *
  *   <Section tone="muted" spacing="lg" aria-labelledby="faq-title">...</Section>
  */
 import type { HTMLAttributes } from "astro/types"
@@ -39,6 +44,7 @@ const {
 
 <Tag
   data-slot="section"
+  data-tone={tone ?? "default"}
   class={cn(sectionVariants({ tone, spacing, bordered }), className)}
   {...rest}
 >
