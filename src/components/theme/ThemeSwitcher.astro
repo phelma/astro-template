@@ -14,11 +14,13 @@ interface Props {
   class?: string
   /** Element id; must be unique per instance on a page. */
   id?: string
+  /** Render even when `theme.switcher` is off (styleguide, showcases). */
+  force?: boolean
 }
 
-const { class: className, id = "theme-switcher" } = Astro.props
+const { class: className, id = "theme-switcher", force = false } = Astro.props
 const { switcher, available, default: defaultTheme } = siteConfig.theme
-const enabled = switcher && available.length > 1
+const enabled = (switcher || force) && available.length > 1
 ---
 
 {enabled && (

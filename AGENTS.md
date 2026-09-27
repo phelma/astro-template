@@ -21,7 +21,17 @@ Use pnpm only. Fix formatting with `pnpm format` (Prettier: no semicolons, doubl
 - Icons: `astro-icon` with Lucide, `<Icon name="lucide:<name>" aria-hidden="true" />` plus visible or `sr-only` text. `lucide-react` is only for shadcn internals.
 - Images: `<Image>` / `<Picture>` from `astro:assets` with images imported from `src/assets/`. `priority` on at most one above-the-fold image per page.
 
-## Styling and themes
+## Blocks (`src/components/blocks/`)
+
+Reusable, themeable Astro components (the Astro counterpart to `src/components/ui/`). One folder per block: `blocks/<kebab-name>/<PascalName>.astro`, parts as `<PascalName><Part>.astro`, cva variants in `variants.ts`, pure helpers in `*.ts`. Import `.astro` files directly (no barrel files: they lose prop types). Same customisation contract as shadcn:
+
+- The code is owned by the site: restyle by editing the file, or override at the call site.
+- Every component takes `class`, merged last with `cn()` so call-site utilities win, and spreads remaining HTML attributes (`...rest`) onto its root. Type props as `HTMLAttributes<"tag"> & Variants & {...}`.
+- Every styled element has `data-slot="<block>-<part>"` so sites and themes can target parts (`**:data-[slot=faq-question]:text-lg`, or `[data-slot="faq-question"]` in theme CSS).
+- Visual options are cva variants (`variant`, `size`, `layout`, `tone`...) with defaults, exported from `variants.ts` for reuse like `buttonVariants`.
+- Compose from small parts; the top-level component is the default composition. Content via props and slots. Site data (contact, hours, address) defaults from `siteConfig` and can be overridden by props, so blocks work with any data.
+- Section-level blocks render inside `Section` / `SectionHeader` (`blocks/section`) and accept `headingLevel` (default 2) plus section props (`tone`, `spacing`, `width`).
+- Every block has a showcase page `src/pages/components/<block>.astro` using `Showcase` + `Demo` (`src/components/showcase`) showing each variant; nest block headings under the demo `<h2>` with `headingLevel={3}`. Check in both themes, light and dark.
 
 - Colours, radius, shadows, fonts and tracking come from tokens via Tailwind utilities (`bg-primary`, `text-muted-foreground`, `border-border`, `rounded-lg`, `shadow-md`, `font-heading`). Use tokens for every colour; hex/rgb/oklch literals and Tailwind palette colours (`bg-blue-500`) belong only in `src/styles/themes/*.css`.
 - Theme = tokens (`src/styles/themes/<name>.css`, scoped to `[data-theme="<name>"]` and `[data-theme="<name>"].dark`). shadcn style (`components.json`) = component structure. Change the look via tokens; change structure only by editing components.

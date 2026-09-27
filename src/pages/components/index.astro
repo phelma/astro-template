@@ -1,0 +1,35 @@
+---
+/**
+ * Index of block showcase pages. Lists every sibling page automatically.
+ */
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const pages = Object.keys(import.meta.glob("./*.astro"))
+  .map((file) => file.replace(/^\.\/|\.astro$/g, ""))
+  .filter((slug) => slug !== "index")
+  .sort()
+
+const label = (slug: string) =>
+  slug.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase())
+---
+
+<Showcase
+  title="Components"
+  description="Reusable blocks for local business sites. Switch theme and colour mode to check each one."
+>
+  <Demo title="Blocks">
+    <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {pages.map((slug) => (
+        <li>
+          <a
+            href={`/components/${slug}`}
+            class="flex min-h-11 items-center rounded-md border px-4 font-medium hover:bg-accent hover:text-accent-foreground"
+          >
+            {label(slug)}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </Demo>
+</Showcase>

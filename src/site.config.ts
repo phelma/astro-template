@@ -22,6 +22,18 @@ const link = z.object({
   external: z.boolean().optional(),
 })
 
+/** Header nav item: a link, optionally with one level of child links (dropdown). */
+const navItem = link.extend({
+  children: z.array(link).optional(),
+})
+
+/** Day codes as used by schema.org `openingHours` ("Mo", "Tu", ...). */
+const day = z.enum(["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"])
+/** 24-hour local time, "HH:MM". */
+const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+/** ISO date, "YYYY-MM-DD". */
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+
 const social = z.object({
   /** Human label, also used as the accessible name of icon-only links. */
   label: z.string().min(1),
@@ -73,10 +85,106 @@ const siteConfigSchema = z
       socials: z.array(social).default([]),
     }),
 
-    /** Primary header navigation. */
-    nav: z.array(link),
+    /** Primary header navigation. Items with `children` render as dropdowns. */
+    nav: z.array(navItem),
     /** Footer link list (legal, secondary pages). */
     footer: z.array(link),
+
+    /** Site header options (src/components/layout/Header.astro). */
+    header: z.object({
+      /** Brand left + nav right, or brand centred with nav below. */
+      layout: z.enum(["start", "center"]).default("start"),
+      /** Stick to the top of the viewport while scrolling. */
+      sticky: z.boolean().default(true),
+      /** Show the click-to-call phone number (contact.phone) in the bar. */
+      showPhone: z.boolean().default(false),
+      /** Primary call-to-action button at the end of the bar. */
+      cta: link.optional(),
+      /** Thin utility bar above the header: phone, email, today's hours. */
+      topBar: z.boolean().default(false),
+    }),
+
+    /**
+     * Site-wide announcement banner (closures, offers). Shown only between
+     * `from` and `until` (inclusive, checked at build time) when set.
+     */
+    announcement: z
+      .object({
+        message: z.string().min(1),
+        link: link.optional(),
+        from: isoDate.optional(),
+        until: isoDate.optional(),
+        /** Visitors can dismiss it (remembered per `message`). */
+        dismissible: z.boolean().default(true),
+      })
+      .optional(),
+
+    /** Local business details: LocalBusiness JSON-LD, opening hours, maps. */
+    business: z.object({
+      /**
+       * schema.org LocalBusiness subtype, e.g. "Plumber", "Restaurant",
+       * "HairSalon", "Dentist". https://schema.org/LocalBusiness
+       */
+      type: z
+        .string()
+        .regex(/^[A-Z][A-Za-z]+$/)
+        .default("LocalBusiness"),
+      /** e.g. "££" or "£50-£200". */
+      priceRange: z.string().optional(),
+      /** Used for the map pin and JSON-LD geo. */
+      geo: z
+        .object({
+          latitude: z.number().min(-90).max(90),
+          longitude: z.number().min(-180).max(180),
+        })
+        .optional(),
+      /** IANA time zone the opening hours are in (for "Open now"). */
+      timeZone: z.string().default("Europe/London"),
+      /** Regular weekly hours. Days not listed are closed. */
+      hours: z
+        .array(
+          z.object({
+            days: z.array(day).min(1),
+            opens: time,
+            closes: time,
+          })
+        )
+        .default([]),
+      /** Exceptions (bank holidays, closures). Omit opens/closes for closed. */
+      specialHours: z
+        .array(
+          z.object({
+            from: isoDate,
+            /** Inclusive; defaults to `from`. */
+            until: isoDate.optional(),
+            opens: time.optional(),
+            closes: time.optional(),
+            /** e.g. "Christmas". */
+            label: z.string().optional(),
+          })
+        )
+        .default([]),
+      /** Towns/areas covered (service-area businesses). */
+      areaServed: z.array(z.string().min(1)).default([]),
+      /** WhatsApp number in international format, digits only (e.g. "447946000000"). */
+      whatsapp: z
+        .string()
+        .regex(/^\d{7,15}$/)
+        .optional(),
+      /** Google Business Profile / Maps URL (reviews, directions). */
+      googleMapsUrl: z.url().optional(),
+      /** Online booking URL (Calendly, Fresha, OpenTable, ...). */
+      bookingUrl: z.url().optional(),
+    }),
+
+    /** Sticky bottom action bar on small screens. */
+    mobileActions: z.object({
+      enabled: z.boolean().default(false),
+      /** Order matters. Actions whose data is missing are skipped. */
+      actions: z
+        .array(z.enum(["call", "whatsapp", "email", "directions", "book"]))
+        .default(["call", "directions"]),
+    }),
 
     seo: z.object({
       /**
@@ -176,6 +284,10 @@ const siteConfigSchema = z
 export type SiteConfig = z.output<typeof siteConfigSchema>
 export type SiteConfigInput = z.input<typeof siteConfigSchema>
 export type NavLink = z.output<typeof link>
+export type NavItem = z.output<typeof navItem>
+export type Day = z.output<typeof day>
+export type BusinessHours = SiteConfig["business"]["hours"]
+export type SpecialHours = SiteConfig["business"]["specialHours"]
 export type SocialLink = z.output<typeof social>
 export type ColorMode = SiteConfig["colorMode"]["default"]
 
@@ -227,6 +339,31 @@ const config = {
     { label: "Contact", href: "/contact" },
     { label: "Privacy", href: "/privacy" },
   ],
+
+  header: {
+    layout: "start",
+    sticky: true,
+    showPhone: false,
+    topBar: false,
+  },
+
+  business: {
+    type: "LocalBusiness",
+    priceRange: "££",
+    geo: { latitude: 51.5202, longitude: -0.0978 },
+    timeZone: "Europe/London",
+    hours: [
+      { days: ["Mo", "Tu", "We", "Th", "Fr"], opens: "09:00", closes: "17:30" },
+      { days: ["Sa"], opens: "10:00", closes: "14:00" },
+    ],
+    specialHours: [],
+    areaServed: ["London"],
+  },
+
+  mobileActions: {
+    enabled: false,
+    actions: ["call", "directions"],
+  },
 
   seo: {
     ogImage: "/og-default.png",

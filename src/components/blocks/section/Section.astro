@@ -1,0 +1,51 @@
+---
+/**
+ * Layout primitive for page sections: a full-width band (`tone`, `spacing`,
+ * `bordered`) around a centred container (`width`). Most blocks render inside
+ * one; pass `class` to style the band and `containerClass` for the column.
+ *
+ *   <Section tone="muted" spacing="lg" aria-labelledby="faq-title">...</Section>
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import {
+  containerVariants,
+  sectionVariants,
+  type ContainerVariants,
+  type SectionVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"section"> &
+  SectionVariants &
+  ContainerVariants & {
+    /** Element to render; use "div" for sections without a heading. */
+    as?: "section" | "div" | "aside"
+    containerClass?: string
+  }
+
+const {
+  as: Tag = "section",
+  tone,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  containerClass,
+  ...rest
+} = Astro.props
+---
+
+<Tag
+  data-slot="section"
+  class={cn(sectionVariants({ tone, spacing, bordered }), className)}
+  {...rest}
+>
+  <div
+    data-slot="section-container"
+    class={cn(containerVariants({ width }), containerClass)}
+  >
+    <slot />
+  </div>
+</Tag>

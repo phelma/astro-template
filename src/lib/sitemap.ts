@@ -9,7 +9,11 @@
  */
 
 /** Root-relative paths (no trailing slash) excluded from the sitemap. */
-export const noindexPaths: readonly string[] = ["/styleguide", "/404"]
+export const noindexPaths: readonly string[] = [
+  "/styleguide",
+  "/components",
+  "/404",
+]
 
 /** `filter` for `sitemap()`: receives each page's absolute URL. */
 export function sitemapFilter(page: string): boolean {

@@ -1,0 +1,70 @@
+---
+/**
+ * Heading group for a section: optional eyebrow, the heading and a lede.
+ * Pass `id` and reference it from the section's `aria-labelledby`.
+ * Extra content (e.g. a "View all" link) goes in the default slot.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import {
+  sectionHeaderVariants,
+  type HeadingLevel,
+  type SectionHeaderVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  SectionHeaderVariants & {
+    title: string
+    /** Id for the heading element (for aria-labelledby). */
+    headingId?: string
+    headingLevel?: HeadingLevel
+    eyebrow?: string
+    lede?: string
+  }
+
+const {
+  title,
+  headingId,
+  headingLevel = 2,
+  eyebrow,
+  lede,
+  align,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+---
+
+<div
+  data-slot="section-header"
+  class={cn(sectionHeaderVariants({ align }), "mb-8 md:mb-12", className)}
+  {...rest}
+>
+  {eyebrow && (
+    <p
+      data-slot="section-eyebrow"
+      class="text-sm font-medium tracking-wide text-primary uppercase"
+    >
+      {eyebrow}
+    </p>
+  )}
+  <Heading
+    id={headingId}
+    data-slot="section-title"
+    class="max-w-3xl text-3xl sm:text-4xl"
+  >
+    {title}
+  </Heading>
+  {lede && (
+    <p
+      data-slot="section-lede"
+      class="max-w-prose text-lg text-muted-foreground"
+    >
+      {lede}
+    </p>
+  )}
+  <slot />
+</div>

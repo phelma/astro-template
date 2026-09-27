@@ -1,0 +1,43 @@
+---
+/**
+ * Layout for component showcase pages (src/pages/components/*). noindex and
+ * excluded from the sitemap (src/lib/sitemap.ts). Renders theme and colour
+ * mode controls so every block can be checked in each theme and mode.
+ */
+import PageHeader from "@/components/sections/PageHeader.astro"
+import ThemeSwitcher from "@/components/theme/ThemeSwitcher.astro"
+import ThemeToggle from "@/components/theme/ThemeToggle.astro"
+import BaseLayout from "@/layouts/BaseLayout.astro"
+
+interface Props {
+  title: string
+  description: string
+}
+
+const { title, description } = Astro.props
+const isIndex = title === "Components"
+---
+
+<BaseLayout
+  title={isIndex ? title : `${title} | Components`}
+  description={description}
+  noindex
+  breadcrumbs={
+    isIndex
+      ? [{ name: "Home", href: "/" }, { name: title }]
+      : [
+          { name: "Home", href: "/" },
+          { name: "Components", href: "/components" },
+          { name: title },
+        ]
+  }
+>
+  <PageHeader title={title} lede={description} />
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 pb-8 sm:px-6">
+    <ThemeToggle name="color-mode-showcase" />
+    <ThemeSwitcher id="theme-switcher-showcase" force />
+  </div>
+  <div class="flex flex-col gap-16 pb-16">
+    <slot />
+  </div>
+</BaseLayout>

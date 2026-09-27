@@ -1,0 +1,38 @@
+---
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const tones = ["default", "muted", "card", "primary", "secondary"] as const
+---
+
+<Showcase
+  title="Section"
+  description="Layout primitive every block sits in: tone, spacing, width and a heading group."
+>
+  {tones.map((tone) => (
+    <Demo title={`Tone: ${tone}`} bleed>
+      <Section tone={tone} aria-labelledby={`section-${tone}`}>
+        <SectionHeader
+          headingId={`section-${tone}`}
+          headingLevel={3}
+          eyebrow="Eyebrow"
+          title={`A ${tone} section`}
+          lede="Sections set the band colour and vertical rhythm; blocks go inside."
+        />
+      </Section>
+    </Demo>
+  ))}
+  <Demo title="Centred header, narrow width" bleed>
+    <Section width="narrow" spacing="lg" aria-labelledby="section-centred">
+      <SectionHeader
+        headingId="section-centred"
+        headingLevel={3}
+        align="center"
+        title="Centred and narrow"
+        lede="align='center' on the header, width='narrow' on the section."
+      />
+    </Section>
+  </Demo>
+</Showcase>

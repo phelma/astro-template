@@ -1,0 +1,41 @@
+---
+/**
+ * One example on a showcase page: a heading, optional notes and the rendered
+ * block. `bleed` lets full-width blocks (sections, bars) span the viewport.
+ */
+import { cn } from "@/lib/utils"
+
+interface Props {
+  title: string
+  /** Short note: what this variant is for, props used. */
+  description?: string
+  /** Render the example full width instead of in a bordered frame. */
+  bleed?: boolean
+  class?: string
+}
+
+const { title, description, bleed = false, class: className } = Astro.props
+const id = `demo-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
+---
+
+<section aria-labelledby={id} class="flex flex-col gap-4">
+  <div class="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 sm:px-6">
+    <h2 id={id} class="text-2xl">
+      {title}
+    </h2>
+    {description && (
+      <p class="max-w-prose text-sm text-muted-foreground">{description}</p>
+    )}
+  </div>
+  {bleed ? (
+    <div class={cn("border-y border-dashed", className)}>
+      <slot />
+    </div>
+  ) : (
+    <div class="mx-auto w-full max-w-6xl px-4 sm:px-6">
+      <div class={cn("rounded-xl border border-dashed p-4 sm:p-6", className)}>
+        <slot />
+      </div>
+    </div>
+  )}
+</section>
