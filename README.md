@@ -23,7 +23,7 @@ It's a base, not a design. Replace the placeholder copy, pick or build a theme, 
 - **Zero JavaScript by default.** shadcn/ui components are React, but they render to HTML at build time. The only client JS is a tiny theme script. Hydrate a component only when it needs real interactivity.
 - **Themes that go beyond colour.** Each theme sets shadcn tokens plus fonts, radius, shadows, tracking and heading weight. Switch `data-theme` and the whole site changes, with no rebuild.
 - **Light, dark and system modes.** Light is the default, and one config value changes it. The theme is applied before first paint, so there's no flash of the wrong theme.
-- **SEO handled.** Meta tags, Open Graph and Twitter cards, canonical URLs, JSON-LD (Organization, WebSite, BreadcrumbList), a sitemap, and `robots.txt` with an AI-crawler toggle and Content Signals.
+- **SEO handled.** Meta tags, Open Graph and Twitter cards, canonical URLs, JSON-LD (LocalBusiness with opening hours, WebSite, BreadcrumbList), a sitemap, and `robots.txt` with an AI-crawler toggle and Content Signals.
 - **Secure by default.** A hash-based CSP with Trusted Types, plus HSTS, frame, referrer, permissions, COOP and CORP headers for Cloudflare, and a generated `security.txt`.
 - **Ready for AI agents.** Generated `/llms.txt` and `/llms-full.txt`, a Markdown copy of every page (`/about.md`), `Link` discovery headers, TDMRep, and an `AGENTS.md` that tells coding agents the project's conventions.
 - **Accessible.** Skip link, landmarks, visible focus, targets of at least 24px, reduced-motion and forced-colours support, and AA-contrast tokens.
@@ -31,16 +31,17 @@ It's a base, not a design. Replace the placeholder copy, pick or build a theme, 
 
 ## What's inside
 
-| Area       | Choice                                                                              |
-| ---------- | ----------------------------------------------------------------------------------- |
-| Framework  | Astro 7, static output, no adapter, clean URLs (`/about`)                           |
-| Styling    | Tailwind CSS 4 (Vite plugin, no `tailwind.config`)                                  |
-| Components | shadcn/ui (`base-vega` style, Base UI primitives), React 19 at build time only      |
-| Icons      | `astro-icon` + Iconify Lucide                                                       |
-| Fonts      | Astro Fonts API: self-hosted and subsetted, with metric-matched fallbacks           |
-| Pages      | Home, About, Contact, Privacy, 404, `/styleguide` (tokens, themes and components)   |
-| Tooling    | pnpm, TypeScript, `astro check`, ESLint (Astro, jsx-a11y), Prettier (Tailwind sort) |
-| Hosting    | Any static host; `_headers` and `_redirects` included for Cloudflare                |
+| Area       | Choice                                                                               |
+| ---------- | ------------------------------------------------------------------------------------ |
+| Framework  | Astro 7, static output, no adapter, clean URLs (`/about`)                            |
+| Styling    | Tailwind CSS 4 (Vite plugin, no `tailwind.config`)                                   |
+| Components | shadcn/ui (`base-vega` style, Base UI primitives), React 19 at build time only       |
+| Blocks     | ~30 themeable Astro blocks for local business sites, no framework JS (`/components`) |
+| Icons      | `astro-icon` + Iconify Lucide                                                        |
+| Fonts      | Astro Fonts API: self-hosted and subsetted, with metric-matched fallbacks            |
+| Pages      | Home, About, Contact, Privacy, 404, `/styleguide`, `/components` (block showcase)    |
+| Tooling    | pnpm, TypeScript, `astro check`, ESLint (Astro, jsx-a11y), Prettier (Tailwind sort)  |
+| Hosting    | Any static host; `_headers` and `_redirects` included for Cloudflare                 |
 
 ## Quick start
 
@@ -113,7 +114,9 @@ Only if you add them ([security](#security)):
 
 - [ ] Add every new origin (analytics, embeds, fonts, images, form targets) to `security.csp.directives` in `astro.config.ts`.
 - [ ] Analytics: add consent if you need it, and count prerendered page views on `prerenderingchange` ([performance](#performance)).
-- [ ] Forms: pick a form service (add it to `form-action`) or add an adapter ([adding an adapter](#adding-an-adapter-later)).
+- [ ] Forms: pick a form service, pass its endpoint as `action` to `ContactForm` / `QuoteForm` and add it to `form-action`, or add an adapter ([adding an adapter](#adding-an-adapter-later)).
+- [ ] Maps: set `PUBLIC_GOOGLE_MAPS_EMBED_KEY` (see `.env.example`); without it maps use Google's unofficial keyless embed.
+- [ ] Embeds (maps, booking): mention them and the `embed-consent:*` localStorage keys in the privacy policy.
 
 ### Deploy
 
@@ -167,8 +170,10 @@ src/
     layout/                     Header (Popover API mobile nav), Footer
     theme/                      ThemeToggle (light/dark/system), ThemeSwitcher (optional)
     seo/                        JsonLd, Breadcrumbs
-    sections/                   Hero, Features, CtaBand, PageHeader, Prose
-    ui/                         shadcn/ui components (button, card, badge, separator, input, label, textarea)
+    blocks/<name>/              Themeable Astro blocks (header, forms, map, hours, gallery, ...)
+    showcase/                   Showcase + Demo layout for /components pages
+    sections/                   Prose, plus thin wrappers over blocks (Hero, Features, CtaBand, PageHeader)
+    ui/                         shadcn/ui components (button, card, badge, input, field, native-select, ...)
   lib/
     seo.ts                      Title, URL and JSON-LD helpers
     theme-script.ts             Blocking head script (colour mode + theme)
@@ -179,12 +184,14 @@ src/
     ai-crawlers.ts              AI crawler user agents for robots.txt
   pages/
     index, about, contact, privacy, 404, styleguide (.astro)
+    components/                 One showcase page per block (noindex)
     robots.txt.ts, llms.txt.ts, site.webmanifest.ts, .well-known/{security.txt,tdmrep.json}.ts
   styles/
     global.css                  Tailwind, shadcn base, token mapping, base styles
     themes/<name>.css           One file per theme
     themes/index.ts             Theme registry (labels, theme-color, fonts)
-astro.config.ts                 site, CSP, fonts, sitemap, prefetch, images
+astro.config.ts                 site, CSP, env schema, fonts, sitemap, prefetch, images
+.env.example                    Optional build-time variables (Google Maps keys)
 AGENTS.md                       Rules for AI coding agents (CLAUDE.md is a symlink)
 CHECKLIST.md                    Website specification checklist, audited against the template
 IDEAS.md                        Possible future improvements
@@ -209,9 +216,13 @@ Validated with zod at build time, so a typo fails the build.
 | `description`       | Default meta description.                                                                                              |
 | `titleTemplate`     | e.g. `"%s \| Acme Studio"`. The home page (no `title`) gets just `name`.                                               |
 | `locale`, `lang`    | `og:locale` / JSON-LD (`en-GB`) and `<html lang>` (`en`).                                                              |
-| `organisation`      | JSON-LD Organization: `name`, `legalName`, `logo`, `sameAs` (defaults to social URLs).                                 |
+| `organisation`      | JSON-LD business node: `name`, `legalName`, `logo`, `sameAs` (defaults to social URLs).                                |
 | `contact`           | `email`, `phone`, `address`, `socials` (label, URL, `lucide:*` icon). Used by contact page, footer, JSON-LD, llms.txt. |
 | `nav`, `footer`     | Header and footer links. External links open in a new tab.                                                             |
+| `header`            | `layout`, `variant`, `sticky`, `bordered`, `mobileMenu`, `showPhone`, `cta`, `topBar`.                                 |
+| `announcement`      | Optional banner: `message`, `link`, `from`/`until` dates, `dismissible`.                                               |
+| `business`          | `type` (schema.org subtype), `hours`, `specialHours`, `timeZone`, `geo`, `areaServed`, `whatsapp`, `bookingUrl`, ...   |
+| `mobileActions`     | Sticky bottom bar on phones: `enabled`, `actions` (call, whatsapp, email, directions, book).                           |
 | `seo`               | Default `ogImage` (+ `ogImageAlt`) and `twitterHandle`.                                                                |
 | `robots`            | `allowAiCrawlers`, `disallowAll`, `contentSignals` (see [SEO](#seo)).                                                  |
 | `tdm`               | TDMRep text and data mining `reservation` (0/1) and optional `policy` URL.                                             |
@@ -278,6 +289,30 @@ Only hydrate (`client:visible`, `client:idle`, ...) when a component needs genui
 
 Review diffs to `src/styles/global.css` after `shadcn add`: tokens belong in theme files, not `:root`.
 
+## Blocks
+
+`src/components/blocks/` holds reusable Astro components for local business sites. Browse them at [`/components`](http://localhost:4321/components) (noindex), where each block has a page showing every variant; switch theme and colour mode there to check them.
+
+| Group   | Blocks                                                                                          |
+| ------- | ----------------------------------------------------------------------------------------------- |
+| Layout  | `section` (band + container + heading group), `navbar` (header parts), `announcement`, `footer` |
+| Heroes  | `hero`, `page-header`, `cta`, `features`                                                        |
+| Local   | `opening-hours` (live "Open now"), `map`, `booking`, `service-area`, `mobile-actions`           |
+| Forms   | `form` (native controls, field, validation, honeypot), `contact-form`, `quote-form`             |
+| Content | `testimonials`, `faq`, `services`, `price-list`, `steps`, `stats`, `team`, `logo-strip`         |
+| Media   | `gallery` (lightbox), `before-after`                                                            |
+
+They work like shadcn components: the code lives in the repo and is yours to edit, and they only use theme tokens, so they restyle with the theme. To make one fit a site:
+
+1. **Change the theme** (tokens, fonts, radius, shadows) and every block follows.
+2. **Pick variants** with props (`layout`, `variant`, `tone`, `size`, ...). Section blocks also take `tone`, `spacing`, `width` and `headingLevel`.
+3. **Override at the call site** with `class`, which is merged last, or target a part via its `data-slot`: `<Faq class="**:data-[slot=faq-question]:text-lg" />`. Set custom properties with classes (`[--embed-aspect:5/2]`): the CSP blocks inline `style` attributes.
+4. **Edit the block**, or its `variants.ts`, when the structure itself should change.
+
+Business data (contact, hours, address, booking link) comes from `src/site.config.ts` by default and can be overridden per instance with props. The header, footer, announcement banner, mobile action bar and `LocalBusiness` JSON-LD are driven entirely by config.
+
+Blocks ship no framework JavaScript. Where they need behaviour (dropdowns, lightbox, form validation, "Open now") it's native HTML plus a small bundled script that the page works without. Third-party embeds (Google Maps, Calendly) are click-to-load, so nothing loads from Google before the visitor asks for it.
+
 ## SEO
 
 Every page uses `BaseLayout` with at least `title` and `description`:
@@ -297,7 +332,7 @@ What you get:
 - `lang`, charset, viewport, title template, description, canonical, `robots` meta.
 - Full icon set + `site.webmanifest`, `theme-color`, `color-scheme`.
 - Open Graph + Twitter card with a default image (`seo.ogImage`) and per-page override.
-- JSON-LD `Organization` + `WebSite` on every page; `BreadcrumbList` via the `breadcrumbs` prop (also renders visible breadcrumbs); `ContactPage` on `/contact`.
+- JSON-LD `LocalBusiness` (subtype from `business.type`, with address, geo and opening hours) + `WebSite` on every page; `BreadcrumbList` via the `breadcrumbs` prop (also renders visible breadcrumbs); `ContactPage` on `/contact`.
 - **Sitemap** (`@astrojs/sitemap`). Caveat: `noindex` pages must **also** be listed in `noindexPaths` in `src/lib/sitemap.ts`, or they will appear in the sitemap.
 - **robots.txt** from config: `robots.disallowAll: true` blocks everything (staging); `robots.allowAiCrawlers: false` disallows AI training and assistant crawlers (`src/lib/ai-crawlers.ts`) while leaving search engines alone.
 - **/llms.txt** summarising the site from config (nav under "Pages", other footer links under "Optional").

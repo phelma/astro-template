@@ -31,6 +31,8 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 - Visual options are cva variants (`variant`, `size`, `layout`, `tone`...) with defaults, exported from `variants.ts` for reuse like `buttonVariants`.
 - Compose from small parts; the top-level component is the default composition. Content via props and slots. Site data (contact, hours, address) defaults from `siteConfig` and can be overridden by props, so blocks work with any data.
 - Section-level blocks render inside `Section` / `SectionHeader` (`blocks/section`) and accept `headingLevel` (default 2) plus section props (`tone`, `spacing`, `width`).
+- Inline `style` attributes are blocked by the CSP: set custom properties with classes (`[--gallery-gap:1rem]`).
+- A block's own JSON-LD builder may live in its folder (`blocks/faq/schema.ts`); site-wide nodes stay in `src/lib/seo.ts`.
 - Every block has a showcase page `src/pages/components/<block>.astro` using `Showcase` + `Demo` (`src/components/showcase`) showing each variant; nest block headings under the demo `<h2>` with `headingLevel={3}`. Check in both themes, light and dark.
 
 - Colours, radius, shadows, fonts and tracking come from tokens via Tailwind utilities (`bg-primary`, `text-muted-foreground`, `border-border`, `rounded-lg`, `shadow-md`, `font-heading`). Use tokens for every colour; hex/rgb/oklch literals and Tailwind palette colours (`bg-blue-500`) belong only in `src/styles/themes/*.css`.
@@ -43,11 +45,11 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 - Every page uses `BaseLayout` with `title` and `description` (home page omits `title`). Content pages pass `breadcrumbs`.
 - Exactly one `<h1>` per page (`Hero` or `PageHeader` provides it). Heading levels descend without skipping.
 - `noindex` pages: set `noindex` on `BaseLayout` AND add the path to `noindexPaths` in `src/lib/sitemap.ts`.
-- Structured data: extend builders in `src/lib/seo.ts`, render with `JsonLd.astro`.
+- Structured data: extend builders in `src/lib/seo.ts`, render with `JsonLd.astro`. The site node is `LocalBusiness` (type from `business.type`), keeping the `#organization` @id.
 
 ## Config
 
-- Brand, contact, nav, footer, SEO, robots, security.txt, theme and colour-mode settings: `src/site.config.ts` (zod-validated). Read values from it; keep copy out of components.
+- Brand, contact, nav, header, footer, announcement, business (hours, geo, booking), mobile actions, SEO, robots, security.txt, theme and colour-mode settings: `src/site.config.ts` (zod-validated). Read values from it; keep copy out of components.
 - Canonical origin: `site` in `astro.config.ts` (`Astro.site` / `context.site`).
 - `src/site.config.ts`, `src/styles/themes/index.ts` and `src/lib/{csp,markdown-export,sitemap,speculation-rules,theme-script,view-transitions}.ts` are imported by `astro.config.ts`: use relative imports there (no `@/`, no `astro:*`).
 
