@@ -68,77 +68,79 @@ Copy this into an issue and tick as you go. Links point to the section that expl
 ### Make it yours
 
 - [ ] Set `site` in `astro.config.ts` to your production origin ([config](#astroconfigts)).
-- [ ] Set `name` in `package.json`.
-- [ ] Remove template-only files: `.github/assets/` (README screenshots), `CHECKLIST.md` (an audit of the template, not your site; keep it as a to-do list if useful) and `IDEAS.md`. Rewrite this README for your project.
-- [ ] Review `AGENTS.md` and keep the rules that still apply.
+- [ ] Rename the project: set `name` in `package.json`.
+- [ ] Delete the template-only files: `.github/assets/` (README screenshots), `CHECKLIST.md` (an audit of the template, not your site; keep it as a to-do list if useful) and `IDEAS.md`.
+- [ ] Rewrite this README for your project.
+- [ ] Read through `AGENTS.md` and delete any rules that no longer apply.
 
 ### Brand and config (`src/site.config.ts`)
 
-- [ ] `name`, `shortName` (max 12 chars), `description` and `titleTemplate` ([fields](#srcsiteconfigts)).
-- [ ] `locale` and `lang` (the template uses `en-GB` / `en`).
-- [ ] `organisation`: `name`, `legalName`, `logo`.
-- [ ] `contact`: email, phone, address, and `socials`. Remove the `example` GitHub and LinkedIn entries rather than leaving them.
-- [ ] `nav` and `footer` links.
-- [ ] `seo`: `ogImageAlt` and `twitterHandle` (or remove the handle).
-- [ ] `security.contact`: a monitored address for vulnerability reports.
+- [ ] Fill in your site's `name`, `shortName` (max 12 chars), `description` and `titleTemplate` ([fields](#srcsiteconfigts)).
+- [ ] Set `locale` and `lang` for your audience (the template uses `en-GB` / `en`).
+- [ ] Fill in `organisation` with your business `name`, `legalName` and `logo`.
+- [ ] Enter your real `contact` email, phone and address.
+- [ ] Add your social profiles to `contact.socials`, and delete the `example` GitHub and LinkedIn entries.
+- [ ] Update the `nav` and `footer` links to match your pages.
+- [ ] Set `seo.ogImageAlt`, and set `seo.twitterHandle` or remove it.
+- [ ] Set `security.contact` to an address someone actually monitors for vulnerability reports.
 
 ### Look and feel
 
 - [ ] Pick a theme or [add your own](#add-a-theme), then set `theme.default`, `theme.available` and `theme.switcher`.
-- [ ] Remove unused themes (CSS file, `global.css` import and variant, registry entry, fonts in `astro.config.ts`) so their fonts aren't built.
-- [ ] Choose `colorMode.default` ([light / dark mode](#light--dark-mode)).
-- [ ] Check AA contrast in light and dark at `/styleguide`.
-- [ ] Replace `public/icon.svg`, set `BACKGROUND` in `scripts/generate-icons.mjs` to your logo's background colour, then run `pnpm icons` ([icons](#icons)).
-- [ ] Replace `public/og-default.png` (1200x630).
+- [ ] Delete the themes you don't use (CSS file, `global.css` import and variant, registry entry, fonts in `astro.config.ts`) so their fonts aren't built.
+- [ ] Choose the default colour mode with `colorMode.default` ([light / dark mode](#light--dark-mode)).
+- [ ] Open `/styleguide` and check text meets AA contrast in both light and dark mode.
+- [ ] Replace `public/icon.svg` with your logo, set `BACKGROUND` in `scripts/generate-icons.mjs` to its background colour, then run `pnpm icons` ([icons](#icons)).
+- [ ] Replace `public/og-default.png` with your own 1200x630 social share image.
 
 ### Content
 
-- [ ] Replace the placeholder copy in `src/pages/` (home, about, contact, 404).
-- [ ] Replace `src/assets/hero-placeholder.jpg`, with real `alt` text.
-- [ ] Write a real `/privacy` policy for your jurisdiction. Revisit it whenever you add analytics, forms, embeds or cookies.
-- [ ] Decide whether to ship `/styleguide`. It is `noindex` but still public; delete the page (and its `noindexPaths` entry) if you don't want it live.
-- [ ] Give new pages `title`, `description` and `breadcrumbs`, and add any `noindex` page to `noindexPaths` ([SEO](#seo)).
+- [ ] Replace the placeholder copy on the home, about, contact and 404 pages in `src/pages/`.
+- [ ] Replace `src/assets/hero-placeholder.jpg` with a real image and write `alt` text that describes it.
+- [ ] Write a real privacy policy at `/privacy` for your jurisdiction. Update it whenever you add analytics, forms, embeds or cookies.
+- [ ] Decide whether to ship `/styleguide`. It is `noindex` but still public; if you don't want it live, delete the page and its `noindexPaths` entry.
+- [ ] For every new page, pass `title`, `description` and `breadcrumbs`, and add `noindex` pages to `noindexPaths` ([SEO](#seo)).
 
 ### Policy decisions
 
 The defaults allow everything. Make these choices on purpose ([SEO](#seo)):
 
-- [ ] `robots.allowAiCrawlers`: allow or block AI training and assistant crawlers.
-- [ ] `robots.contentSignals`: `search`, `aiInput` and `aiTrain` preferences.
-- [ ] `tdm.reservation` and `tdm.policy`: text and data mining rights.
-- [ ] `viewTransitions` and `speculationRules`.
+- [ ] Decide whether to allow or block AI training and assistant crawlers with `robots.allowAiCrawlers`.
+- [ ] Set your `search`, `aiInput` and `aiTrain` preferences in `robots.contentSignals`.
+- [ ] Declare your text and data mining rights with `tdm.reservation` and `tdm.policy`.
+- [ ] Decide whether to keep `viewTransitions` and `speculationRules` switched on.
 
 ### Third parties
 
 Only if you add them ([security](#security)):
 
 - [ ] Add every new origin (analytics, embeds, fonts, images, form targets) to `security.csp.directives` in `astro.config.ts`.
-- [ ] Analytics: add consent if you need it, and count prerendered page views on `prerenderingchange` ([performance](#performance)).
+- [ ] Analytics: add a consent banner if you need one, and count prerendered page views on `prerenderingchange` ([performance](#performance)).
 - [ ] Forms: pick a form service, pass its endpoint as `action` to `ContactForm` / `QuoteForm` and add it to `form-action`, or add an adapter ([adding an adapter](#adding-an-adapter-later)).
 - [ ] Maps: set `PUBLIC_GOOGLE_MAPS_EMBED_KEY` (see `.env.example`); without it maps use Google's unofficial keyless embed.
-- [ ] Embeds (maps, booking): mention them and the `embed-consent:*` localStorage keys in the privacy policy.
+- [ ] Embeds (maps, booking): list them and the `embed-consent:*` localStorage keys in your privacy policy.
 
 ### Deploy
 
 - [ ] Create the Cloudflare project (for Workers, add `wrangler.jsonc` with your `name`) ([deploying](#deploying-to-cloudflare-static)).
-- [ ] In `public/_headers`, uncomment the `X-Robots-Tag: noindex` rules and set your `*.pages.dev` / `*.workers.dev` hostnames.
-- [ ] Use `robots.disallowAll: true` for staging builds, and make sure production has it `false`.
-- [ ] Add the custom domain and redirect the other of apex / `www` to the one in `site`.
-- [ ] If you're replacing an existing site, add `301`s for its old URLs to `public/_redirects`.
-- [ ] DNS: CAA records and DNSSEC. Consider HSTS `preload` only once every subdomain serves HTTPS.
-- [ ] Optionally set up the Reporting API endpoint in `_headers`.
-- [ ] Run `pnpm format:check && pnpm lint && pnpm check && pnpm build`.
+- [ ] In `public/_headers`, uncomment the `X-Robots-Tag: noindex` rules and set your `*.pages.dev` / `*.workers.dev` hostnames, so preview URLs stay out of search results.
+- [ ] Set `robots.disallowAll: true` for staging builds, and check production builds have it `false`.
+- [ ] Add your custom domain, and redirect whichever of apex / `www` you don't use to the one in `site`.
+- [ ] If you're replacing an existing site, add `301` redirects for its old URLs to `public/_redirects`.
+- [ ] Add CAA records and enable DNSSEC for your domain. Only add HSTS `preload` once every subdomain serves HTTPS.
+- [ ] Optionally, set up the Reporting API endpoint in `_headers`.
+- [ ] Run `pnpm format:check && pnpm lint && pnpm check && pnpm build` and fix anything that fails.
 
 ### After launch
 
-- [ ] An unknown URL returns the 404 page with a `404` status.
-- [ ] Headers and CSP are live with no console violations (securityheaders.com, browser devtools).
-- [ ] Social previews render (Open Graph and Twitter card debuggers).
-- [ ] JSON-LD passes Google's Rich Results Test.
-- [ ] `/robots.txt`, `/sitemap-index.xml`, `/llms.txt` and `/.well-known/security.txt` show your origin and details.
-- [ ] Submit the sitemap to Google Search Console and Bing Webmaster Tools.
-- [ ] Run Lighthouse and an accessibility checker (axe) on the main pages.
-- [ ] Schedule a rebuild and redeploy before `security.txt` expires (`security.expiresInMonths`, max 12).
+- [ ] Visit a URL that doesn't exist and check you get the 404 page with a `404` status (browser devtools, Network tab).
+- [ ] Scan the site with securityheaders.com, and check the browser console shows no CSP violations.
+- [ ] Paste your URLs into the Open Graph and Twitter card debuggers and check the social previews look right.
+- [ ] Test your pages with Google's Rich Results Test and fix any structured data errors.
+- [ ] Open `/robots.txt`, `/sitemap-index.xml`, `/llms.txt` and `/.well-known/security.txt` and check they show your domain and details, not the template's.
+- [ ] Submit your sitemap to Google Search Console and Bing Webmaster Tools.
+- [ ] Run Lighthouse and an accessibility checker (axe) on your main pages and fix what they flag.
+- [ ] Put a reminder in your calendar to rebuild and redeploy before `security.txt` expires (`security.expiresInMonths`, max 12).
 
 ## Scripts
 
