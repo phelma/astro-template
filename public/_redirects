@@ -1,0 +1,11 @@
+# Cloudflare redirects (Workers static assets & Pages).
+# Docs: https://developers.cloudflare.com/workers/static-assets/redirects/
+#
+# Format: <source> <destination> [status]   (status defaults to 302)
+# Rules run top-down, first match wins; put static rules before dynamic ones
+# (splats "*" -> ":splat", placeholders ":name"). URLs have no trailing slash
+# (trailingSlash: "never" in astro.config.ts). Examples (uncomment to use):
+#
+# /old-page        /new-page                301
+# /blog/*          https://blog.example.com/:splat  301
+# /team/:name      /about#:name             301
