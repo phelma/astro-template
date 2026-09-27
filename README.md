@@ -1,26 +1,62 @@
 # Astro marketing-site template
 
-A minimal, fast, accessible starting point for marketing and brochure sites:
+**A fast, accessible, production-ready base for marketing and brochure sites.**
+Static HTML, a theme system that restyles everything from a few CSS variables, and the SEO and security basics already done.
 
-- **Astro 7**, static output, no adapter. Clean URLs (`/about`, no trailing slash).
-- **Tailwind CSS 4** (Vite plugin, no `tailwind.config`).
-- **shadcn/ui** (Base UI primitives) rendered to HTML at build time: zero client JS unless you opt in.
-- **Multi-theme token system** (shadcn tokens + tweakcn-style extras) with light / dark / system colour mode and no flash of the wrong theme.
-- **SEO, security and agent basics** generated from one config file: meta and social cards, JSON-LD, sitemap, robots.txt, llms.txt, security.txt, web manifest, CSP and Cloudflare headers.
+![Astro 7](https://img.shields.io/badge/Astro-7-BC52EE?logo=astro&logoColor=white)
+![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-Base_UI-000000?logo=shadcnui&logoColor=white)
+![Static output](https://img.shields.io/badge/output-static-2ea44f)
+![Cloudflare ready](https://img.shields.io/badge/Cloudflare-ready-F38020?logo=cloudflare&logoColor=white)
 
-It is a base, not a design: replace the placeholder copy, pick or build a theme and ship.
+| Default theme                                          | Bold theme                                               |
+| ------------------------------------------------------ | -------------------------------------------------------- |
+| ![Default theme, light](.github/assets/home-light.png) | ![Bold theme, light](.github/assets/home-bold-light.png) |
+| ![Default theme, dark](.github/assets/home-dark.png)   | ![Bold theme, dark](.github/assets/home-bold-dark.png)   |
+
+_Same markup in all four screenshots. Only the theme tokens and colour mode change._
+
+It's a base, not a design. Replace the placeholder copy, pick or build a theme, and ship.
+
+## Why this template
+
+- **Zero JavaScript by default.** shadcn/ui components are React, but they render to HTML at build time. The only client JS is a tiny theme script. Hydrate a component only when it needs real interactivity.
+- **Themes that go beyond colour.** Each theme sets shadcn tokens plus fonts, radius, shadows, tracking and heading weight. Switch `data-theme` and the whole site changes, with no rebuild.
+- **Light, dark and system modes.** Light is the default, and one config value changes it. The theme is applied before first paint, so there's no flash of the wrong theme.
+- **SEO handled.** Meta tags, Open Graph and Twitter cards, canonical URLs, JSON-LD (Organization, WebSite, BreadcrumbList), a sitemap, and `robots.txt` with an AI-crawler toggle.
+- **Secure by default.** A hash-based CSP plus HSTS, frame, referrer, permissions and COOP headers for Cloudflare, and a generated `security.txt`.
+- **Ready for AI agents.** A generated `/llms.txt`, and an `AGENTS.md` that tells coding agents the project's conventions.
+- **Accessible.** Skip link, landmarks, visible focus, targets of at least 24px, reduced-motion and forced-colours support, and AA-contrast tokens.
+- **One config file.** Brand, contact, nav, footer, SEO, robots and theme settings live in `src/site.config.ts`. The file is zod-validated, so a typo fails the build.
+
+## What's inside
+
+| Area       | Choice                                                                              |
+| ---------- | ----------------------------------------------------------------------------------- |
+| Framework  | Astro 7, static output, no adapter, clean URLs (`/about`)                           |
+| Styling    | Tailwind CSS 4 (Vite plugin, no `tailwind.config`)                                  |
+| Components | shadcn/ui (`base-vega` style, Base UI primitives), React 19 at build time only      |
+| Icons      | `astro-icon` + Iconify Lucide                                                       |
+| Fonts      | Astro Fonts API: self-hosted and subsetted, with metric-matched fallbacks           |
+| Pages      | Home, About, Contact, Privacy, 404, `/styleguide` (tokens, themes and components)   |
+| Tooling    | pnpm, TypeScript, `astro check`, ESLint (Astro, jsx-a11y), Prettier (Tailwind sort) |
+| Hosting    | Any static host; `_headers` and `_redirects` included for Cloudflare                |
 
 ## Quick start
 
 ```sh
 # From the CLI
-pnpm create astro@latest -- --template <owner>/<repo>
+pnpm create astro@latest -- --template phelma/astro-template
 
 # Or click "Use this template" on GitHub, then clone your new repo.
 
 pnpm install
 pnpm dev          # http://localhost:4321
 ```
+
+Open [`/styleguide`](http://localhost:4321/styleguide) to see every token, both themes in light and dark, and the installed components.
+
+The screenshots in `.github/assets/` are for this README; delete them in your site.
 
 Requires Node `>=22.12` (`.nvmrc` pins 24) and **pnpm**.
 
