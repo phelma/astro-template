@@ -15,6 +15,7 @@ import type { ComponentProps } from "astro/types"
 import Section from "@/components/blocks/section/Section.astro"
 import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
 import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { uniqueId } from "@/lib/ids"
 import { cn } from "@/lib/utils"
 
 import type { ComparisonPair } from "./before-after"
@@ -59,7 +60,7 @@ const {
   ...rest
 } = Astro.props
 
-const headingId = `${id ?? `before-after-${crypto.randomUUID().slice(0, 8)}`}-title`
+const headingId = `${id ?? uniqueId(Astro, "before-after")}-title`
 const sizes = {
   1: "(min-width: 1152px) 1152px, 100vw",
   2: "(min-width: 1152px) 576px, (min-width: 768px) 50vw, 100vw",

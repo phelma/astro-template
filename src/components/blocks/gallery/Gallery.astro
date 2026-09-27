@@ -19,6 +19,7 @@ import type { ComponentProps } from "astro/types"
 import Section from "@/components/blocks/section/Section.astro"
 import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
 import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { uniqueId } from "@/lib/ids"
 
 import GalleryGrid from "./GalleryGrid.astro"
 
@@ -67,7 +68,7 @@ const {
   ...rest
 } = Astro.props
 
-const baseId = id ?? `gallery-${crypto.randomUUID().slice(0, 8)}`
+const baseId = id ?? uniqueId(Astro, "gallery")
 const headingId = `${baseId}-title`
 ---
 

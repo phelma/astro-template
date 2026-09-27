@@ -9,6 +9,7 @@
 import type { HTMLAttributes } from "astro/types"
 
 import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { uniqueId } from "@/lib/ids"
 import { isExternal } from "@/lib/nav"
 import { cn } from "@/lib/utils"
 import type { NavLink } from "@/site.config"
@@ -41,7 +42,7 @@ const {
 
 const Heading = `h${headingLevel}` as const
 const headingId = title
-  ? `${id ?? `footer-${crypto.randomUUID().slice(0, 8)}`}-heading`
+  ? `${id ?? uniqueId(Astro, `footer-${title}`)}-heading`
   : undefined
 ---
 
