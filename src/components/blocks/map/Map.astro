@@ -1,0 +1,234 @@
+---
+/**
+ * Google Map behind a click-to-load facade, with "Get directions" and
+ * "Open in Google Maps" links that always work (no JS, no consent needed).
+ *
+ *   <Map />                                    // siteConfig name + address
+ *   <Map variant="bare" aspect="wide" />       // edge to edge
+ *   <Map placeId="ChIJ..." zoom={16} />        // exact Google listing
+ *   <Map lat={53.7997} lng={-1.5492} />        // coordinates only
+ *
+ * Data: defaults from siteConfig (`name`, `contact.address`, `business.geo`,
+ * `business.googleMapsUrl`); every value can be passed as a prop. Location
+ * precedence: `placeId`, then `query` (default "<name>, <address>"), then
+ * `lat` / `lng`. Passing `lat` / `lng` without `query` maps the coordinates.
+ *
+ * Embed URL: with `PUBLIC_GOOGLE_MAPS_EMBED_KEY` set (astro.config.ts
+ * `env.schema`, see .env.example) the official Maps Embed API; without it
+ * Google's keyless `/maps?q=...&output=embed` URL (unofficial, no place ID
+ * support). Poster: a Maps Static API image when
+ * `PUBLIC_GOOGLE_MAPS_STATIC_KEY` is set (disable with
+ * `staticPoster={false}`), otherwise the token-drawn MapPlaceholder, or
+ * your own `poster` slot.
+ *
+ * Customise: `variant` (card | outline | bare), `aspect` (video | wide |
+ * classic | square | portrait | tall | fill, or a `[--embed-aspect:5/2]` class),
+ * `frameClass`, `actionsClass`, `showDirections`, `showOpenInMaps`. Parts:
+ * `data-slot="map"`, `map-address`, `map-actions`, `map-directions`,
+ * `map-open`, plus the `embed-*` slots of EmbedFacade.
+ *
+ * Privacy: no request to Google until the visitor clicks "Load map" (except
+ * the optional static image). The iframe sends only the site origin as
+ * referrer (`strict-origin-when-cross-origin`, required for key referrer
+ * restrictions). CSP: `frame-src https://www.google.com` and, for the static
+ * image, `img-src https://maps.googleapis.com` in astro.config.ts.
+ */
+import {
+  PUBLIC_GOOGLE_MAPS_EMBED_KEY,
+  PUBLIC_GOOGLE_MAPS_STATIC_KEY,
+} from "astro:env/client"
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import EmbedFacade from "@/components/blocks/embed/EmbedFacade.astro"
+import type { EmbedVariants } from "@/components/blocks/embed/variants"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import {
+  addressLines,
+  addressText,
+  directionsUrl,
+  embedUrl,
+  searchUrl,
+  staticMapUrl,
+  type Address,
+  type EmbedOptions,
+  type MapLocation,
+} from "./google-maps"
+import MapPlaceholder from "./MapPlaceholder.astro"
+import { mapActionsVariants } from "./variants"
+
+export type Props = Omit<HTMLAttributes<"div">, "title"> &
+  EmbedVariants &
+  MapLocation &
+  EmbedOptions & {
+    /** Place name on the facade and in the default query. */
+    name?: string
+    /** Address shown on the facade (object or one line); `false` hides it. */
+    address?: Address | string | false
+    /** iframe title (accessible name). Default "Map of <name>, <address>". */
+    title?: string
+    /** Google Business Profile URL for "Open in Google Maps". */
+    googleMapsUrl?: string
+    showDirections?: boolean
+    showOpenInMaps?: boolean
+    /** Use a Maps Static API image as poster when its key is configured. */
+    staticPoster?: boolean
+    /** Offer "Always load Google content" on the facade. */
+    remember?: boolean
+    frameClass?: string
+    actionsClass?: string
+  }
+
+const {
+  name = siteConfig.name,
+  address = siteConfig.contact.address ?? false,
+  placeId,
+  query: queryProp,
+  lat: latProp,
+  lng: lngProp,
+  zoom = 15,
+  language = siteConfig.locale,
+  region,
+  maptype,
+  title: titleProp,
+  googleMapsUrl = siteConfig.business.googleMapsUrl,
+  showDirections = true,
+  showOpenInMaps = true,
+  staticPoster = true,
+  remember = true,
+  variant,
+  aspect = "classic",
+  class: className,
+  frameClass,
+  actionsClass,
+  ...rest
+} = Astro.props
+
+const addressLine =
+  typeof address === "string" ? address : address ? addressText(address) : ""
+const lines =
+  typeof address === "string" ? [address] : address ? addressLines(address) : []
+const explicitCoords = latProp !== undefined && lngProp !== undefined
+// business.geo only describes the site's own address: skip it when the
+// location is overridden.
+const siteGeo =
+  Astro.props.address === undefined && !queryProp && !placeId
+    ? siteConfig.business.geo
+    : undefined
+
+const location: MapLocation = {
+  placeId,
+  query:
+    queryProp ??
+    (explicitCoords || !addressLine ? undefined : `${name}, ${addressLine}`),
+  lat: latProp ?? siteGeo?.latitude,
+  lng: lngProp ?? siteGeo?.longitude,
+}
+
+if (!location.query && !location.placeId && location.lat === undefined) {
+  throw new Error(
+    "Map: pass query, placeId or lat/lng, or set contact.address / business.geo in site.config.ts"
+  )
+}
+
+const options = { zoom, language, region, maptype }
+const src = embedUrl(location, {
+  ...options,
+  key: PUBLIC_GOOGLE_MAPS_EMBED_KEY,
+})
+const openUrl = googleMapsUrl ?? searchUrl(location)
+const title =
+  titleProp ?? `Map of ${[name, addressLine].filter(Boolean).join(", ")}`
+
+// Static image size follows the frame ratio (API max 640 px a side).
+const staticSizes = {
+  video: [640, 360],
+  wide: [640, 274],
+  classic: [640, 480],
+  square: [640, 640],
+  portrait: [480, 640],
+  tall: [640, 640],
+  fill: [640, 640],
+} as const
+const [width, height] = staticSizes[aspect ?? "classic"]
+const posterSrc =
+  staticPoster && PUBLIC_GOOGLE_MAPS_STATIC_KEY
+    ? staticMapUrl(location, {
+        ...options,
+        key: PUBLIC_GOOGLE_MAPS_STATIC_KEY,
+        width,
+        height,
+      })
+    : undefined
+const hasPosterSlot = Astro.slots.has("poster")
+---
+
+<div data-slot="map" class={cn("flex flex-col gap-3", className)} {...rest}>
+  <EmbedFacade
+    src={src}
+    title={title}
+    label={name}
+    provider="google-maps"
+    icon="map-pin"
+    loadLabel="Load map"
+    fallbackHref={openUrl}
+    fallbackLabel="Open in Google Maps"
+    posterSrc={posterSrc}
+    allowFullscreen
+    remember={remember}
+    variant={variant}
+    aspect={aspect}
+    class={frameClass}
+  >
+    {hasPosterSlot ? (
+      <slot name="poster" slot="poster" />
+    ) : (
+      !posterSrc && <MapPlaceholder slot="poster" />
+    )}
+    {lines.length > 0 && (
+      <p data-slot="map-address" class="text-sm text-muted-foreground">
+        {lines.map((line, i) => (
+          <>
+            {i > 0 && <br />}
+            {line}
+          </>
+        ))}
+      </p>
+    )}
+  </EmbedFacade>
+
+  {(showDirections || showOpenInMaps) && (
+    <div
+      data-slot="map-actions"
+      class={cn(mapActionsVariants({ variant }), actionsClass)}
+    >
+      {showDirections && (
+        <a
+          href={directionsUrl(location)}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-slot="map-directions"
+          class={buttonVariants({ variant: "secondary" })}
+        >
+          <Icon name="lucide:navigation" aria-hidden="true" />
+          Get directions<span class="sr-only"> (opens Google Maps)</span>
+        </a>
+      )}
+      {showOpenInMaps && (
+        <a
+          href={openUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-slot="map-open"
+          class={buttonVariants({ variant: "ghost" })}
+        >
+          <Icon name="lucide:external-link" aria-hidden="true" />
+          Open in Google Maps<span class="sr-only"> (opens in a new tab)</span>
+        </a>
+      )}
+    </div>
+  )}
+</div>

@@ -1,0 +1,101 @@
+---
+import BookingCta from "@/components/blocks/booking/BookingCta.astro"
+import BookingEmbed from "@/components/blocks/booking/BookingEmbed.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+// Demo URL: replace with business.bookingUrl in site.config.ts.
+const calendly = "https://calendly.com/acme-studio/consultation"
+---
+
+<Showcase
+  title="Booking"
+  description="Online booking: an embedded widget behind a click-to-load facade, or a simple link card for providers that don't allow embedding."
+>
+  <Demo
+    title="Embed: Calendly"
+    description="provider='calendly'. Nothing loads from Calendly until the visitor clicks; without JS only the 'Open booking page' link shows."
+  >
+    <BookingEmbed provider="calendly" src={calendly} />
+  </Demo>
+
+  <Demo
+    title="Embed: outline, custom height, no remember"
+    description="variant='outline', a [--embed-height:32rem] class, remember={false}, custom copy."
+  >
+    <BookingEmbed
+      provider="calendly"
+      src={calendly}
+      variant="outline"
+      class="[--embed-height:32rem]"
+      remember={false}
+      label="Book a free boiler survey"
+      description="30 minutes at your home, anywhere in Leeds and Bradford."
+      loadLabel="Choose a date"
+      icon="wrench"
+    />
+  </Demo>
+
+  <Demo
+    title="CTA: card"
+    description="Default: links to business.bookingUrl (or href) with a call fallback from contact.phone."
+  >
+    <BookingCta
+      headingLevel={3}
+      href="https://www.fresha.com/"
+      provider="Fresha"
+      title="Book your cut and colour"
+      description="See live availability for all our stylists and book in seconds."
+    />
+  </Demo>
+
+  <Demo
+    title="CTA: primary, centred"
+    description="variant='primary' layout='centered' for a bold band at the end of a page."
+  >
+    <BookingCta
+      headingLevel={3}
+      href="https://www.opentable.co.uk/"
+      provider="OpenTable"
+      variant="primary"
+      layout="centered"
+      title="Reserve a table"
+      description="Sunday lunch books up fast. Tables for up to 8 online; call us for larger groups."
+      label="Reserve online"
+      icon="utensils"
+    />
+  </Demo>
+
+  <Demo
+    title="CTA: muted, stacked"
+    description="variant='muted' layout='stacked' with extra copy in the default slot."
+  >
+    <div class="max-w-md">
+      <BookingCta
+        href="https://calendly.com/acme-studio/consultation"
+        variant="muted"
+        layout="stacked"
+        headingLevel={3}
+        title="New patient check-up"
+        description="45-minute appointment with a full examination and X-rays if needed."
+      >
+        <p class="text-sm text-muted-foreground">
+          Please give 24 hours' notice to cancel or rearrange.
+        </p>
+      </BookingCta>
+    </div>
+  </Demo>
+
+  <Demo
+    title="CTA: phone only"
+    description="href={false}: no online booking, so the call link becomes the main button. variant='inline'."
+  >
+    <BookingCta
+      headingLevel={3}
+      href={false}
+      variant="inline"
+      title="Call to book"
+      description="We take bookings by phone, Monday to Saturday."
+    />
+  </Demo>
+</Showcase>

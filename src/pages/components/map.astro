@@ -1,0 +1,135 @@
+---
+import {
+  PUBLIC_GOOGLE_MAPS_EMBED_KEY,
+  PUBLIC_GOOGLE_MAPS_STATIC_KEY,
+} from "astro:env/client"
+
+import Map from "@/components/blocks/map/Map.astro"
+import MapSection from "@/components/blocks/map/MapSection.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const keyed = Boolean(PUBLIC_GOOGLE_MAPS_EMBED_KEY)
+const staticKeyed = Boolean(PUBLIC_GOOGLE_MAPS_STATIC_KEY)
+
+const hours = [
+  ["Monday to Friday", "8am to 6pm"],
+  ["Saturday", "9am to 1pm"],
+  ["Sunday", "Closed"],
+]
+---
+
+<Showcase
+  title="Map"
+  description="Google Maps behind a click-to-load facade: nothing loads from Google until the visitor asks, and directions always work."
+>
+  <Demo
+    title="Keyless vs keyed"
+    description="How this build is configured. Set the variables in .env (see .env.example)."
+  >
+    <ul class="flex flex-col gap-2 text-sm wrap-break-word">
+      <li>
+        <strong>Embed:</strong>
+        {keyed
+          ? "PUBLIC_GOOGLE_MAPS_EMBED_KEY is set, so maps use the official Maps Embed API (place mode, place IDs supported)."
+          : "No PUBLIC_GOOGLE_MAPS_EMBED_KEY, so maps use Google's keyless embed URL. It works, but is unofficial and ignores placeId: set a key before launch."}
+      </li>
+      <li>
+        <strong>Poster:</strong>
+        {staticKeyed
+          ? "PUBLIC_GOOGLE_MAPS_STATIC_KEY is set, so the facade shows a Maps Static API image (a request to Google before consent)."
+          : "No PUBLIC_GOOGLE_MAPS_STATIC_KEY, so the facade shows the token-drawn placeholder (no request to Google)."}
+      </li>
+    </ul>
+  </Demo>
+
+  <Demo
+    title="Card (default)"
+    description="Name, address and coordinates from site.config.ts. Tick 'Always load' to remember the choice for every Google embed (localStorage)."
+  >
+    <Map />
+  </Demo>
+
+  <Demo
+    title="Bare, full bleed"
+    description="variant='bare' aspect='wide': edge to edge, links aligned with the page column."
+    bleed
+  >
+    <Map variant="bare" aspect="wide" class="py-4" />
+  </Demo>
+
+  <Demo
+    title="Another location"
+    description="Props override siteConfig: name, a one-line address and zoom. Outline frame, square."
+  >
+    <div class="max-w-md">
+      <Map
+        name="Harbourside Barbers"
+        address="14 Narrow Quay, Bristol BS1 4QA"
+        zoom={16}
+        variant="outline"
+        aspect="square"
+        showOpenInMaps={false}
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Coordinates only"
+    description="lat and lng without a query map a point (useful for a yard or a van pitch with no postal address)."
+  >
+    <Map
+      name="Saturday market stall"
+      address={false}
+      lat={53.7959}
+      lng={-1.5473}
+      zoom={17}
+      aspect="video"
+    />
+  </Demo>
+
+  <Demo
+    title="Section: map beside address"
+    description="MapSection with an opening hours slot (use the hours block there) and a parking note in the default slot."
+    bleed
+  >
+    <MapSection
+      headingLevel={3}
+      headingId="map-demo-end"
+      eyebrow="Visit us"
+      title="Find the shop"
+      lede="Two minutes from the station, with parking round the back."
+    >
+      <dl
+        slot="hours"
+        class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm"
+      >
+        {hours.map(([days, time]) => (
+          <>
+            <dt class="font-medium">{days}</dt>
+            <dd class="text-muted-foreground">{time}</dd>
+          </>
+        ))}
+      </dl>
+      <p class="text-sm text-muted-foreground">
+        Free customer parking behind the building. Step-free access from the car
+        park.
+      </p>
+    </MapSection>
+  </Demo>
+
+  <Demo
+    title="Section: map first, muted"
+    description="layout='map-start' tone='muted', map options passed through the map prop."
+    bleed
+  >
+    <MapSection
+      headingLevel={3}
+      headingId="map-demo-start"
+      layout="map-start"
+      tone="muted"
+      title="Where to find us"
+      map={{ variant: "outline", zoom: 16 }}
+    />
+  </Demo>
+</Showcase>

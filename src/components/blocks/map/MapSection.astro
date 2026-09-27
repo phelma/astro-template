@@ -1,0 +1,209 @@
+---
+/**
+ * "Find us" section: a Map beside an address and contact panel, inside
+ * Section + SectionHeader.
+ *
+ *   <MapSection />
+ *   <MapSection layout="map-start" tone="muted" map={{ zoom: 16 }}>
+ *     <OpeningHours slot="hours" />
+ *   </MapSection>
+ *
+ * Data: `name`, `address`, `phone`, `email` default from siteConfig
+ * (`contact.*`); pass `false` to hide one. `map` forwards props to Map
+ * (placeId, query, zoom, aspect...). Slots: `hours` (opening hours block,
+ * shown under the contact details), default (extra panel content, e.g.
+ * parking or accessibility notes), `actions` (replaces the directions link).
+ *
+ * Customise: `layout` (map-end | map-start | stacked), section props
+ * (`tone`, `spacing`, `width`, `bordered`), `headingLevel`, `panelClass`.
+ * Parts: `data-slot="map-section"`, `map-section-grid`, `map-section-panel`,
+ * `map-section-name`, `map-section-address`, `map-section-contact`,
+ * `map-section-hours`, `map-section-actions`.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import { addressLines, directionsUrl, type Address } from "./google-maps"
+import Map, { type Props as MapProps } from "./Map.astro"
+import { mapSectionVariants, type MapSectionVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  MapSectionVariants & {
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    headingId?: string
+    name?: string
+    address?: Address | false
+    phone?: string | false
+    email?: string | false
+    map?: Partial<MapProps>
+    panelClass?: string
+  }
+
+const {
+  title = "Find us",
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  headingId = "map-section-title",
+  name = siteConfig.name,
+  address = siteConfig.contact.address ?? false,
+  phone = siteConfig.contact.phone ?? false,
+  email = siteConfig.contact.email ?? false,
+  map = {},
+  layout,
+  tone,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  panelClass,
+  ...rest
+} = Astro.props
+
+const SubHeading = `h${Math.min(headingLevel + 1, 6)}` as "h3"
+const tel = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : undefined
+const directions = address
+  ? directionsUrl({
+      query: map.query ?? `${name}, ${addressLines(address).join(", ")}`,
+      placeId: map.placeId,
+    })
+  : undefined
+---
+
+<Section
+  data-slot="map-section"
+  aria-labelledby={headingId}
+  tone={tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width}
+  class={className}
+  {...rest}
+>
+  <SectionHeader
+    headingId={headingId}
+    headingLevel={headingLevel}
+    title={title}
+    eyebrow={eyebrow}
+    lede={lede}
+  />
+  <div data-slot="map-section-grid" class={mapSectionVariants({ layout })}>
+    <div
+      data-slot="map-section-panel"
+      class={cn("flex flex-col gap-6", panelClass)}
+    >
+      <div class="flex flex-col gap-2">
+        <SubHeading
+          data-slot="map-section-name"
+          class="font-heading text-xl font-semibold"
+        >
+          {name}
+        </SubHeading>
+        {address && (
+          <address
+            data-slot="map-section-address"
+            class="flex gap-2 text-muted-foreground not-italic"
+          >
+            <Icon
+              name="lucide:map-pin"
+              class="mt-1 size-4 shrink-0"
+              aria-hidden="true"
+            />
+            <span>
+              {addressLines(address).map((line, i) => (
+                <>
+                  {i > 0 && <br />}
+                  {line}
+                </>
+              ))}
+            </span>
+          </address>
+        )}
+      </div>
+
+      {(phone || email) && (
+        <ul data-slot="map-section-contact" class="flex flex-col gap-1">
+          {phone && (
+            <li>
+              <a
+                href={tel}
+                class="inline-flex min-h-6 items-center gap-2 underline-offset-4 hover:underline"
+              >
+                <Icon name="lucide:phone" class="size-4" aria-hidden="true" />
+                <span class="sr-only">Phone: </span>
+                {phone}
+              </a>
+            </li>
+          )}
+          {email && (
+            <li>
+              <a
+                href={`mailto:${email}`}
+                class="inline-flex min-h-6 items-center gap-2 break-all underline-offset-4 hover:underline"
+              >
+                <Icon name="lucide:mail" class="size-4" aria-hidden="true" />
+                <span class="sr-only">Email: </span>
+                {email}
+              </a>
+            </li>
+          )}
+        </ul>
+      )}
+
+      {Astro.slots.has("hours") && (
+        <div data-slot="map-section-hours">
+          <slot name="hours" />
+        </div>
+      )}
+
+      <slot />
+
+      <div data-slot="map-section-actions" class="mt-auto flex flex-wrap gap-2">
+        {Astro.slots.has("actions") ? (
+          <slot name="actions" />
+        ) : (
+          directions && (
+            <a
+              href={directions}
+              target="_blank"
+              rel="noopener noreferrer"
+              class={buttonVariants({ size: "lg" })}
+            >
+              <Icon name="lucide:navigation" aria-hidden="true" />
+              Get directions<span class="sr-only"> (opens Google Maps)</span>
+            </a>
+          )
+        )}
+      </div>
+    </div>
+
+    <Map
+      name={name}
+      address={address}
+      showDirections={false}
+      aspect="classic"
+      {...map}
+      class={cn(
+        layout === "map-start" && "lg:order-first",
+        "min-w-0",
+        map.class
+      )}
+    />
+  </div>
+</Section>
