@@ -235,9 +235,9 @@ const headingStyle =
         Themes
       </h2>
       <p class="max-w-prose text-muted-foreground">
-        Every available theme (
-        <code class="font-mono text-sm">siteConfig.theme.available</code>) in
-        light and dark. Default:
+        Every available theme in light and dark (from
+        <code class="font-mono text-sm">siteConfig.theme.available</code>).
+        Default:
         <strong>{themes[siteConfig.theme.default].label}</strong>.
       </p>
       {siteConfig.theme.available.map((name) => (
@@ -382,8 +382,8 @@ const headingStyle =
         Radius
       </h2>
       <p class="max-w-prose text-muted-foreground">
-        Derived from the theme's <code class="font-mono text-sm">--radius</code>
-        .
+        Derived from the theme's
+        <code class="font-mono text-sm">--radius</code> token.
       </p>
       <ul class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
         {radii.map((radius) => (

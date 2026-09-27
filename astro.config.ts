@@ -13,6 +13,12 @@ export default defineConfig({
   site: "https://example.com",
   output: "static",
 
+  // Astro 7 defaults to JSX whitespace rules ("jsx"), which drop the line
+  // break between text and an inline element ("such as\n<code>" renders as
+  // "such as<code>"). Prettier reflows prose onto new lines, so use lossless
+  // compression instead: whitespace that affects rendering is kept.
+  compressHTML: true,
+
   // Clean, slash-less URLs (/about) emitted as about.html, which static hosts
   // like Cloudflare serve at /about. Keeps canonical, sitemap and nav in sync.
   trailingSlash: "never",
