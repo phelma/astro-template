@@ -114,6 +114,15 @@ export function organizationSchema(site: URL | undefined): Organization {
 export type LocalBusinessType = Exclude<LocalBusiness, string>["@type"]
 
 /**
+ * `business.type` options (site config). Fails to compile if one of them is
+ * not a LocalBusiness subtype in schema-dts.
+ */
+export type BusinessType = AssertLocalBusinessType<
+  SiteConfig["business"]["type"]
+>
+type AssertLocalBusinessType<T extends LocalBusinessType> = T
+
+/**
  * `business.hours` + `business.specialHours` as OpeningHoursSpecification,
  * following Google's guidance: identical hours share one spec with several
  * `dayOfWeek`s; ranges past midnight stay on the opening day (Sat 18:00 to
@@ -176,7 +185,7 @@ export function localBusinessSchema(site: URL | undefined): LocalBusiness {
   const hours = openingHoursSpecification(business)
 
   const node = {
-    "@type": business.type as LocalBusinessType,
+    "@type": business.type,
     "@id": organizationId(site),
     name: organisation.name,
     ...(organisation.legalName && { legalName: organisation.legalName }),
@@ -203,7 +212,8 @@ export function localBusinessSchema(site: URL | undefined): LocalBusiness {
     ...(business.googleMapsUrl && { hasMap: business.googleMapsUrl }),
     ...(sameAs.length > 0 && { sameAs }),
   }
-  // The subtype is only known at runtime; every subtype accepts these props.
+  // `business.type` is checked against schema-dts above, but TypeScript
+  // can't match an object with a union "@type" to the union of subtypes.
   return node as LocalBusiness
 }
 

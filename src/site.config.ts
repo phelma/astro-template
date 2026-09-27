@@ -44,6 +44,89 @@ const social = z.object({
 
 const themeName = z.enum(themeNames)
 
+/**
+ * schema.org LocalBusiness subtypes for `business.type`, picked for UK small
+ * businesses. Every name must be a real schema.org type known to schema-dts
+ * (`LocalBusinessType` in src/lib/seo.ts checks this at compile time).
+ */
+export const localBusinessTypes = [
+  "LocalBusiness",
+  // Trades and home services
+  "HomeAndConstructionBusiness",
+  "Plumber",
+  "Electrician",
+  "HVACBusiness",
+  "RoofingContractor",
+  "GeneralContractor",
+  "HousePainter",
+  "Locksmith",
+  "MovingCompany",
+  "SelfStorage",
+  "DryCleaningOrLaundry",
+  // Professional services
+  "ProfessionalService",
+  "LegalService",
+  "Attorney",
+  "Notary",
+  "AccountingService",
+  "FinancialService",
+  "InsuranceAgency",
+  "RealEstateAgent",
+  "EmploymentAgency",
+  "TravelAgency",
+  // Health and beauty
+  "HealthAndBeautyBusiness",
+  "HairSalon",
+  "BeautySalon",
+  "NailSalon",
+  "DaySpa",
+  "TattooParlor",
+  "Dentist",
+  "Physician",
+  "MedicalClinic",
+  "Optician",
+  "Physiotherapy",
+  "Pharmacy",
+  // Food and drink
+  "FoodEstablishment",
+  "Restaurant",
+  "CafeOrCoffeeShop",
+  "Bakery",
+  "BarOrPub",
+  "FastFoodRestaurant",
+  "IceCreamShop",
+  "Brewery",
+  "Winery",
+  // Motoring
+  "AutomotiveBusiness",
+  "AutoRepair",
+  "AutoBodyShop",
+  "AutoDealer",
+  "AutoWash",
+  // Shops
+  "Store",
+  "ClothingStore",
+  "Florist",
+  "HomeGoodsStore",
+  "HardwareStore",
+  "GardenStore",
+  "FurnitureStore",
+  "BookStore",
+  "PetStore",
+  "JewelryStore",
+  "BikeStore",
+  // Leisure, care and accommodation
+  "ChildCare",
+  "SportsActivityLocation",
+  "ExerciseGym",
+  "EntertainmentBusiness",
+  "AnimalShelter",
+  "LodgingBusiness",
+  "BedAndBreakfast",
+  "Hotel",
+  "Campground",
+] as const
+
 const siteConfigSchema = z
   .object({
     /** Full site / brand name. Used in titles, OG site_name, JSON-LD. */
@@ -132,12 +215,10 @@ const siteConfigSchema = z
     business: z.object({
       /**
        * schema.org LocalBusiness subtype, e.g. "Plumber", "Restaurant",
-       * "HairSalon", "Dentist". https://schema.org/LocalBusiness
+       * "HairSalon", "Dentist" (see `localBusinessTypes` above; add others
+       * from https://schema.org/LocalBusiness as needed).
        */
-      type: z
-        .string()
-        .regex(/^[A-Z][A-Za-z]+$/)
-        .default("LocalBusiness"),
+      type: z.enum(localBusinessTypes).default("LocalBusiness"),
       /** e.g. "££" or "£50-£200". */
       priceRange: z.string().optional(),
       /** Used for the map pin and JSON-LD geo. */
