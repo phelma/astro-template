@@ -1,0 +1,148 @@
+---
+import team1 from "@/assets/placeholders/content/team-1.jpg"
+import team2 from "@/assets/placeholders/content/team-2.jpg"
+import team3 from "@/assets/placeholders/content/team-3.jpg"
+import team4 from "@/assets/placeholders/content/team-4.jpg"
+import Team from "@/components/blocks/team/Team.astro"
+import type { TeamMember } from "@/components/blocks/team/types"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const team: TeamMember[] = [
+  {
+    name: "Sarah Mills",
+    role: "Owner & senior stylist",
+    bio: "Twenty years behind the chair and still loves a big transformation. Specialises in colour correction.",
+    image: team1,
+    imageAlt: "",
+    links: [
+      {
+        label: "Email Sarah",
+        href: "mailto:sarah@example.com",
+        icon: "lucide:mail",
+      },
+      {
+        label: "Sarah on Instagram",
+        href: "https://example.com/sarah",
+        icon: "lucide:instagram",
+      },
+    ],
+  },
+  {
+    name: "Jordan Reid",
+    role: "Stylist",
+    bio: "Precision cuts and barbering. Ask Jordan about low-maintenance styles.",
+    image: team2,
+    imageAlt: "",
+    links: [
+      {
+        label: "Jordan on Instagram",
+        href: "https://example.com/jordan",
+        icon: "lucide:instagram",
+      },
+    ],
+  },
+  {
+    name: "Aisha Khan",
+    role: "Colourist",
+    bio: "Balayage and lived-in blondes. Trained with L'Atelier in London.",
+    image: team3,
+    imageAlt: "",
+  },
+  {
+    name: "Ben Taylor",
+    role: "Apprentice",
+    bio: "Second-year apprentice; book a discounted cut on Tuesday evenings.",
+    image: team4,
+    imageAlt: "",
+  },
+]
+
+const trades: TeamMember[] = [
+  {
+    name: "Dave Wilson",
+    role: "Founder, Gas Safe engineer",
+    bio: "Started the business in 2001 with one van.",
+    image: team1,
+    imageAlt: "",
+    links: [
+      { label: "Call Dave", href: "tel:+441130000000", icon: "lucide:phone" },
+    ],
+  },
+  {
+    name: "Emma Wilson",
+    role: "Office manager",
+    bio: "Your first point of contact for bookings and quotes.",
+    links: [
+      {
+        label: "Email Emma",
+        href: "mailto:office@example.com",
+        icon: "lucide:mail",
+      },
+    ],
+  },
+  {
+    name: "Liam O'Brien",
+    role: "Heating engineer",
+    bio: "Boiler installs, smart controls and power flushes.",
+    image: team3,
+    imageAlt: "",
+  },
+  {
+    name: "Chris Adeyemi",
+    role: "Plumber",
+    bio: "Bathrooms, leaks and everything in between.",
+    image: team4,
+    imageAlt: "",
+  },
+]
+---
+
+<Showcase
+  title="Team"
+  description="The people behind the business: photo cards, a plain grid and a compact list, with optional icon links."
+>
+  <Demo
+    title="Cards"
+    description="variant='cards' (default), columns={4}; icon links with hidden labels."
+    bleed
+  >
+    <Team
+      id="team-cards"
+      columns={4}
+      headingLevel={3}
+      eyebrow="Our team"
+      title="Meet the stylists"
+      items={team}
+    />
+  </Demo>
+
+  <Demo
+    title="Plain grid"
+    description="variant='plain', columns={3}, on a muted band."
+    bleed
+  >
+    <Team
+      id="team-plain"
+      variant="plain"
+      tone="muted"
+      headingLevel={3}
+      title="The people you'll meet"
+      items={team.slice(0, 3)}
+    />
+  </Demo>
+
+  <Demo
+    title="Compact list"
+    description="variant='compact': small round photos in two columns; initials when there's no photo."
+    bleed
+  >
+    <Team
+      id="team-compact"
+      variant="compact"
+      headingLevel={3}
+      title="Who's who"
+      items={trades}
+    />
+  </Demo>
+</Showcase>

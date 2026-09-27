@@ -1,0 +1,205 @@
+---
+/**
+ * Trust strip: accreditation badges (trade schemes, registers) or "as
+ * featured in" press logos. Logos can be images or text placeholders
+ * (see LogoStripItem). Don't ship real scheme logos without permission.
+ *
+ * - `static`: wrapping row (default).
+ * - `grayscale`: logos desaturated with a CSS filter until hover/focus.
+ * - `marquee`: continuous horizontal scroll (pure CSS). The list is rendered
+ *   twice for a seamless loop; the copy is `aria-hidden` and untabbable. It
+ *   pauses on hover and keyboard focus, has a pause toggle (a checkbox, so
+ *   no JS), and becomes a static wrapped row under `prefers-reduced-motion`.
+ *   `speed` sets the loop time (`--logo-strip-duration`).
+ *
+ * Give it a `title` (section heading) or a small `label` caption.
+ *
+ *   <LogoStrip label="Accredited by" items={logos} variant="grayscale" />
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+import LogoStripItem from "./LogoStripItem.astro"
+import type { Logo } from "./types"
+import {
+  logoStripListVariants,
+  logoStripMarqueeVariants,
+  type LogoStripItemVariants,
+  type LogoStripListVariants,
+  type LogoStripMarqueeVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  LogoStripListVariants &
+  LogoStripItemVariants & {
+    items: Logo[]
+    /** Prefix for element ids; unique per page. */
+    id?: string
+    /** Section heading. */
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    /** Small caption above the logos when there's no heading, e.g. "As featured in". */
+    label?: string
+    /** Marquee loop speed. */
+    speed?: LogoStripMarqueeVariants["speed"]
+  }
+
+const {
+  items,
+  id = "logos",
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  label,
+  speed,
+  variant = "static",
+  align = "center",
+  size,
+  tone,
+  spacing = "sm",
+  bordered,
+  width,
+  class: className,
+  ...rest
+} = Astro.props
+
+const headingId = `${id}-title`
+const labelId = `${id}-label`
+const labelledBy = title ? headingId : label ? labelId : undefined
+const listClass = logoStripListVariants({ variant, align })
+---
+
+<Section
+  data-slot="logo-strip"
+  tone={tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width}
+  aria-labelledby={labelledBy}
+  as={labelledBy ? "section" : "div"}
+  class={className}
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align}
+    />
+  )}
+  {!title && label && (
+    <p
+      id={labelId}
+      data-slot="logo-strip-label"
+      class={cn(
+        "mb-6 text-sm font-medium text-muted-foreground",
+        align === "center" && "text-center"
+      )}
+    >
+      {label}
+    </p>
+  )}
+
+  {variant === "marquee" ? (
+    <div
+      data-slot="logo-strip-marquee"
+      class={logoStripMarqueeVariants({ speed })}
+    >
+      <div
+        data-slot="logo-strip-viewport"
+        class="flex overflow-hidden py-1 mask-x-from-90% motion-reduce:mask-none"
+      >
+        <ul
+          data-slot="logo-strip-list"
+          class={cn(
+            listClass,
+            "logo-strip-track motion-reduce:w-full motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-y-6 motion-reduce:pe-0"
+          )}
+        >
+          {items.map((item) => (
+            <LogoStripItem {...item} size={size} />
+          ))}
+        </ul>
+        <ul
+          data-slot="logo-strip-list"
+          class={cn(listClass, "logo-strip-track motion-reduce:hidden")}
+          aria-hidden="true"
+        >
+          {items.map((item) => (
+            <LogoStripItem {...item} size={size} linkTabIndex={-1} />
+          ))}
+        </ul>
+      </div>
+      <label
+        data-slot="logo-strip-pause"
+        class={cn(
+          buttonVariants({ variant: "ghost", size: "sm" }),
+          "cursor-pointer self-end has-focus-visible:ring-3 has-focus-visible:ring-ring/50 motion-reduce:hidden"
+        )}
+      >
+        <input type="checkbox" class="peer sr-only" />
+        <Icon
+          name="lucide:pause"
+          class="peer-checked:hidden"
+          aria-hidden="true"
+        />
+        <Icon
+          name="lucide:play"
+          class="hidden peer-checked:block"
+          aria-hidden="true"
+        />
+        Pause animation
+      </label>
+    </div>
+  ) : (
+    <ul data-slot="logo-strip-list" class={listClass}>
+      {items.map((item) => (
+        <LogoStripItem {...item} size={size} />
+      ))}
+    </ul>
+  )}
+  <slot />
+</Section>
+
+<style>
+  @keyframes logo-strip-scroll {
+    to {
+      transform: translateX(-100%);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .logo-strip-track {
+      animation: logo-strip-scroll var(--logo-strip-duration, 40s) linear
+        infinite;
+    }
+
+    /* Pause on hover, on keyboard focus inside, and via the toggle. */
+    [data-slot="logo-strip-marquee"]:is(
+        :hover,
+        :focus-within,
+        :has(input:checked)
+      )
+      .logo-strip-track {
+      animation-play-state: paused;
+    }
+  }
+</style>

@@ -1,0 +1,120 @@
+---
+/**
+ * "How it works" section: a numbered process as an ordered list.
+ *
+ * - `horizontal`: numbers joined by a connector line across the row from
+ *   medium screens; a vertical timeline on small screens (default).
+ * - `timeline`: vertical timeline at every width.
+ * - `cards`: each step in a card with a large number.
+ *
+ * `columns` defaults to the number of steps (2 to 4). Put a call to action
+ * in the default slot.
+ *
+ *   <Steps title="How it works" items={[{ title: "Call us", description: "..." }, ...]} />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionHeaderVariants,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import StepItem from "./StepItem.astro"
+import { stepsListVariants, type StepsListVariants } from "./variants"
+
+export interface Step {
+  title: string
+  description?: string
+}
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  StepsListVariants & {
+    items: Step[]
+    /** Prefix for element ids; unique per page. */
+    id?: string
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    align?: SectionHeaderVariants["align"]
+  }
+
+const {
+  items,
+  id = "steps",
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  variant = "horizontal",
+  columns = Math.min(Math.max(items.length, 2), 4) as 2 | 3 | 4,
+  tone,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  ...rest
+} = Astro.props
+
+const headingId = `${id}-title`
+const itemHeadingLevel = Math.min(
+  title ? headingLevel + 1 : headingLevel,
+  6
+) as HeadingLevel
+---
+
+<Section
+  data-slot="steps"
+  tone={tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width}
+  aria-labelledby={title ? headingId : undefined}
+  as={title ? "section" : "div"}
+  class={className}
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align}
+    />
+  )}
+  <ol
+    data-slot="steps-list"
+    class={cn(stepsListVariants({ variant, columns }))}
+  >
+    {items.map((item, index) => (
+      <StepItem
+        {...item}
+        number={index + 1}
+        variant={variant}
+        headingLevel={itemHeadingLevel}
+        last={index === items.length - 1}
+      />
+    ))}
+  </ol>
+  {Astro.slots.has("default") && (
+    <div
+      data-slot="steps-footer"
+      class={cn(
+        "mt-10 flex flex-wrap gap-3",
+        align === "center" && "justify-center"
+      )}
+    >
+      <slot />
+    </div>
+  )}
+</Section>

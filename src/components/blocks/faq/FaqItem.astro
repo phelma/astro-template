@@ -1,0 +1,78 @@
+---
+/**
+ * One question: a native <details>/<summary> disclosure. Works without JS.
+ * Items sharing a `name` form an exclusive accordion (opening one closes the
+ * others). Opening animates its height where `::details-content` and
+ * `interpolate-size` are supported, and is instant elsewhere and under
+ * `prefers-reduced-motion`.
+ *
+ *   <FaqItem question="Do you charge a call-out fee?" answer="No, ..." />
+ *   <FaqItem question="Which areas do you cover?" name="faq"><p>Rich <a href="/areas">answer</a></p></FaqItem>
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+
+import { answerParagraphs } from "./schema"
+import { faqItemVariants, type FaqItemVariants } from "./variants"
+
+type Props = HTMLAttributes<"details"> &
+  FaqItemVariants & {
+    question: string
+    /** Plain-text answer (blank lines split paragraphs). Or use the slot. */
+    answer?: string
+  }
+
+const { question, answer, variant, class: className, ...rest } = Astro.props
+---
+
+<details
+  data-slot="faq-item"
+  class={cn(faqItemVariants({ variant }), className)}
+  {...rest}
+>
+  <summary
+    data-slot="faq-question"
+    class="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-4 text-left font-medium hover:underline hover:underline-offset-4 [&::-webkit-details-marker]:hidden"
+  >
+    {question}
+    <Icon
+      data-slot="faq-icon"
+      name="lucide:chevron-down"
+      class="size-5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180"
+      aria-hidden="true"
+    />
+  </summary>
+  <div
+    data-slot="faq-answer"
+    class="flex max-w-prose flex-col gap-3 pb-5 text-muted-foreground [&_a]:text-foreground [&_a]:underline [&_a]:underline-offset-4"
+  >
+    <slot>
+      {answer &&
+        answerParagraphs(answer).map((paragraph) => <p>{paragraph}</p>)}
+    </slot>
+  </div>
+</details>
+
+<style>
+  /* Animate open/close height. Browsers without ::details-content drop this
+     rule and open instantly; reduced-motion users skip the transition. */
+  @media (prefers-reduced-motion: no-preference) {
+    details {
+      interpolate-size: allow-keywords;
+    }
+
+    details::details-content {
+      block-size: 0;
+      overflow-y: clip;
+      transition:
+        block-size 0.25s ease,
+        content-visibility 0.25s allow-discrete;
+    }
+
+    details[open]::details-content {
+      block-size: auto;
+    }
+  }
+</style>

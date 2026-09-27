@@ -1,0 +1,112 @@
+---
+/**
+ * Price list / menu section for salons, cafés and trades: groups with
+ * headings, each a list of items with name, price, optional unit, badge and
+ * description. Numeric prices are formatted as £ (see ./price.ts); strings
+ * ("POA", "from £60") are shown as given.
+ *
+ * - `variant`: `plain` (ruled rows, default), `leader` (dotted leaders, menu
+ *   style) or `cards` (each group framed as a card).
+ * - `columns`: 1 (default) or 2 groups side by side from medium screens.
+ *
+ * Put footnotes ("Prices include VAT") in the default slot.
+ *
+ *   <PriceList title="Prices" groups={groups} variant="leader" columns={2} />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionHeaderVariants,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import PriceListGroup from "./PriceListGroup.astro"
+import type { PriceListGroup as Group } from "./types"
+import { priceListVariants, type PriceListVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  PriceListVariants & {
+    groups: Group[]
+    /** Prefix for element ids; unique per page. */
+    id?: string
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    align?: SectionHeaderVariants["align"]
+  }
+
+const {
+  groups,
+  id = "prices",
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  variant,
+  columns,
+  tone,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  ...rest
+} = Astro.props
+
+const headingId = `${id}-title`
+const groupHeadingLevel = Math.min(
+  title ? headingLevel + 1 : headingLevel,
+  6
+) as HeadingLevel
+---
+
+<Section
+  data-slot="price-list"
+  tone={tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width ?? (columns === 2 ? "default" : "narrow")}
+  aria-labelledby={title ? headingId : undefined}
+  as={title ? "section" : "div"}
+  class={className}
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align}
+    />
+  )}
+  <div
+    data-slot="price-list-groups"
+    class={cn(priceListVariants({ variant, columns }))}
+  >
+    {groups.map((group) => (
+      <PriceListGroup
+        {...group}
+        variant={variant}
+        headingLevel={groupHeadingLevel}
+      />
+    ))}
+  </div>
+  {Astro.slots.has("default") && (
+    <div
+      data-slot="price-list-footer"
+      class="mt-8 text-sm text-muted-foreground"
+    >
+      <slot />
+    </div>
+  )}
+</Section>

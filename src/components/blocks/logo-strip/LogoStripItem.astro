@@ -1,0 +1,73 @@
+---
+/**
+ * One logo: an image (alt = name) or, without an image, a text placeholder
+ * badge with an icon, styled from tokens. Linked when `href` is set.
+ * Renders an <li> for LogoStrip's list; `tabindex={-1}` on the duplicated
+ * marquee copy keeps it out of the tab order.
+ *
+ *   <LogoStripItem name="HeatSafe Registered" image={logo} href="https://..." />
+ *   <LogoStripItem name="Fair Trader Scheme" icon="lucide:shield-check" />
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+import { Image } from "astro:assets"
+
+import { cn } from "@/lib/utils"
+
+import type { Logo } from "./types"
+import { logoStripItemVariants, type LogoStripItemVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"li">, "name"> &
+  LogoStripItemVariants &
+  Logo & {
+    /** Tab index for the link (use -1 on aria-hidden duplicates). */
+    linkTabIndex?: number
+  }
+
+const {
+  name,
+  image,
+  href,
+  icon = "lucide:badge-check",
+  invertInDark = false,
+  linkTabIndex,
+  size,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Tag = href ? "a" : "span"
+const imageHeight = size === "sm" ? 32 : size === "lg" ? 64 : 48
+---
+
+<li data-slot="logo-strip-item" class={cn("flex", className)} {...rest}>
+  <Tag
+    data-slot="logo-strip-logo"
+    href={href}
+    tabindex={href ? linkTabIndex : undefined}
+    class={cn(
+      logoStripItemVariants({ size }),
+      href && "transition-opacity hover:opacity-80"
+    )}
+  >
+    {image ? (
+      <Image
+        data-slot="logo-strip-image"
+        src={image}
+        alt={name}
+        height={imageHeight}
+        width={Math.round((imageHeight * image.width) / image.height)}
+        layout="fixed"
+        class={cn("w-auto", invertInDark && "dark:invert")}
+      />
+    ) : (
+      <span
+        data-slot="logo-strip-placeholder"
+        class="inline-flex h-full items-center gap-2 rounded-md border bg-card px-4 font-heading text-sm font-semibold whitespace-nowrap text-card-foreground"
+      >
+        <Icon name={icon} class="size-5 text-primary" aria-hidden="true" />
+        {name}
+      </span>
+    )}
+  </Tag>
+</li>

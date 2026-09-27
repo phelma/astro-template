@@ -1,0 +1,119 @@
+---
+/**
+ * FAQ section: a heading and an accordion of native <details> items.
+ *
+ * - `variant`: `list` (ruled rows, default) or `cards` (separate cards).
+ * - `layout`: `stacked` (header above) or `split` (header on the left and
+ *   sticky on wide screens; put a "Still got questions?" link in the slot).
+ * - `exclusive`: only one answer open at a time (shared `name` attribute;
+ *   older browsers simply allow several open).
+ * - `schema`: also emit FAQPage JSON-LD built from `items` (see ./schema.ts).
+ *
+ *   <Faq title="Common questions" items={faqs} exclusive schema />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionHeaderVariants,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import JsonLd from "@/components/seo/JsonLd.astro"
+import { cn } from "@/lib/utils"
+
+import FaqItem from "./FaqItem.astro"
+import { faqPageSchema, type FaqEntry } from "./schema"
+import {
+  faqLayoutVariants,
+  faqListVariants,
+  type FaqLayoutVariants,
+  type FaqListVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  FaqListVariants &
+  FaqLayoutVariants & {
+    items: FaqEntry[]
+    /** Prefix for element ids and the accordion group name; unique per page. */
+    id?: string
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    align?: SectionHeaderVariants["align"]
+    /** Only one answer open at a time. */
+    exclusive?: boolean
+    /** Index of an item to open initially. */
+    defaultOpen?: number
+    /** Emit FAQPage JSON-LD for these items (one FAQ per page). */
+    schema?: boolean
+  }
+
+const {
+  items,
+  id = "faq",
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  exclusive = false,
+  defaultOpen,
+  schema = false,
+  variant,
+  layout,
+  tone,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  ...rest
+} = Astro.props
+
+const headingId = `${id}-title`
+const name = exclusive ? `${id}-group` : undefined
+---
+
+<Section
+  data-slot="faq"
+  tone={tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width ?? (layout === "split" ? "default" : "narrow")}
+  aria-labelledby={title ? headingId : undefined}
+  as={title ? "section" : "div"}
+  class={className}
+  containerClass={faqLayoutVariants({ layout })}
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={layout === "split" ? "start" : align}
+    >
+      <slot name="header" />
+    </SectionHeader>
+  )}
+  <div data-slot="faq-list" class={cn(faqListVariants({ variant }))}>
+    {items.map((item, index) => (
+      <FaqItem
+        question={item.question}
+        answer={item.answer}
+        variant={variant}
+        name={name}
+        open={index === defaultOpen}
+      />
+    ))}
+    <slot />
+  </div>
+  {schema && <JsonLd data={faqPageSchema(items)} />}
+</Section>

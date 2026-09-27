@@ -1,0 +1,111 @@
+---
+import Steps, { type Step } from "@/components/blocks/steps/Steps.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+import { buttonVariants } from "@/components/ui/button"
+
+const trade: Step[] = [
+  {
+    title: "Get in touch",
+    description:
+      "Call, email or use the form. Tell us what's wrong and send a photo if you can.",
+  },
+  {
+    title: "Free visit & quote",
+    description:
+      "We'll come and look, explain the options and give you a fixed written price.",
+  },
+  {
+    title: "We do the work",
+    description:
+      "On the agreed day, with dust sheets down and everything cleared away after.",
+  },
+  {
+    title: "Aftercare",
+    description:
+      "12-month labour guarantee, and a reminder when your next service is due.",
+  },
+]
+
+const salon: Step[] = [
+  {
+    title: "Book online",
+    description: "Pick a stylist and a time that suits you, day or night.",
+  },
+  {
+    title: "Consultation",
+    description: "We'll talk through the look you want before we start.",
+  },
+  {
+    title: "Relax",
+    description: "Tea, coffee and a head massage while your colour develops.",
+  },
+]
+---
+
+<Showcase
+  title="Steps"
+  description="'How it works' numbered process: horizontal with connectors, vertical timeline and cards."
+>
+  <Demo
+    title="Horizontal"
+    description="variant='horizontal' (default): connector line between numbers from medium screens; vertical below. Columns follow the number of steps. CTA in the default slot."
+    bleed
+  >
+    <Steps
+      id="steps-horizontal"
+      headingLevel={3}
+      eyebrow="How it works"
+      title="From first call to finished job"
+      items={trade}
+    >
+      <a href="/contact" class={buttonVariants({ size: "lg" })}>
+        Book a free visit
+      </a>
+    </Steps>
+  </Demo>
+
+  <Demo
+    title="Timeline"
+    description="variant='timeline': vertical at every width, centred header, on a muted band."
+    bleed
+  >
+    <Steps
+      id="steps-timeline"
+      variant="timeline"
+      tone="muted"
+      align="center"
+      headingLevel={3}
+      title="Your first appointment"
+      items={salon}
+    />
+  </Demo>
+
+  <Demo
+    title="Cards"
+    description="variant='cards': large numbers in cards."
+    bleed
+  >
+    <Steps
+      id="steps-cards"
+      variant="cards"
+      headingLevel={3}
+      title="How we work"
+      items={trade}
+    />
+  </Demo>
+
+  <Demo
+    title="On a primary band"
+    description="tone='primary': numbers and connectors switch to the foreground colour."
+    bleed
+  >
+    <Steps
+      id="steps-primary"
+      tone="primary"
+      headingLevel={3}
+      title="Three easy steps"
+      items={salon}
+    />
+  </Demo>
+</Showcase>

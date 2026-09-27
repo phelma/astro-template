@@ -1,0 +1,104 @@
+---
+import Stats, { type Stat } from "@/components/blocks/stats/Stats.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const stats: Stat[] = [
+  { value: "25", label: "Years in business" },
+  {
+    value: "4.9★",
+    valueLabel: "4.9 out of 5 stars",
+    label: "Average Google rating",
+  },
+  { value: "1,200+", label: "Boilers fitted" },
+  { value: "2 hrs", label: "Emergency response" },
+]
+
+const detailed: Stat[] = [
+  {
+    value: "25",
+    label: "Years in business",
+    description: "Family-run since 2001.",
+    icon: "lucide:calendar",
+  },
+  {
+    value: "4.9★",
+    valueLabel: "4.9 out of 5 stars",
+    label: "Google rating",
+    description: "From 128 reviews.",
+    icon: "lucide:star",
+  },
+  {
+    value: "1,200+",
+    label: "Jobs completed",
+    description: "Across Leeds and Bradford.",
+    icon: "lucide:wrench",
+  },
+  {
+    value: "12",
+    label: "Engineers",
+    description: "All Gas Safe registered.",
+    icon: "lucide:users",
+  },
+]
+---
+
+<Showcase
+  title="Stats"
+  description="Key figures as a description list: plain, cards, a primary band and a row with dividers."
+>
+  <Demo
+    title="Plain"
+    description="variant='plain' (default). valueLabel gives '4.9★' a spoken alternative."
+    bleed
+  >
+    <Stats
+      id="stats-plain"
+      headingLevel={3}
+      title="Leeds' trusted heating engineers"
+      items={stats}
+    />
+  </Demo>
+
+  <Demo
+    title="Cards"
+    description="variant='cards' with icons and descriptions, on a muted band."
+    bleed
+  >
+    <Stats
+      id="stats-cards"
+      variant="cards"
+      tone="muted"
+      headingLevel={3}
+      title="In numbers"
+      items={detailed}
+    />
+  </Demo>
+
+  <Demo
+    title="Primary band"
+    description="variant='band': tone defaults to primary; no heading (aria-label names the region)."
+    bleed
+  >
+    <Stats
+      id="stats-band"
+      variant="band"
+      aria-label="Key figures"
+      items={stats}
+    />
+  </Demo>
+
+  <Demo
+    title="Dividers"
+    description="variant='dividers': one row split by rules, stacked on small screens. Three items."
+    bleed
+  >
+    <Stats
+      id="stats-dividers"
+      variant="dividers"
+      bordered
+      spacing="sm"
+      items={stats.slice(0, 3)}
+    />
+  </Demo>
+</Showcase>

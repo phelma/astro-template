@@ -1,0 +1,81 @@
+---
+/**
+ * One figure: a big value, its label and an optional note. Renders a <div>
+ * of <dt>/<dd> for use inside Stats' <dl>; the value is shown first
+ * visually but read after its label ("Years in business: 25").
+ *
+ * Use `valueLabel` when the visible value relies on a symbol, e.g.
+ * value "4.9★" with valueLabel "4.9 out of 5 stars".
+ *
+ *   <StatItem value="1,200+" label="Boilers fitted" />
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+
+import {
+  statItemVariants,
+  statValueVariants,
+  type StatItemVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"div"> &
+  StatItemVariants & {
+    value: string
+    label: string
+    /** Text read instead of `value` by assistive tech. */
+    valueLabel?: string
+    description?: string
+    /** astro-icon name shown above the value. Decorative. */
+    icon?: string
+  }
+
+const {
+  value,
+  label,
+  valueLabel,
+  description,
+  icon,
+  variant,
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+<div
+  data-slot="stat"
+  class={cn(statItemVariants({ variant }), className)}
+  {...rest}
+>
+  <dt data-slot="stat-label" class="font-medium">
+    {label}
+  </dt>
+  <dd
+    data-slot="stat-value"
+    class={statValueVariants({ size: variant === "cards" ? "sm" : "default" })}
+  >
+    {valueLabel ? (
+      <>
+        <span aria-hidden="true">{value}</span>
+        <span class="sr-only">{valueLabel}</span>
+      </>
+    ) : (
+      value
+    )}
+  </dd>
+  {description && (
+    <dd data-slot="stat-description" class="text-sm text-muted-foreground">
+      {description}
+    </dd>
+  )}
+  {icon && (
+    <dd
+      data-slot="stat-icon"
+      class="-order-2 mb-2 text-primary in-[.bg-primary]:text-current"
+      aria-hidden="true"
+    >
+      <Icon name={icon} class="size-6" />
+    </dd>
+  )}
+</div>

@@ -1,0 +1,32 @@
+---
+/**
+ * Starting price for a service: "From £65". Numbers are formatted as £
+ * (see price-list/price.ts); text is shown as given.
+ *
+ *   <ServicePrice price={65} />
+ *   <ServicePrice price="Free quotes" prefix="" />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { formatPrice, type Price } from "@/components/blocks/price-list/price"
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"p"> & {
+  price: Price
+  /** Text before the price. */
+  prefix?: string
+}
+
+const { price, prefix = "From", class: className, ...rest } = Astro.props
+---
+
+<p
+  data-slot="service-price"
+  class={cn("text-sm text-muted-foreground", className)}
+  {...rest}
+>
+  {prefix && `${prefix} `}
+  <strong class="text-base font-semibold text-foreground tabular-nums">
+    {formatPrice(price)}
+  </strong>
+</p>

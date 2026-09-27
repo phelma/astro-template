@@ -1,0 +1,143 @@
+---
+/**
+ * One service: an icon card, an image card, or a compact list item. With
+ * `href` the title becomes a link stretched over the whole card, so the card
+ * is one click target with one accessible name (the title).
+ *
+ *   <ServiceCard title="Boiler servicing" description="..." icon="lucide:flame" price={80} href="/services/boilers" />
+ *   <ServiceCard variant="image" image={photo} imageAlt="" title="Bathrooms" description="..." />
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+import { Image } from "astro:assets"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import ServicePrice from "./ServicePrice.astro"
+import type { Service } from "./types"
+import {
+  serviceCardVariants,
+  serviceIconVariants,
+  type ServiceCardVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"article">, "title"> &
+  Omit<ServiceCardVariants, "interactive"> &
+  Service & {
+    headingLevel?: HeadingLevel
+  }
+
+const {
+  title,
+  description,
+  icon,
+  image,
+  imageAlt,
+  price,
+  pricePrefix,
+  href,
+  linkLabel = "Find out more",
+  features = [],
+  headingLevel = 3,
+  variant = "icon",
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+---
+
+<article
+  data-slot="service-card"
+  class={cn(
+    serviceCardVariants({ variant, interactive: Boolean(href) }),
+    className
+  )}
+  {...rest}
+>
+  {variant === "image" && image && (
+    <Image
+      data-slot="service-image"
+      src={image}
+      alt={imageAlt}
+      width={640}
+      height={427}
+      class="aspect-3/2 w-full object-cover"
+    />
+  )}
+  {variant !== "image" && icon && (
+    <span
+      data-slot="service-icon"
+      class={serviceIconVariants({
+        size: variant === "list" ? "sm" : "default",
+      })}
+    >
+      <Icon name={icon} aria-hidden="true" />
+    </span>
+  )}
+  <div
+    data-slot="service-body"
+    class={cn("flex flex-1 flex-col gap-2", variant === "image" && "p-6 pt-2")}
+  >
+    <Heading
+      data-slot="service-title"
+      class={variant === "list" ? "text-base" : "text-lg"}
+    >
+      {href ? (
+        <a
+          href={href}
+          class="after:absolute after:inset-0 hover:underline hover:underline-offset-4"
+        >
+          {title}
+        </a>
+      ) : (
+        title
+      )}
+    </Heading>
+    <p
+      data-slot="service-description"
+      class="text-sm text-pretty text-muted-foreground"
+    >
+      {description}
+    </p>
+    {features.length > 0 && (
+      <ul data-slot="service-features" class="flex flex-col gap-1.5 text-sm">
+        {features.map((feature) => (
+          <li data-slot="service-feature" class="flex items-start gap-2">
+            <Icon
+              name="lucide:check"
+              class="mt-0.5 size-4 shrink-0 text-primary"
+              aria-hidden="true"
+            />
+            {feature}
+          </li>
+        ))}
+      </ul>
+    )}
+    {(price !== undefined || (href && variant !== "list")) && (
+      <div
+        data-slot="service-footer"
+        class="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2"
+      >
+        {price !== undefined && (
+          <ServicePrice price={price} prefix={pricePrefix} />
+        )}
+        {href && variant !== "list" && (
+          <span
+            data-slot="service-link"
+            class="inline-flex items-center gap-1 text-sm font-medium text-primary group-has-[a:hover]/service:underline"
+            aria-hidden="true"
+          >
+            {linkLabel}
+            <Icon
+              name="lucide:arrow-right"
+              class="size-4 transition-transform group-has-[a:hover]/service:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </span>
+        )}
+      </div>
+    )}
+  </div>
+</article>

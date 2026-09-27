@@ -1,0 +1,84 @@
+---
+/**
+ * Star rating with a text alternative ("Rated 4.5 out of 5"). Stars are
+ * decorative; the visually hidden text is what assistive tech (and the
+ * Markdown export) reads. Rounds to the nearest half star. Stars are
+ * `text-primary` (primary-foreground on a primary band); recolour them with
+ * `**:data-[slot=star-rating-stars]:text-...` on the call site.
+ *
+ *   <StarRating rating={5} />
+ *   <StarRating rating={4.9} showValue size="lg" />
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+
+import { starRatingVariants, type StarRatingVariants } from "./variants"
+
+type Props = HTMLAttributes<"span"> &
+  StarRatingVariants & {
+    rating: number
+    /** Best possible rating. */
+    max?: number
+    /** Also show the number next to the stars (e.g. "4.9"). */
+    showValue?: boolean
+  }
+
+const {
+  rating,
+  max = 5,
+  showValue = false,
+  size,
+  class: className,
+  ...rest
+} = Astro.props
+
+const clamped = Math.min(Math.max(rating, 0), max)
+const rounded = Math.round(clamped * 2) / 2
+const stars = Array.from({ length: max }, (_, i) =>
+  rounded >= i + 1 ? "full" : rounded >= i + 0.5 ? "half" : "empty"
+)
+const label = `Rated ${clamped} out of ${max}`
+---
+
+<span
+  data-slot="star-rating"
+  class={cn(starRatingVariants({ size }), className)}
+  {...rest}
+>
+  <span class="sr-only">{label}</span>
+  <span
+    data-slot="star-rating-stars"
+    class="inline-flex gap-0.5 text-primary in-[.bg-primary]:text-primary-foreground"
+  >
+    {stars.map((star) =>
+      star === "half" ? (
+        <span data-slot="star-rating-star" class="relative inline-flex">
+          <Icon name="lucide:star" class="opacity-30" aria-hidden="true" />
+          <Icon
+            name="lucide:star-half"
+            class="absolute inset-0 fill-current"
+            aria-hidden="true"
+          />
+        </span>
+      ) : (
+        <Icon
+          data-slot="star-rating-star"
+          name="lucide:star"
+          class={star === "full" ? "fill-current" : "opacity-30"}
+          aria-hidden="true"
+        />
+      )
+    )}
+  </span>
+  {showValue && (
+    <span
+      data-slot="star-rating-value"
+      class="ms-1.5 font-semibold"
+      aria-hidden="true"
+    >
+      {clamped}
+    </span>
+  )}
+</span>

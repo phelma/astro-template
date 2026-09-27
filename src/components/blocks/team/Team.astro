@@ -1,0 +1,102 @@
+---
+/**
+ * Team section: the people behind the business.
+ *
+ * - `cards`: framed cards with a portrait photo on top (default).
+ * - `plain`: the same grid without frames.
+ * - `compact`: two-column list with small round photos; good for larger
+ *   teams or a "Meet the team" strip on the about page.
+ *
+ * Photos are optional (initials are shown instead). Portraits crop to 5:6.
+ *
+ *   <Team title="Meet the team" items={team} columns={4} />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionHeaderVariants,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import TeamMember from "./TeamMember.astro"
+import type { TeamMember as Member } from "./types"
+import { teamListVariants, type TeamListVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  TeamListVariants & {
+    items: Member[]
+    /** Prefix for element ids; unique per page. */
+    id?: string
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    align?: SectionHeaderVariants["align"]
+  }
+
+const {
+  items,
+  id = "team",
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  variant = "cards",
+  columns,
+  tone,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  ...rest
+} = Astro.props
+
+const headingId = `${id}-title`
+const itemHeadingLevel = Math.min(
+  title ? headingLevel + 1 : headingLevel,
+  6
+) as HeadingLevel
+---
+
+<Section
+  data-slot="team"
+  tone={tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width}
+  aria-labelledby={title ? headingId : undefined}
+  as={title ? "section" : "div"}
+  class={className}
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align}
+    />
+  )}
+  <ul data-slot="team-list" class={cn(teamListVariants({ variant, columns }))}>
+    {items.map((item) => (
+      <li data-slot="team-item">
+        <TeamMember
+          {...item}
+          variant={variant}
+          headingLevel={itemHeadingLevel}
+        />
+      </li>
+    ))}
+  </ul>
+  <slot />
+</Section>

@@ -1,0 +1,107 @@
+---
+/**
+ * Key figures row ("25 years", "4.9★", "1,200 jobs") as a description list.
+ *
+ * - `plain`: open grid of figures (default).
+ * - `cards`: each figure in a card.
+ * - `band`: centred figures on a primary-coloured band (`tone` defaults to
+ *   "primary"; set another tone to override).
+ * - `dividers`: one row split by vertical rules, stacked on small screens.
+ *
+ * The heading is optional: a stats strip often sits under a hero with no
+ * title, in which case pass `aria-label` or leave it as a plain <div>.
+ *
+ *   <Stats variant="band" items={[{ value: "25", label: "Years in business" }]} />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionHeaderVariants,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import StatItem from "./StatItem.astro"
+import { statsListVariants, type StatsListVariants } from "./variants"
+
+export interface Stat {
+  value: string
+  label: string
+  /** Read instead of `value` by assistive tech, e.g. "4.9 out of 5 stars". */
+  valueLabel?: string
+  description?: string
+  /** astro-icon name, e.g. "lucide:award". Decorative. */
+  icon?: string
+}
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  StatsListVariants & {
+    items: Stat[]
+    /** Prefix for element ids; unique per page. */
+    id?: string
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    align?: SectionHeaderVariants["align"]
+  }
+
+const {
+  items,
+  id = "stats",
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  variant = "plain",
+  columns = Math.min(Math.max(items.length, 2), 4) as 2 | 3 | 4,
+  tone = variant === "band" ? "primary" : undefined,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  ...rest
+} = Astro.props
+
+const headingId = `${id}-title`
+const centred = variant === "band" || variant === "dividers"
+---
+
+<Section
+  data-slot="stats"
+  tone={tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width}
+  aria-labelledby={title ? headingId : undefined}
+  as={title || rest["aria-label"] ? "section" : "div"}
+  class={className}
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align ?? (centred ? "center" : "start")}
+    />
+  )}
+  <dl
+    data-slot="stats-list"
+    class={cn(statsListVariants({ variant, columns }))}
+  >
+    {items.map((item) => (
+      <StatItem {...item} variant={variant} />
+    ))}
+  </dl>
+  <slot />
+</Section>
