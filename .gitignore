@@ -23,3 +23,6 @@ pnpm-debug.log*
 
 # editor
 .idea/
+
+# Claude Code agent worktrees
+.claude/worktrees/
