@@ -96,6 +96,15 @@ const siteConfigSchema = z
       layout: z.enum(["start", "center"]).default("start"),
       /** Stick to the top of the viewport while scrolling. */
       sticky: z.boolean().default(true),
+      /**
+       * Bar background. `transparent` overlaps the first section (use with a
+       * full-bleed hero) and turns solid on scroll.
+       */
+      variant: z.enum(["solid", "blurred", "transparent"]).default("blurred"),
+      /** Bottom border on the bar. */
+      bordered: z.boolean().default(true),
+      /** Mobile menu presentation. */
+      mobileMenu: z.enum(["fullscreen", "sheet"]).default("fullscreen"),
       /** Show the click-to-call phone number (contact.phone) in the bar. */
       showPhone: z.boolean().default(false),
       /** Primary call-to-action button at the end of the bar. */
@@ -343,6 +352,9 @@ const config = {
   header: {
     layout: "start",
     sticky: true,
+    variant: "blurred",
+    bordered: true,
+    mobileMenu: "fullscreen",
     showPhone: false,
     topBar: false,
   },

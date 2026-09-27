@@ -19,21 +19,11 @@ import NavbarLinks from "@/components/blocks/navbar/NavbarLinks.astro"
 import NavbarMobileMenu from "@/components/blocks/navbar/NavbarMobileMenu.astro"
 import NavbarPhone from "@/components/blocks/navbar/NavbarPhone.astro"
 import NavbarTopBar from "@/components/blocks/navbar/NavbarTopBar.astro"
-import type {
-  NavbarMobileMenuVariants,
-  NavbarVariants,
-} from "@/components/blocks/navbar/variants"
 import ThemeSwitcher from "@/components/theme/ThemeSwitcher.astro"
 import ThemeToggle from "@/components/theme/ThemeToggle.astro"
 import { siteConfig } from "@/site.config"
 
-// Options not (yet) in the siteConfig.header schema fall back to today's look.
-const header = siteConfig.header as typeof siteConfig.header & {
-  variant?: NavbarVariants["variant"]
-  bordered?: boolean
-  mobileMenu?: NavbarMobileMenuVariants["menu"]
-}
-const { nav, name, contact } = siteConfig
+const { header, nav, name, contact } = siteConfig
 const showPhone = header.showPhone && Boolean(contact.phone)
 ---
 
@@ -44,8 +34,8 @@ const showPhone = header.showPhone && Boolean(contact.phone)
 <Navbar
   layout={header.layout}
   sticky={header.sticky}
-  variant={header.variant ?? "blurred"}
-  bordered={header.bordered ?? true}
+  variant={header.variant}
+  bordered={header.bordered}
 >
   <NavbarBrand slot="start" />
 
@@ -67,7 +57,7 @@ const showPhone = header.showPhone && Boolean(contact.phone)
       id="mobile-nav"
       items={nav}
       title={name}
-      menu={header.mobileMenu ?? "fullscreen"}
+      menu={header.mobileMenu}
     >
       {header.cta && (
         <NavbarCta
