@@ -43,20 +43,18 @@ import { Icon } from "astro-icon/components"
 import EmbedFacade from "@/components/blocks/embed/EmbedFacade.astro"
 import type { EmbedVariants } from "@/components/blocks/embed/variants"
 import { buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-import { siteConfig } from "@/site.config"
-
 import {
   addressLines,
   addressText,
   directionsUrl,
-  embedUrl,
   searchUrl,
-  staticMapUrl,
   type Address,
-  type EmbedOptions,
   type MapLocation,
-} from "./google-maps"
+} from "@/lib/contact-links"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import { embedUrl, staticMapUrl, type EmbedOptions } from "./google-maps"
 import MapPlaceholder from "./MapPlaceholder.astro"
 import { mapActionsVariants } from "./variants"
 

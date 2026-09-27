@@ -1,8 +1,7 @@
 /**
- * Google Maps URL builders (pure; no API calls).
+ * Google Maps embed URL builders (pure; no API calls). Directions and
+ * search links live in `@/lib/contact-links`.
  *
- * - Maps URLs (directions / search links): no key, documented at
- *   https://developers.google.com/maps/documentation/urls/get-started
  * - Maps Embed API (iframe, needs a key, free and unlimited):
  *   https://developers.google.com/maps/documentation/embed/embedding-map
  * - Keyless embed fallback (`/maps?q=...&output=embed`): widely used but not
@@ -10,62 +9,14 @@
  * - Maps Static API (poster image, needs a key, billed per load):
  *   https://developers.google.com/maps/documentation/maps-static/start
  */
-import type { SiteConfig } from "@/site.config"
+import {
+  mapCoords as coords,
+  mapSearchText as searchText,
+  urlWithParams as build,
+  type MapLocation,
+} from "@/lib/contact-links"
 
-export type Address = NonNullable<SiteConfig["contact"]["address"]>
-
-export interface MapLocation {
-  /** Free-text search: business name and/or address. */
-  query?: string
-  /** Google place ID (most precise; find it with Google's Place ID Finder). */
-  placeId?: string
-  lat?: number
-  lng?: number
-}
-
-/** Address as display lines: street, "Town, Region", postcode. */
-export function addressLines(address: Address): string[] {
-  return [
-    address.streetAddress,
-    [address.addressLocality, address.addressRegion].filter(Boolean).join(", "),
-    address.postalCode,
-  ]
-}
-
-/** One-line address for searches: "1 High St, Leeds, LS1 1AA". */
-export const addressText = (address: Address) =>
-  addressLines(address).join(", ")
-
-const coords = ({ lat, lng }: MapLocation) =>
-  lat !== undefined && lng !== undefined ? `${lat},${lng}` : undefined
-
-/** Best free-text destination: query, else coordinates. */
-const searchText = (location: MapLocation) =>
-  location.query ?? coords(location) ?? ""
-
-function build(base: string, params: Record<string, string | undefined>) {
-  const url = new URL(base)
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== "") url.searchParams.set(key, value)
-  }
-  return url.toString()
-}
-
-/** "Get directions" link: opens Google Maps (app on phones) with routing. */
-export const directionsUrl = (location: MapLocation) =>
-  build("https://www.google.com/maps/dir/", {
-    api: "1",
-    destination: searchText(location),
-    destination_place_id: location.placeId,
-  })
-
-/** "Open in Google Maps" link for the place. */
-export const searchUrl = (location: MapLocation) =>
-  build("https://www.google.com/maps/search/", {
-    api: "1",
-    query: searchText(location),
-    query_place_id: location.placeId,
-  })
+export type { MapLocation }
 
 export interface EmbedOptions {
   zoom?: number

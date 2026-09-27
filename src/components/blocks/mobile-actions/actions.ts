@@ -3,6 +3,12 @@
  * from contact/business data. Pure: pass data in; `siteActionData()` reads
  * the defaults from `siteConfig`. Actions with missing data are skipped.
  */
+import {
+  directionsUrl,
+  mailtoHref,
+  telHref,
+  whatsappHref,
+} from "@/lib/contact-links"
 import { siteConfig, type SiteConfig } from "@/site.config"
 
 export type ActionKind = SiteConfig["mobileActions"]["actions"][number]
@@ -45,17 +51,6 @@ export const actionIcons: Record<ActionKind, string> = {
   book: "lucide:calendar-check",
 }
 
-/** "+44 20 7946 0000" -> "tel:+442079460000". */
-export function telHref(phone: string): string {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`
-}
-
-export function whatsappHref(number: string, text?: string): string {
-  const url = new URL(`https://wa.me/${number.replace(/\D/g, "")}`)
-  if (text) url.searchParams.set("text", text)
-  return url.href
-}
-
 /**
  * Google Maps directions (Maps URLs API, opens the app on mobile). Prefers
  * the business name + address (matches the Business Profile), then
@@ -78,10 +73,7 @@ export function directionsHref(data: ActionData): string | undefined {
     destination = `${geo.latitude},${geo.longitude}`
   }
   if (!destination) return data.googleMapsUrl
-  const url = new URL("https://www.google.com/maps/dir/")
-  url.searchParams.set("api", "1")
-  url.searchParams.set("destination", destination)
-  return url.href
+  return directionsUrl({ query: destination })
 }
 
 function hrefFor(kind: ActionKind, data: ActionData): string | undefined {
@@ -93,7 +85,7 @@ function hrefFor(kind: ActionKind, data: ActionData): string | undefined {
         ? whatsappHref(data.whatsapp, data.whatsappText)
         : undefined
     case "email":
-      return data.email ? `mailto:${data.email}` : undefined
+      return data.email ? mailtoHref(data.email) : undefined
     case "directions":
       return directionsHref(data)
     case "book":

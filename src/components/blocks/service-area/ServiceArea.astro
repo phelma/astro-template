@@ -13,7 +13,6 @@
 import { Icon } from "astro-icon/components"
 import type { HTMLAttributes } from "astro/types"
 
-import { telHref } from "@/components/blocks/mobile-actions/actions"
 import Section from "@/components/blocks/section/Section.astro"
 import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
 import type {
@@ -23,18 +22,17 @@ import type {
   SectionVariants,
 } from "@/components/blocks/section/variants"
 import { buttonVariants } from "@/components/ui/button"
+import type { ActionLink } from "@/lib/actions"
+import { telHref } from "@/lib/contact-links"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
 import ServiceAreaList from "./ServiceAreaList.astro"
 import type { ServiceAreaListVariants } from "./variants"
 
-interface Cta {
+type Cta = Pick<ActionLink, "label" | "href" | "icon"> & {
   /** Lead-in text before the button ("Not listed?"). */
   text?: string
-  label: string
-  href: string
-  icon?: string
 }
 
 type Props = Omit<HTMLAttributes<"section">, "title"> &

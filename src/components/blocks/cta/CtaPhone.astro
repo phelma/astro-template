@@ -7,10 +7,9 @@
 import type { HTMLAttributes } from "astro/types"
 import { Icon } from "astro-icon/components"
 
+import { telHref } from "@/lib/contact-links"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
-
-import { telHref } from "./phone"
 
 type Props = HTMLAttributes<"p"> & {
   /** Display format, e.g. "0113 496 0000". */

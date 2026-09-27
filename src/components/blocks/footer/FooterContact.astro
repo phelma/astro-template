@@ -8,10 +8,11 @@ import type { HTMLAttributes } from "astro/types"
 import { Icon } from "astro-icon/components"
 
 import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { addressLines, mailtoHref, telHref } from "@/lib/contact-links"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
-import { addressLines, telHref, type FooterAddress } from "./footer"
+import type { FooterAddress } from "./footer"
 import { footerLinkVariants } from "./variants"
 
 type Props = HTMLAttributes<"div"> & {
@@ -89,7 +90,7 @@ const iconClass = "size-4 shrink-0 text-muted-foreground"
     )}
     {email && (
       <a
-        href={`mailto:${email}`}
+        href={mailtoHref(email)}
         data-slot="footer-email"
         class={cn(footerLinkVariants(), "self-start [overflow-wrap:anywhere]")}
       >

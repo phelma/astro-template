@@ -60,14 +60,12 @@ export function resolveNav(
   })
 }
 
-/** `tel:` URL from a display phone number: "+44 20 7946 0000" -> "tel:+442079460000". */
-export function telHref(phone: string): string {
-  return `tel:${phone.replace(/(?!^\+)[^\d]/g, "")}`
-}
-
 /** `target`/`rel` attributes for a link that may open in a new tab. */
 export function linkTarget(external: boolean) {
   return external
     ? { target: "_blank", rel: "noopener noreferrer" }
     : { target: undefined, rel: undefined }
 }
+
+/** Re-exported for existing imports; the implementation is in contact-links. */
+export { telHref } from "@/lib/contact-links"

@@ -31,10 +31,17 @@ import type {
   SectionVariants,
 } from "@/components/blocks/section/variants"
 import { buttonVariants } from "@/components/ui/button"
+import {
+  addressLines,
+  addressText,
+  directionsUrl,
+  mailtoHref,
+  telHref,
+  type Address,
+} from "@/lib/contact-links"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
-import { addressLines, directionsUrl, type Address } from "./google-maps"
 import Map, { type Props as MapProps } from "./Map.astro"
 import { mapSectionVariants, type MapSectionVariants } from "./variants"
 
@@ -77,10 +84,10 @@ const {
 } = Astro.props
 
 const SubHeading = `h${Math.min(headingLevel + 1, 6)}` as "h3"
-const tel = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : undefined
+const tel = phone ? telHref(phone) : undefined
 const directions = address
   ? directionsUrl({
-      query: map.query ?? `${name}, ${addressLines(address).join(", ")}`,
+      query: map.query ?? `${name}, ${addressText(address)}`,
       placeId: map.placeId,
     })
   : undefined
@@ -154,7 +161,7 @@ const directions = address
           {email && (
             <li>
               <a
-                href={`mailto:${email}`}
+                href={mailtoHref(email)}
                 class="inline-flex min-h-6 items-center gap-2 break-all underline-offset-4 hover:underline"
               >
                 <Icon name="lucide:mail" class="size-4" aria-hidden="true" />

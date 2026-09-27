@@ -31,6 +31,7 @@ import {
   type FormSurfaceVariants,
 } from "@/components/blocks/form/variants"
 import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { telHref } from "@/lib/contact-links"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
@@ -86,7 +87,7 @@ const {
 const Heading = `h${headingLevel}` as const
 const headingId = `${id}-title`
 const twoColumn = layout === "two-column"
-const telHref = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : undefined
+const phoneHref = phone ? telHref(phone) : undefined
 const field = (name: string) => `${id}-${name}`
 ---
 
@@ -196,7 +197,7 @@ const field = (name: string) => `${id}-${name}`
           >
             Prefer to talk? Call{" "}
             <a
-              href={telHref}
+              href={phoneHref}
               class="inline-flex min-h-6 items-center gap-1 font-medium text-foreground underline underline-offset-4"
             >
               <Icon name="lucide:phone" aria-hidden="true" class="size-4" />
