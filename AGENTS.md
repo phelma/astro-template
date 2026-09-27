@@ -38,6 +38,8 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 - A block's own JSON-LD builder may live in its folder (`blocks/faq/schema.ts`); site-wide nodes stay in `src/lib/seo.ts`.
 - Every block has a showcase page `src/pages/components/<block>.astro` using `Showcase` + `Demo` (`src/components/showcase`) showing each variant; nest block headings under the demo `<h2>` with `headingLevel={3}`. Check in both themes, light and dark.
 
+## Styling and themes
+
 - Colours, radius, shadows, fonts and tracking come from tokens via Tailwind utilities (`bg-primary`, `text-muted-foreground`, `border-border`, `rounded-lg`, `shadow-md`, `font-heading`). Use tokens for every colour; hex/rgb/oklch literals and Tailwind palette colours (`bg-blue-500`) belong only in `src/styles/themes/*.css`.
 - Theme = tokens (`src/styles/themes/<name>.css`, scoped to `[data-theme="<name>"]` and `[data-theme="<name>"].dark`). shadcn style (`components.json`) = component structure. Change the look via tokens; change structure only by editing components.
 - Structural per-theme tweaks: `theme-<name>:` variants (`theme-bold:uppercase`). Mode tweaks: `dark:`.
