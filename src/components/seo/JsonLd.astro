@@ -1,0 +1,17 @@
+---
+/**
+ * Renders a JSON-LD block. Pass one schema object (with "@context") or build
+ * one with `jsonLdGraph()` from `@/lib/seo`.
+ *
+ * JSON-LD is a data block (not executed), so CSP `script-src` doesn't apply.
+ */
+import { serializeJsonLd } from "@/lib/seo"
+
+interface Props {
+  data: Record<string, unknown>
+}
+
+const { data } = Astro.props
+---
+
+<script is:inline type="application/ld+json" set:html={serializeJsonLd(data)} />

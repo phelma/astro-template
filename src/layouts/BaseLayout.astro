@@ -1,0 +1,215 @@
+---
+/**
+ * Base document layout: <head> (SEO, social, icons, fonts, theme bootstrap,
+ * JSON-LD) and page chrome (skip link, header, <main id="main">, footer).
+ *
+ * Every page should use this layout and pass at least `title` and
+ * `description`. Extra head tags go in the `head` slot:
+ *   <BaseLayout title="About"><link slot="head" rel="..." /></BaseLayout>
+ */
+import type { ImageMetadata } from "astro"
+import { Font, getImage } from "astro:assets"
+import type { CssVariable } from "astro:assets"
+
+import Footer from "@/components/layout/Footer.astro"
+import Header from "@/components/layout/Header.astro"
+import Breadcrumbs from "@/components/seo/Breadcrumbs.astro"
+import JsonLd from "@/components/seo/JsonLd.astro"
+import {
+  absoluteUrl,
+  formatTitle,
+  jsonLdGraph,
+  ogLocale,
+  pagePath,
+  organizationSchema,
+  websiteSchema,
+  type BreadcrumbItem,
+} from "@/lib/seo"
+import { themeScript } from "@/lib/theme-script"
+import { viewTransitionStyle } from "@/lib/view-transitions"
+import { siteConfig } from "@/site.config"
+import { themes } from "@/styles/themes"
+import "@/styles/global.css"
+
+export interface Props {
+  /** Page title; formatted with `siteConfig.titleTemplate`. Omit on the home page. */
+  title?: string
+  /** Meta/OG description. Defaults to `siteConfig.description`. */
+  description?: string
+  /** Social image: an imported image (optimised to 1200px JPEG) or a public path / absolute URL. */
+  image?: ImageMetadata | string
+  /** Alt text for the social image. Defaults to `siteConfig.seo.ogImageAlt`. */
+  imageAlt?: string
+  /** Canonical URL override (absolute, or path resolved against `site`). */
+  canonical?: string | URL
+  /** Emit `noindex` (also exclude the page from the sitemap in astro.config.ts). */
+  noindex?: boolean
+  /** Open Graph type. */
+  type?: "website" | "article"
+  /** Visible breadcrumbs + BreadcrumbList JSON-LD, rendered at the top of <main>. */
+  breadcrumbs?: BreadcrumbItem[]
+}
+
+const {
+  title,
+  description = siteConfig.description,
+  image,
+  imageAlt,
+  canonical,
+  noindex = false,
+  type = "website",
+  breadcrumbs,
+} = Astro.props
+
+const site = Astro.site
+const fullTitle = formatTitle(title)
+const canonicalUrl = canonical
+  ? absoluteUrl(canonical.toString(), site)
+  : absoluteUrl(pagePath(Astro.url.pathname), site)
+
+// Social image: optimise imported images; resolve strings against `site`.
+let ogImage: { url: string; width?: number; height?: number }
+if (image && typeof image !== "string") {
+  const optimised = await getImage({ src: image, width: 1200, format: "jpg" })
+  ogImage = {
+    url: absoluteUrl(optimised.src, site),
+    width: Number(optimised.attributes.width),
+    height: Number(optimised.attributes.height),
+  }
+} else if (image) {
+  ogImage = { url: absoluteUrl(image, site) }
+} else {
+  // Default image lives in public/ at 1200x630.
+  ogImage = {
+    url: absoluteUrl(siteConfig.seo.ogImage, site),
+    width: 1200,
+    height: 630,
+  }
+}
+const ogImageAlt = imageAlt ?? siteConfig.seo.ogImageAlt
+
+const robots = siteConfig.robots.disallowAll
+  ? "noindex, nofollow"
+  : noindex
+    ? "noindex, follow"
+    : "index, follow, max-image-preview:large"
+
+// Dev only: warn in the browser console when a page doesn't have exactly one <h1>.
+const h1Check = `addEventListener("DOMContentLoaded",function(){var n=document.querySelectorAll("h1").length;if(n!==1)console.warn("[template] Expected exactly one <h1> on "+location.pathname+", found "+n+".")})`
+
+// Theme + colour mode defaults (the head script overrides from localStorage).
+const defaultTheme = siteConfig.theme.default
+const defaultMode = siteConfig.colorMode.default
+const themeColor = themes[defaultTheme].themeColor
+const colorScheme =
+  defaultMode === "system" ? "light dark" : (defaultMode as string)
+
+// Fonts: emit @font-face for every available theme; preload only the default theme's.
+const preload = new Set<string>(themes[defaultTheme].preload)
+const fontVariables = [
+  ...new Set(siteConfig.theme.available.flatMap((name) => themes[name].fonts)),
+] as CssVariable[]
+
+const structuredData = jsonLdGraph(
+  organizationSchema(site),
+  websiteSchema(site)
+)
+---
+
+<!doctype html>
+<html
+  lang={siteConfig.lang}
+  data-theme={defaultTheme}
+  class:list={{ dark: defaultMode === "dark" }}
+>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content={colorScheme} />
+    {defaultMode === "system" ? (
+      <>
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: light)"
+          content={themeColor.light}
+        />
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: dark)"
+          content={themeColor.dark}
+        />
+      </>
+    ) : (
+      <meta name="theme-color" content={themeColor[defaultMode]} />
+    )}
+    <!-- Blocking: sets .dark / data-theme / meta before first paint. Hash: src/lib/csp.ts -->
+    <script is:inline set:html={themeScript} />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content={robots} />
+
+    {fontVariables.map((cssVariable) => (
+      <Font cssVariable={cssVariable} preload={preload.has(cssVariable)} />
+    ))}
+
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={siteConfig.name} />
+    <meta property="og:locale" content={ogLocale()} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage.url} />
+    {ogImage.width && (
+      <meta property="og:image:width" content={String(ogImage.width)} />
+    )}
+    {ogImage.height && (
+      <meta property="og:image:height" content={String(ogImage.height)} />
+    )}
+    <meta property="og:image:alt" content={ogImageAlt} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    {siteConfig.seo.twitterHandle && (
+      <meta name="twitter:site" content={siteConfig.seo.twitterHandle} />
+    )}
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage.url} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+
+    <JsonLd data={structuredData} />
+
+    {siteConfig.viewTransitions && (
+      <style is:inline set:html={viewTransitionStyle} />
+    )}
+
+    <slot name="head" />
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <a
+      href="#main"
+      class="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+    >
+      Skip to content
+    </a>
+    <Header />
+    <main id="main" tabindex="-1" class="flex-1 focus:outline-none">
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <Breadcrumbs
+          items={breadcrumbs}
+          class="mx-auto max-w-6xl px-4 pt-6 sm:px-6"
+        />
+      )}
+      <slot />
+    </main>
+    <Footer />
+
+    {import.meta.env.DEV && <script is:inline set:html={h1Check} />}
+  </body>
+</html>

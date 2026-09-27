@@ -1,0 +1,60 @@
+---
+/**
+ * Visible breadcrumb trail + BreadcrumbList JSON-LD.
+ *
+ * Usually rendered by BaseLayout via its `breadcrumbs` prop. The last item is
+ * the current page (give it no `href`); it gets `aria-current="page"`.
+ */
+import { Icon } from "astro-icon/components"
+
+import JsonLd from "@/components/seo/JsonLd.astro"
+import { cn } from "@/lib/utils"
+import { breadcrumbSchema, type BreadcrumbItem } from "@/lib/seo"
+
+interface Props {
+  items: BreadcrumbItem[]
+  class?: string
+}
+
+const { items, class: className } = Astro.props
+const schema = {
+  "@context": "https://schema.org",
+  ...breadcrumbSchema(items, Astro.site, Astro.url),
+}
+---
+
+{items.length > 0 && (
+  <>
+    <nav aria-label="Breadcrumb" class={cn("text-sm", className)}>
+      <ol class="flex flex-wrap items-center gap-1.5 text-muted-foreground">
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1
+          return (
+            <li class="inline-flex items-center gap-1.5">
+              {item.href && !isLast ? (
+                <a
+                  href={item.href}
+                  class="tap-target inline-flex items-center underline-offset-4 hover:text-foreground hover:underline"
+                >
+                  {item.name}
+                </a>
+              ) : (
+                <span aria-current="page" class="text-foreground">
+                  {item.name}
+                </span>
+              )}
+              {!isLast && (
+                <Icon
+                  name="lucide:chevron-right"
+                  class="size-3.5"
+                  aria-hidden="true"
+                />
+              )}
+            </li>
+          )
+        })}
+      </ol>
+    </nav>
+    <JsonLd data={schema} />
+  </>
+)}
