@@ -25,10 +25,10 @@ import type { HTMLAttributes } from "astro/types"
 
 import CheckboxField from "@/components/blocks/form/CheckboxField.astro"
 import ChoiceGroup from "@/components/blocks/form/ChoiceGroup.astro"
-import type { FormOption } from "@/components/blocks/form/form"
 import Form from "@/components/blocks/form/Form.astro"
 import FormField from "@/components/blocks/form/FormField.astro"
 import FormSubmit from "@/components/blocks/form/FormSubmit.astro"
+import type { FormOption } from "@/components/blocks/form/form"
 import {
   formGridVariants,
   formSurfaceVariants,
@@ -36,6 +36,7 @@ import {
   type FormSurfaceVariants,
 } from "@/components/blocks/form/variants"
 import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { uniqueId } from "@/lib/ids"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
@@ -104,7 +105,7 @@ const {
     title: "Thanks, your quote request has been sent",
     message: "We'll be in touch within one working day.",
   },
-  id = "quote-form",
+  id: idProp,
   action,
   method = "post",
   hiddenFields,
@@ -119,6 +120,7 @@ const {
   class: className,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "quote-form")
 
 const Heading = `h${headingLevel}` as const
 const headingId = `${id}-title`

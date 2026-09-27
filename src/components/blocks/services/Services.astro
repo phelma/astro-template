@@ -23,6 +23,7 @@ import type {
   SectionHeaderVariants,
   SectionVariants,
 } from "@/components/blocks/section/variants"
+import { uniqueId } from "@/lib/ids"
 import { cn } from "@/lib/utils"
 
 import ServiceCard from "./ServiceCard.astro"
@@ -46,7 +47,7 @@ type Props = Omit<HTMLAttributes<"section">, "title"> &
 
 const {
   items,
-  id = "services",
+  id: idProp,
   title,
   eyebrow,
   lede,
@@ -61,6 +62,7 @@ const {
   class: className,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "services")
 
 const headingId = `${id}-title`
 const itemHeadingLevel = Math.min(

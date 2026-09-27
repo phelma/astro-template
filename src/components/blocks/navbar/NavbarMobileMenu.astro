@@ -19,6 +19,7 @@
 import type { HTMLAttributes } from "astro/types"
 import { Icon } from "astro-icon/components"
 
+import { uniqueId } from "@/lib/ids"
 import { linkTarget, resolveNav } from "@/lib/nav"
 import { cn } from "@/lib/utils"
 import type { NavItem } from "@/site.config"
@@ -46,7 +47,7 @@ type Props = Omit<HTMLAttributes<"div">, "title"> &
   }
 
 const {
-  id = "mobile-nav",
+  id: idProp,
   items,
   title,
   label = "Main",
@@ -58,6 +59,7 @@ const {
   triggerClass,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "mobile-nav")
 
 const links = resolveNav(items, pathname)
 const hasTitle = Boolean(title) || Astro.slots.has("title")

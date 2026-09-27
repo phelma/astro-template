@@ -20,6 +20,7 @@
  */
 import type { HTMLAttributes } from "astro/types"
 
+import { uniqueId } from "@/lib/ids"
 import { cn } from "@/lib/utils"
 
 import FormErrorSummary from "./FormErrorSummary.astro"
@@ -42,7 +43,7 @@ type Props = HTMLAttributes<"form"> & {
 }
 
 const {
-  id = "form",
+  id: idProp,
   method = "post",
   hiddenFields = {},
   honeypot = "_gotcha",
@@ -53,6 +54,7 @@ const {
   class: className,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "form")
 ---
 
 <form

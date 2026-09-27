@@ -32,6 +32,7 @@ import {
 } from "@/components/blocks/form/variants"
 import type { HeadingLevel } from "@/components/blocks/section/variants"
 import { telHref } from "@/lib/contact-links"
+import { uniqueId } from "@/lib/ids"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
@@ -59,7 +60,7 @@ type Props = HTMLAttributes<"div"> &
   }
 
 const {
-  id = "contact-form",
+  id: idProp,
   action,
   method = "post",
   hiddenFields,
@@ -83,6 +84,7 @@ const {
   class: className,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "contact-form")
 
 const Heading = `h${headingLevel}` as const
 const headingId = `${id}-title`

@@ -20,6 +20,7 @@ import type { ImageMetadata } from "astro"
 import type { HTMLAttributes } from "astro/types"
 
 import type { ActionLink } from "@/lib/actions"
+import { uniqueId } from "@/lib/ids"
 import type {
   ContainerVariants,
   HeadingLevel,
@@ -58,7 +59,7 @@ type Props = Omit<HTMLAttributes<"section">, "title"> &
   }
 
 const {
-  id = "cta",
+  id: idProp,
   variant = "band",
   tone: toneProp,
   title,
@@ -71,6 +72,7 @@ const {
   headingLevel = 2,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "cta")
 
 const tone = toneProp ?? ctaDefaultTone[variant ?? "band"]
 const titleId = `${id}-title`

@@ -34,6 +34,7 @@ import FeaturesItem from "./FeaturesItem.astro"
 import FeaturesList from "./FeaturesList.astro"
 import FeaturesTitle from "./FeaturesTitle.astro"
 import type { FeatureItem, FeaturesVariants } from "./variants"
+import { uniqueId } from "@/lib/ids"
 
 type Props = Omit<HTMLAttributes<"section">, "title"> &
   FeaturesVariants &
@@ -51,7 +52,7 @@ type Props = Omit<HTMLAttributes<"section">, "title"> &
   }
 
 const {
-  id = "features",
+  id: idProp,
   items,
   title,
   eyebrow,
@@ -63,6 +64,7 @@ const {
   listClass,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "features")
 
 const titleId = `${id}-title`
 const itemHeading = `h${Math.min(headingLevel + 1, 6)}` as

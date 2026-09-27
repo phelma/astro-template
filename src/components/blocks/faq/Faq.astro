@@ -22,6 +22,7 @@ import type {
   SectionVariants,
 } from "@/components/blocks/section/variants"
 import JsonLd from "@/components/seo/JsonLd.astro"
+import { uniqueId } from "@/lib/ids"
 import { cn } from "@/lib/utils"
 
 import FaqItem from "./FaqItem.astro"
@@ -56,7 +57,7 @@ type Props = Omit<HTMLAttributes<"section">, "title"> &
 
 const {
   items,
-  id = "faq",
+  id: idProp,
   title,
   eyebrow,
   lede,
@@ -74,6 +75,7 @@ const {
   class: className,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "faq")
 
 const headingId = `${id}-title`
 const name = exclusive ? `${id}-group` : undefined

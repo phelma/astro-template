@@ -32,6 +32,7 @@ import type {
   SectionVariants,
 } from "@/components/blocks/section/variants"
 import { buttonVariants } from "@/components/ui/button"
+import { uniqueId } from "@/lib/ids"
 import { cn } from "@/lib/utils"
 
 import TestimonialCard from "./TestimonialCard.astro"
@@ -62,7 +63,7 @@ type Props = Omit<HTMLAttributes<"section">, "title"> &
 
 const {
   items,
-  id = "testimonials",
+  id: idProp,
   title,
   eyebrow,
   lede,
@@ -78,6 +79,7 @@ const {
   class: className,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "testimonials")
 
 const headingId = `${id}-title`
 const listId = `${id}-list`

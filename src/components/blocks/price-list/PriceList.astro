@@ -23,6 +23,7 @@ import type {
   SectionHeaderVariants,
   SectionVariants,
 } from "@/components/blocks/section/variants"
+import { uniqueId } from "@/lib/ids"
 import { cn } from "@/lib/utils"
 
 import PriceListGroup from "./PriceListGroup.astro"
@@ -45,7 +46,7 @@ type Props = Omit<HTMLAttributes<"section">, "title"> &
 
 const {
   groups,
-  id = "prices",
+  id: idProp,
   title,
   eyebrow,
   lede,
@@ -60,6 +61,7 @@ const {
   class: className,
   ...rest
 } = Astro.props
+const id = idProp ?? uniqueId(Astro, "prices")
 
 const headingId = `${id}-title`
 const groupHeadingLevel = Math.min(
