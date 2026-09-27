@@ -2,23 +2,20 @@
 import { Icon } from "astro-icon/components"
 import type { ContactPage, WithContext } from "schema-dts"
 
+import ContactForm from "@/components/blocks/contact-form/ContactForm.astro"
+import MapSection from "@/components/blocks/map/MapSection.astro"
+import OpeningHours from "@/components/blocks/opening-hours/OpeningHours.astro"
+import Section from "@/components/blocks/section/Section.astro"
 import PageHeader from "@/components/sections/PageHeader.astro"
 import JsonLd from "@/components/seo/JsonLd.astro"
 import BaseLayout from "@/layouts/BaseLayout.astro"
+import { telHref } from "@/lib/nav"
 import { absoluteUrl, organizationId, pagePath, websiteId } from "@/lib/seo"
 import { siteConfig } from "@/site.config"
 
-const { email, phone, address, socials } = siteConfig.contact
+const { email, phone, socials } = siteConfig.contact
 const title = "Contact"
 const description = `How to contact ${siteConfig.name}: email, phone, address and social profiles.`
-
-// "+44 20 7946 0000" -> "tel:+442079460000"
-const telHref = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : undefined
-const countryName = address
-  ? new Intl.DisplayNames([siteConfig.locale], { type: "region" }).of(
-      address.addressCountry
-    )
-  : undefined
 
 const contactPageSchema: WithContext<ContactPage> = {
   "@context": "https://schema.org",
@@ -43,101 +40,86 @@ const contactPageSchema: WithContext<ContactPage> = {
     lede="We usually reply within two working days."
   />
 
-  <div class="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-    <dl class="grid max-w-3xl gap-8 sm:grid-cols-2">
-      {email && (
-        <div class="flex flex-col gap-1">
-          <dt class="flex items-center gap-2 font-medium">
-            <Icon name="lucide:mail" class="size-4" aria-hidden="true" />
-            Email
-          </dt>
-          <dd>
-            <a
-              href={`mailto:${email}`}
-              class="text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              {email}
-            </a>
-          </dd>
-        </div>
-      )}
+  <Section spacing="none" containerClass="pb-16" as="div">
+    <div class="grid gap-12 lg:grid-cols-5">
+      {/* Posts to this page until a form provider is set: pass its endpoint
+          as `action` and add its origin to `form-action` in astro.config.ts. */}
+      <ContactForm title="Send us a message" class="lg:col-span-3" />
+      <aside aria-labelledby="contact-details-title" class="lg:col-span-2">
+        <h2 id="contact-details-title" class="mb-6 text-2xl">
+          Other ways to reach us
+        </h2>
+        <dl class="flex flex-col gap-6">
+          {email && (
+            <div class="flex flex-col gap-1">
+              <dt class="flex items-center gap-2 font-medium">
+                <Icon name="lucide:mail" class="size-4" aria-hidden="true" />
+                Email
+              </dt>
+              <dd>
+                <a
+                  href={`mailto:${email}`}
+                  class="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                >
+                  {email}
+                </a>
+              </dd>
+            </div>
+          )}
 
-      {phone && (
-        <div class="flex flex-col gap-1">
-          <dt class="flex items-center gap-2 font-medium">
-            <Icon name="lucide:phone" class="size-4" aria-hidden="true" />
-            Phone
-          </dt>
-          <dd>
-            <a
-              href={telHref}
-              class="text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              {phone}
-            </a>
-          </dd>
-        </div>
-      )}
+          {phone && (
+            <div class="flex flex-col gap-1">
+              <dt class="flex items-center gap-2 font-medium">
+                <Icon name="lucide:phone" class="size-4" aria-hidden="true" />
+                Phone
+              </dt>
+              <dd>
+                <a
+                  href={telHref(phone)}
+                  class="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                >
+                  {phone}
+                </a>
+              </dd>
+            </div>
+          )}
 
-      {address && (
-        <div class="flex flex-col gap-1">
-          <dt class="flex items-center gap-2 font-medium">
-            <Icon name="lucide:map-pin" class="size-4" aria-hidden="true" />
-            Address
-          </dt>
-          <dd>
-            <address class="text-muted-foreground not-italic">
-              {siteConfig.organisation.legalName ??
-                siteConfig.organisation.name}
-              <br />
-              {address.streetAddress}
-              <br />
-              {address.addressLocality}
-              {address.addressRegion && (
-                <>
-                  <br />
-                  {address.addressRegion}
-                </>
-              )}
-              <br />
-              {address.postalCode}
-              <br />
-              {countryName}
-            </address>
-          </dd>
-        </div>
-      )}
+          {socials.length > 0 && (
+            <div class="flex flex-col gap-1">
+              <dt class="flex items-center gap-2 font-medium">
+                <Icon name="lucide:at-sign" class="size-4" aria-hidden="true" />
+                Social
+              </dt>
+              <dd>
+                <ul class="flex flex-col gap-1">
+                  {socials.map((social) => (
+                    <li>
+                      <a
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer me"
+                        class="inline-flex min-h-6 items-center gap-2 text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                      >
+                        <Icon
+                          name={social.icon}
+                          class="size-4"
+                          aria-hidden="true"
+                        />
+                        {siteConfig.name} on {social.label}
+                        <span class="sr-only">(opens in a new tab)</span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
+          )}
+        </dl>
+      </aside>
+    </div>
+  </Section>
 
-      {socials.length > 0 && (
-        <div class="flex flex-col gap-1">
-          <dt class="flex items-center gap-2 font-medium">
-            <Icon name="lucide:at-sign" class="size-4" aria-hidden="true" />
-            Social
-          </dt>
-          <dd>
-            <ul class="flex flex-col gap-1">
-              {socials.map((social) => (
-                <li>
-                  <a
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer me"
-                    class="inline-flex min-h-6 items-center gap-2 text-muted-foreground underline underline-offset-4 hover:text-foreground"
-                  >
-                    <Icon
-                      name={social.icon}
-                      class="size-4"
-                      aria-hidden="true"
-                    />
-                    {siteConfig.name} on {social.label}
-                    <span class="sr-only">(opens in a new tab)</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </dd>
-        </div>
-      )}
-    </dl>
-  </div>
+  <MapSection tone="muted" phone={false} email={false}>
+    <OpeningHours slot="hours" variant="bare" headingLevel={3} />
+  </MapSection>
 </BaseLayout>
