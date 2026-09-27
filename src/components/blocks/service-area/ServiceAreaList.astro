@@ -1,0 +1,83 @@
+---
+/**
+ * The list of towns/areas covered. Defaults to
+ * `siteConfig.business.areaServed`. `variant`: chips, columns or inline
+ * (a sentence joined with the locale's "and"; `prefix` / `suffix` wrap it).
+ *
+ *   <ServiceAreaList variant="columns" />
+ *   <ServiceAreaList variant="inline" prefix="We cover" suffix="and nearby." />
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import {
+  serviceAreaItemVariants,
+  serviceAreaListVariants,
+  type ServiceAreaListVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"ul"> &
+  ServiceAreaListVariants & {
+    areas?: string[]
+    /** Inline variant: text before the list ("We cover"). */
+    prefix?: string
+    /** Inline variant: text after the list ("and surrounding villages."). */
+    suffix?: string
+    /** Marker icon for chips/columns; `false` for none. */
+    icon?: string | false
+    locale?: string
+  }
+
+const {
+  areas = siteConfig.business.areaServed,
+  variant = "chips",
+  align,
+  prefix,
+  suffix,
+  icon = "lucide:map-pin",
+  locale = siteConfig.locale,
+  class: className,
+  ...rest
+} = Astro.props
+
+const listClass = cn(serviceAreaListVariants({ variant, align }), className)
+// Inline: "Prefix A, B and C suffix"; a full stop is added when there's a
+// prefix and the text doesn't already end a sentence.
+let inlineText = [
+  prefix,
+  new Intl.ListFormat(locale, { type: "conjunction" }).format(areas),
+  suffix,
+]
+  .filter(Boolean)
+  .join(" ")
+if (prefix && !/[.!?]$/.test(inlineText)) inlineText += "."
+---
+
+{areas.length > 0 &&
+  (variant === "inline" ? (
+    <p data-slot="service-area-list" class={listClass} {...rest}>
+      {inlineText}
+    </p>
+  ) : (
+    <ul data-slot="service-area-list" class={listClass} {...rest}>
+      {areas.map((area) => (
+        <li
+          data-slot="service-area-item"
+          class={serviceAreaItemVariants({ variant })}
+        >
+          {icon && (
+            <Icon
+              name={icon}
+              data-slot="service-area-icon"
+              class="size-4 shrink-0 opacity-70"
+              aria-hidden="true"
+            />
+          )}
+          {area}
+        </li>
+      ))}
+    </ul>
+  ))}

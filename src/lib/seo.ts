@@ -4,13 +4,26 @@
  */
 import type {
   BreadcrumbList,
+  DayOfWeek,
   Graph,
+  LocalBusiness,
+  OpeningHoursSpecification,
   Organization,
   Thing,
   WebSite,
 } from "schema-dts"
 
-import { siteConfig } from "@/site.config"
+import {
+  DAYS,
+  normaliseWeek,
+  schemaDayName,
+  schemaTimes,
+  specialRanges,
+  todayIn,
+  type TimeRange,
+  upcomingSpecialHours,
+} from "@/lib/hours"
+import { siteConfig, type SiteConfig } from "@/site.config"
 
 export interface BreadcrumbItem {
   /** Visible label and schema.org `name`. */
@@ -69,6 +82,10 @@ export function websiteId(site: URL | undefined): string {
   return `${absoluteUrl("/", site)}#website`
 }
 
+/**
+ * Plain Organization node. BaseLayout emits `localBusinessSchema` (same @id)
+ * instead; switch back to this for businesses with no customer-facing location.
+ */
 export function organizationSchema(site: URL | undefined): Organization {
   const { organisation, contact } = siteConfig
   const sameAs =
@@ -88,6 +105,106 @@ export function organizationSchema(site: URL | undefined): Organization {
     }),
     ...(sameAs.length > 0 && { sameAs }),
   }
+}
+
+/**
+ * Any schema.org LocalBusiness subtype name known to schema-dts: "Plumber",
+ * "HairSalon", "Dentist", "Restaurant", ... (`business.type` in site config).
+ */
+export type LocalBusinessType = Exclude<LocalBusiness, string>["@type"]
+
+/**
+ * `business.hours` + `business.specialHours` as OpeningHoursSpecification,
+ * following Google's guidance: identical hours share one spec with several
+ * `dayOfWeek`s; ranges past midnight stay on the opening day (Sat 18:00 to
+ * 02:00); 24 hours is 00:00–23:59; special hours use validFrom/validThrough
+ * without `dayOfWeek`, and closed days are 00:00–00:00. Special hours that
+ * ended before `today` (ISO date) are left out.
+ */
+export function openingHoursSpecification(
+  business: SiteConfig["business"] = siteConfig.business,
+  today: string = todayIn(business.timeZone)
+): OpeningHoursSpecification[] {
+  const week = normaliseWeek(business.hours)
+  const bySlot = new Map<string, { range: TimeRange; days: DayOfWeek[] }>()
+  for (const day of DAYS) {
+    for (const range of week[day].map(schemaTimes)) {
+      const key = `${range.opens}-${range.closes}`
+      const slot = bySlot.get(key) ?? { range, days: [] }
+      slot.days.push(schemaDayName(day))
+      bySlot.set(key, slot)
+    }
+  }
+  const regular = [...bySlot.values()].map(
+    ({ range, days }): OpeningHoursSpecification => ({
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: days,
+      opens: range.opens,
+      closes: range.closes,
+    })
+  )
+
+  const special = upcomingSpecialHours(business.specialHours, today).map(
+    (entry): OpeningHoursSpecification => {
+      const [range] = specialRanges(entry)
+      const times = range
+        ? schemaTimes(range)
+        : { opens: "00:00", closes: "00:00" }
+      return {
+        "@type": "OpeningHoursSpecification",
+        ...times,
+        validFrom: entry.from,
+        validThrough: entry.until ?? entry.from,
+      }
+    }
+  )
+
+  return [...regular, ...special]
+}
+
+/**
+ * The business as one LocalBusiness node typed with `business.type` (e.g.
+ * "Plumber"). LocalBusiness is a subtype of Organization, so it keeps the
+ * `#organization` @id: `publisher` and ContactPage `about` references still
+ * resolve, and Google reads it for both logo and local business details.
+ * Google requires `name` and `address`; everything else is emitted when set.
+ */
+export function localBusinessSchema(site: URL | undefined): LocalBusiness {
+  const { organisation, contact, business, seo } = siteConfig
+  const sameAs =
+    organisation.sameAs ?? contact.socials.map((social) => social.href)
+  const hours = openingHoursSpecification(business)
+
+  const node = {
+    "@type": business.type as LocalBusinessType,
+    "@id": organizationId(site),
+    name: organisation.name,
+    ...(organisation.legalName && { legalName: organisation.legalName }),
+    description: siteConfig.description,
+    url: absoluteUrl("/", site),
+    logo: absoluteUrl(organisation.logo, site),
+    image: absoluteUrl(seo.ogImage, site),
+    ...(contact.email && { email: contact.email }),
+    ...(contact.phone && { telephone: contact.phone }),
+    ...(contact.address && {
+      address: { "@type": "PostalAddress", ...contact.address },
+    }),
+    ...(business.geo && {
+      geo: { "@type": "GeoCoordinates", ...business.geo },
+    }),
+    ...(business.priceRange && { priceRange: business.priceRange }),
+    ...(hours.length > 0 && { openingHoursSpecification: hours }),
+    ...(business.areaServed.length > 0 && {
+      areaServed: business.areaServed.map((name) => ({
+        "@type": "Place",
+        name,
+      })),
+    }),
+    ...(business.googleMapsUrl && { hasMap: business.googleMapsUrl }),
+    ...(sameAs.length > 0 && { sameAs }),
+  }
+  // The subtype is only known at runtime; every subtype accepts these props.
+  return node as LocalBusiness
 }
 
 export function websiteSchema(site: URL | undefined): WebSite {

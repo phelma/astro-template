@@ -1,0 +1,81 @@
+---
+/**
+ * One-line hours for footers and top bars: "Mon–Fri 9am–5:30pm, Sat
+ * 10am–2pm", optionally led by the live status ("Open now · …"). Static text
+ * (no JS) unless `status` is set. Hours default to `siteConfig.business`.
+ *
+ *   <OpeningHoursSummary />
+ *   <OpeningHoursSummary status includeClosed as="span" class="text-xs" />
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { summariseHours } from "@/lib/hours"
+import { cn } from "@/lib/utils"
+
+import { resolveHours, type HoursProps } from "./data"
+import OpeningHoursStatus from "./OpeningHoursStatus.astro"
+
+type Props = HTMLAttributes<"p"> &
+  HoursProps & {
+    as?: "p" | "span" | "div"
+    /** Leading clock icon. */
+    icon?: boolean
+    /** Prefix the live status (compact: "Open now"). */
+    status?: boolean
+    /** Add closed days ("…, Sun closed"). */
+    includeClosed?: boolean
+    /** Long day names ("Monday–Friday"). */
+    longDays?: boolean
+  }
+
+const {
+  as: Tag = "p",
+  hours,
+  specialHours,
+  timeZone,
+  locale,
+  labels,
+  icon = true,
+  status = false,
+  includeClosed = false,
+  longDays = false,
+  class: className,
+  ...rest
+} = Astro.props
+
+const data = resolveHours({ hours, specialHours, timeZone, locale, labels })
+const summary = summariseHours(data.hours, data.locale, {
+  includeClosed,
+  labels: data.labels,
+  dayWidth: longDays ? "long" : "short",
+})
+---
+
+{summary && (
+  <Tag
+    data-slot="opening-hours-summary"
+    class={cn("inline-flex flex-wrap items-center gap-x-2 gap-y-1", className)}
+    {...rest}
+  >
+    {icon && !status && (
+      <Icon
+        name="lucide:clock"
+        data-slot="opening-hours-summary-icon"
+        class="size-[1.1em] shrink-0"
+        aria-hidden="true"
+      />
+    )}
+    {status && (
+      <OpeningHoursStatus
+        as="span"
+        {...{ hours, specialHours, timeZone, locale, labels }}
+        variant="plain"
+        density="compact"
+        size={null}
+        class="[&[data-state=unknown]]:hidden"
+      />
+    )}
+    <span data-slot="opening-hours-summary-text">{summary}</span>
+  </Tag>
+)}

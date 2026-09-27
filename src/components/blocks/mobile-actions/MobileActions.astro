@@ -1,0 +1,100 @@
+---
+/**
+ * Sticky bottom action bar for small screens: call, WhatsApp, email,
+ * directions, book. Actions come from `siteConfig.mobileActions.actions`
+ * and their links from `siteConfig.contact` / `business`; actions whose data
+ * is missing are skipped (nothing renders if none remain). Override with
+ * `actions`, `data` and `labels`.
+ *
+ * `position="fixed"` (default) pins it to the bottom below `md`, above the
+ * iOS home indicator (safe-area inset). BaseLayout pads <body> by the bar's
+ * height (per `data-variant`, via `:has()`) so the page end isn't covered,
+ * and adds scroll-padding so focused elements aren't hidden behind it; if
+ * you change the bar's height, update those classes too. BaseLayout mounts
+ * it when `siteConfig.mobileActions.enabled`.
+ *
+ *   <MobileActions variant="floating" />
+ *   <MobileActions position="static" actions={["call", "book"]} data={{ phone: "01632 960123" }} />
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import {
+  buildActions,
+  siteActionData,
+  type ActionData,
+  type ActionKind,
+} from "./actions"
+import {
+  mobileActionsItemVariants,
+  mobileActionsListVariants,
+  mobileActionsVariants,
+  type MobileActionsVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"nav"> &
+  MobileActionsVariants & {
+    /** Which actions, in order. Defaults to `siteConfig.mobileActions.actions`. */
+    actions?: readonly ActionKind[]
+    /** Merged over the site's contact/business data. */
+    data?: Partial<ActionData>
+    /** Visible labels per action ("Call", "Book"...). */
+    labels?: Partial<Record<ActionKind, string>>
+    /** Accessible name of the nav landmark. */
+    label?: string
+  }
+
+const {
+  actions: kinds = siteConfig.mobileActions.actions,
+  data,
+  labels,
+  label = "Quick contact",
+  variant = "bar",
+  position = "fixed",
+  class: className,
+  ...rest
+} = Astro.props
+
+const actions = buildActions(kinds, { ...siteActionData(), ...data }, labels)
+---
+
+{actions.length > 0 && (
+  <nav
+    data-slot="mobile-actions"
+    data-variant={variant}
+    data-position={position}
+    aria-label={label}
+    class={cn(mobileActionsVariants({ variant, position }), className)}
+    {...rest}
+  >
+    <ul
+      data-slot="mobile-actions-list"
+      class={mobileActionsListVariants({ variant })}
+    >
+      {actions.map((action, index) => (
+        <li
+          class={cn(
+            "flex min-w-0",
+            variant === "split" && (index === 0 ? "flex-[2]" : "flex-1")
+          )}
+        >
+          <a
+            href={action.href}
+            data-slot="mobile-actions-item"
+            data-action={action.kind}
+            class={cn(
+              "w-full",
+              mobileActionsItemVariants({ variant, primary: index === 0 })
+            )}
+          >
+            <Icon name={action.icon} aria-hidden="true" />
+            <span data-slot="mobile-actions-label">{action.label}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
