@@ -1,0 +1,103 @@
+---
+/**
+ * A single checkbox or switch as a form field, with description and error
+ * message: consent boxes, "Send me reminders", "I'm a new customer". The
+ * label can contain links via the default slot.
+ *
+ *   <CheckboxField name="consent" required>
+ *     I agree to the <a href="/privacy">privacy policy</a>
+ *   </CheckboxField>
+ *   <CheckboxField control="switch" name="reminders" label="Text me a reminder" />
+ *
+ * `class` and other attributes go on the wrapper.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import ChoiceItem from "./ChoiceItem.astro"
+import {
+  describedBy,
+  fieldIds,
+  messageAttributes,
+  type FieldMessages,
+} from "./form"
+import FormError from "./FormError.astro"
+import {
+  formFieldVariants,
+  type ChoiceItemVariants,
+  type FormFieldVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "id"> &
+  ChoiceItemVariants &
+  FormFieldVariants & {
+    name: string
+    /** Label text; the default slot overrides it. */
+    label?: string
+    id?: string
+    control?: "checkbox" | "switch"
+    value?: string
+    description?: string
+    error?: string
+    checked?: boolean
+    required?: boolean
+    disabled?: boolean
+    messages?: FieldMessages
+    size?: "default" | "sm"
+  }
+
+const {
+  name,
+  label,
+  id = name,
+  control = "checkbox",
+  value = "yes",
+  description,
+  error,
+  checked,
+  required,
+  disabled,
+  messages,
+  size,
+  variant,
+  span,
+  class: className,
+  ...rest
+} = Astro.props
+
+const ids = fieldIds(id)
+// Rendered here so ChoiceItem always gets one label (slot or `label`).
+const labelHtml = Astro.slots.has("default")
+  ? await Astro.slots.render("default")
+  : undefined
+---
+
+<div
+  data-slot="form-field"
+  data-form-field
+  class={cn(formFieldVariants({ span }), className)}
+  {...messageAttributes(messages)}
+  {...rest}
+>
+  <ChoiceItem
+    type={control}
+    variant={variant}
+    size={size}
+    id={id}
+    name={name}
+    value={value}
+    label={label}
+    description={description}
+    checked={checked}
+    required={required}
+    disabled={disabled}
+    inputProps={{
+      "aria-invalid": error ? "true" : undefined,
+      "aria-describedby": describedBy(error && ids.error),
+    }}
+  >
+    {labelHtml ? <Fragment set:html={labelHtml} /> : label}
+  </ChoiceItem>
+  <FormError id={ids.error} message={error} />
+</div>

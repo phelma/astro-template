@@ -1,0 +1,59 @@
+---
+/**
+ * "Message sent" panel. Hidden by default; the validation script shows it
+ * (and hides the rest of the form) when the page URL has `?sent` or
+ * `?sent=<form id>`, e.g. after a form provider redirects back. Point the
+ * provider's redirect at the page with that query (Formspree `_next`,
+ * Web3Forms `redirect` hidden fields), or use a separate thanks page instead.
+ * Extra content (e.g. a "Call us" link) goes in the default slot.
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"div"> & {
+  title?: string
+  message?: string
+  /** Render it visible (e.g. to preview it on a showcase page). */
+  open?: boolean
+}
+
+const {
+  title = "Thanks, your message has been sent",
+  message,
+  open = false,
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+<div
+  data-slot="form-success"
+  data-form-success
+  role="status"
+  tabindex="-1"
+  hidden={!open}
+  class={cn(
+    "flex gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4 text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none dark:bg-primary/10",
+    className
+  )}
+  {...rest}
+>
+  <Icon
+    name="lucide:circle-check"
+    aria-hidden="true"
+    class="mt-0.5 size-5 shrink-0 text-primary"
+  />
+  <div class="flex flex-col gap-1">
+    <p data-slot="form-success-title" class="font-semibold">
+      {title}
+    </p>
+    {message && (
+      <p data-slot="form-success-message" class="text-muted-foreground">
+        {message}
+      </p>
+    )}
+    <slot />
+  </div>
+</div>

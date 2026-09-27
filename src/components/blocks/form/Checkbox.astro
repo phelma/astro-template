@@ -1,0 +1,46 @@
+---
+/**
+ * Native checkbox styled with tokens to match the shadcn Input: an
+ * `appearance: none` box plus an overlaid tick icon. States: checked,
+ * focus-visible, disabled, `aria-invalid` and `:user-invalid`. In
+ * forced-colours mode the native control is restored.
+ *
+ * Like shadcn's NativeSelect, `class` styles the wrapper and every other
+ * attribute (name, value, checked, required, id...) goes on the <input>.
+ * Needs a label: use `ChoiceItem` / `CheckboxField`, or your own <label for>.
+ *
+ *   <Checkbox id="news" name="newsletter" value="yes" checked />
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import { checkboxVariants, type CheckboxVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"input">, "type"> & CheckboxVariants
+
+const { size, class: className, ...rest } = Astro.props
+---
+
+<span
+  data-slot="form-checkbox"
+  class={cn("inline-grid shrink-0 place-items-center", className)}
+>
+  <input
+    type="checkbox"
+    data-slot="form-checkbox-input"
+    class={cn(checkboxVariants({ size }))}
+    {...rest}
+  />
+  <Icon
+    name="lucide:check"
+    aria-hidden="true"
+    data-slot="form-checkbox-indicator"
+    class={cn(
+      "pointer-events-none relative col-start-1 row-start-1 text-primary-foreground opacity-0 peer-checked:opacity-100 forced-colors:hidden",
+      size === "sm" ? "size-3" : "size-3.5"
+    )}
+    stroke-width={3}
+  />
+</span>

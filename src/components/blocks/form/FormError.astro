@@ -1,0 +1,42 @@
+---
+/**
+ * Inline error message for a field. Always rendered (hidden when empty) so
+ * the validation script (`Form.astro`) can fill it in; pass `message` to
+ * render a server-side error. The control's `aria-describedby` should list
+ * this element's id only while a message is shown: the field components and
+ * the script handle that.
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"p"> & {
+  message?: string
+  /** Visually hidden prefix so the message is read as an error. */
+  prefix?: string
+}
+
+const { message, prefix = "Error:", class: className, ...rest } = Astro.props
+---
+
+<p
+  data-slot="form-error"
+  data-form-error
+  hidden={!message}
+  class={cn(
+    "flex items-start gap-1.5 text-sm font-medium text-destructive",
+    className
+  )}
+  {...rest}
+>
+  <Icon
+    name="lucide:circle-alert"
+    aria-hidden="true"
+    class="mt-0.5 size-4 shrink-0"
+  />
+  <span>
+    <span class="sr-only">{prefix}</span>
+    <span data-form-error-text>{message}</span>
+  </span>
+</p>

@@ -1,0 +1,62 @@
+---
+/**
+ * Label for a form field, or the legend of a fieldset (`as="legend"`).
+ * Shows a required asterisk (hidden from assistive tech: the control's
+ * `required` attribute is announced instead) or an "(optional)" hint,
+ * depending on `indicator`.
+ *
+ *   <FormLabel for="email" required>Email</FormLabel>
+ *   <FormLabel as="legend" indicator="optional">Preferred date</FormLabel>
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"label"> & {
+  as?: "label" | "legend" | "span"
+  required?: boolean
+  /**
+   * "required": asterisk on required fields. "optional": "(optional)" on
+   * fields that aren't required (GOV.UK style). "none": no marker.
+   */
+  indicator?: "required" | "optional" | "none"
+  optionalText?: string
+}
+
+const {
+  as: Tag = "label",
+  required = false,
+  indicator = "required",
+  optionalText = "(optional)",
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+<Tag
+  data-slot="form-label"
+  class={cn(
+    "flex w-fit items-baseline gap-1 text-sm leading-snug font-medium group-disabled/field:opacity-50",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+  {required && indicator === "required" && (
+    <span
+      data-slot="form-label-required"
+      aria-hidden="true"
+      class="text-destructive"
+    >
+      *
+    </span>
+  )}
+  {!required && indicator === "optional" && (
+    <span
+      data-slot="form-label-optional"
+      class="font-normal text-muted-foreground"
+    >
+      {optionalText}
+    </span>
+  )}
+</Tag>

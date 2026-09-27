@@ -1,0 +1,210 @@
+---
+/**
+ * Contact form: name, email, optional phone, message and a consent checkbox
+ * linking to the privacy page, with inline validation, honeypot and a
+ * "sent" state (see blocks/form/Form.astro). Place it in a Section, a
+ * column next to contact details, or a dialog.
+ *
+ *   <ContactForm action="https://formspree.io/f/abcd" title="Send us a message" />
+ *   <ContactForm layout="two-column" surface="bare" showPhone={false} />
+ *
+ * Props: `action` / `method` / `hiddenFields` / `honeypot` target any form
+ * provider (add its origin to CSP `form-action` in astro.config.ts);
+ * `layout` (stacked | two-column), `surface` (card | muted | bare);
+ * `title`, `description`, `headingLevel`; `showPhone`, `consent`,
+ * `privacyHref`, `submitLabel`, `success` (false to disable), `phone` for the
+ * "Prefer to talk?" note (defaults to siteConfig.contact.phone; false hides).
+ * Slots: default = extra fields (before consent), `footer` = replaces the
+ * note next to the button. `class` and other attributes go on the wrapper.
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import CheckboxField from "@/components/blocks/form/CheckboxField.astro"
+import Form from "@/components/blocks/form/Form.astro"
+import FormField from "@/components/blocks/form/FormField.astro"
+import FormSubmit from "@/components/blocks/form/FormSubmit.astro"
+import {
+  formGridVariants,
+  formSurfaceVariants,
+  type FormGridVariants,
+  type FormSurfaceVariants,
+} from "@/components/blocks/form/variants"
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+type Props = HTMLAttributes<"div"> &
+  FormGridVariants &
+  FormSurfaceVariants & {
+    /** Form id; prefixes field ids. Unique per page. */
+    id?: string
+    action?: string
+    method?: "post" | "get"
+    hiddenFields?: Record<string, string>
+    honeypot?: string | false
+    errorSummary?: boolean
+    title?: string
+    description?: string
+    headingLevel?: HeadingLevel
+    showPhone?: boolean
+    consent?: boolean
+    privacyHref?: string
+    submitLabel?: string
+    success?: { title?: string; message?: string } | false
+    /** Phone number for the note beside the button; false hides it. */
+    phone?: string | false
+    indicator?: "required" | "optional" | "none"
+  }
+
+const {
+  id = "contact-form",
+  action,
+  method = "post",
+  hiddenFields,
+  honeypot,
+  errorSummary = false,
+  title,
+  description,
+  headingLevel = 2,
+  showPhone = true,
+  consent = true,
+  privacyHref = "/privacy",
+  submitLabel = "Send message",
+  success = {
+    title: "Thanks, your message has been sent",
+    message: "We'll get back to you as soon as we can.",
+  },
+  phone = siteConfig.contact.phone ?? false,
+  indicator,
+  layout,
+  surface,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+const headingId = `${id}-title`
+const twoColumn = layout === "two-column"
+const telHref = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : undefined
+const field = (name: string) => `${id}-${name}`
+---
+
+<div
+  data-slot="contact-form"
+  class={cn(formSurfaceVariants({ surface }), className)}
+  {...rest}
+>
+  {(title || description) && (
+    <div data-slot="contact-form-header" class="flex flex-col gap-2">
+      {title && (
+        <Heading id={headingId} data-slot="contact-form-title" class="text-2xl">
+          {title}
+        </Heading>
+      )}
+      {description && (
+        <p data-slot="contact-form-description" class="text-muted-foreground">
+          {description}
+        </p>
+      )}
+    </div>
+  )}
+  <Form
+    id={id}
+    action={action}
+    method={method}
+    hiddenFields={hiddenFields}
+    honeypot={honeypot}
+    errorSummary={errorSummary}
+    success={success || undefined}
+    aria-labelledby={title ? headingId : undefined}
+  >
+    <div data-slot="contact-form-fields" class={formGridVariants({ layout })}>
+      <FormField
+        id={field("name")}
+        name="name"
+        label="Name"
+        autocomplete="name"
+        required
+        indicator={indicator}
+        size="lg"
+        span="full"
+        messages={{ valueMissing: "Enter your name" }}
+      />
+      <FormField
+        id={field("email")}
+        name="email"
+        type="email"
+        label="Email"
+        autocomplete="email"
+        required
+        indicator={indicator}
+        size="lg"
+        span={twoColumn && showPhone ? "auto" : "full"}
+        messages={{ valueMissing: "Enter your email address" }}
+      />
+      {showPhone && (
+        <FormField
+          id={field("phone")}
+          name="phone"
+          type="tel"
+          label="Phone"
+          autocomplete="tel"
+          indicator={indicator}
+          size="lg"
+          description={twoColumn ? undefined : "So we can call you back."}
+        />
+      )}
+      <FormField
+        id={field("message")}
+        name="message"
+        control="textarea"
+        label="Message"
+        required
+        indicator={indicator}
+        rows={5}
+        size="lg"
+        span="full"
+        messages={{ valueMissing: "Enter your message" }}
+      />
+      <slot />
+      {consent && (
+        <CheckboxField
+          id={field("consent")}
+          name="consent"
+          span="full"
+          required
+          messages={{
+            valueMissing: "Tick the box so we can reply to you",
+          }}
+        >
+          I agree to {siteConfig.name} using my details to reply to this
+          enquiry. Read our <a href={privacyHref}>privacy policy</a>.
+        </CheckboxField>
+      )}
+    </div>
+    <div
+      data-slot="contact-form-footer"
+      class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <FormSubmit icon="lucide:send">{submitLabel}</FormSubmit>
+      <slot name="footer">
+        {phone && (
+          <p
+            data-slot="contact-form-note"
+            class="flex flex-wrap items-center gap-x-1 text-sm text-muted-foreground"
+          >
+            Prefer to talk? Call{" "}
+            <a
+              href={telHref}
+              class="inline-flex min-h-6 items-center gap-1 font-medium text-foreground underline underline-offset-4"
+            >
+              <Icon name="lucide:phone" aria-hidden="true" class="size-4" />
+              {phone}
+            </a>
+          </p>
+        )}
+      </slot>
+    </div>
+  </Form>
+</div>

@@ -1,0 +1,25 @@
+---
+/**
+ * Hint text under a label. Give it an `id` and reference it from the
+ * control's `aria-describedby` (the field components do this for you).
+ * Links inside are underlined.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"p">
+
+const { class: className, ...rest } = Astro.props
+---
+
+<p
+  data-slot="form-description"
+  class={cn(
+    "text-sm leading-normal text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-foreground",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</p>

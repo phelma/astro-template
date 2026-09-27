@@ -1,0 +1,45 @@
+---
+/**
+ * On/off switch: a native checkbox with `role="switch"`, styled as a track
+ * with a sliding thumb. Submits like a checkbox (`name=value` when on).
+ * States: checked, focus-visible, disabled, `aria-invalid`. The slide is
+ * instant under `prefers-reduced-motion` (global.css); in forced-colours
+ * mode it falls back to a native checkbox.
+ *
+ * `class` styles the wrapper; every other attribute goes on the <input>.
+ * Needs a label: use `CheckboxField control="switch"` or your own <label for>.
+ *
+ *   <Switch id="reminders" name="reminders" value="yes" checked />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import {
+  switchThumbVariants,
+  switchVariants,
+  type SwitchVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"input">, "type" | "role"> & SwitchVariants
+
+const { size, class: className, ...rest } = Astro.props
+---
+
+<span
+  data-slot="form-switch"
+  class={cn("inline-grid shrink-0 items-center", className)}
+>
+  <input
+    type="checkbox"
+    role="switch"
+    data-slot="form-switch-input"
+    class={cn(switchVariants({ size }))}
+    {...rest}
+  />
+  <span
+    aria-hidden="true"
+    data-slot="form-switch-thumb"
+    class={cn(switchThumbVariants({ size }))}
+  ></span>
+</span>
