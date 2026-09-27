@@ -1,0 +1,129 @@
+---
+/**
+ * One team member: photo (or initials), name, role, short bio and optional
+ * icon links (email, social). Variants match Team: `cards` (framed, photo
+ * on top), `plain` (unframed) and `compact` (small round photo beside text).
+ * Icon links have visually hidden labels.
+ *
+ *   <TeamMember name="Sarah Mills" role="Owner & senior stylist" image={photo} imageAlt="" />
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+import { Image } from "astro:assets"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+import type { TeamMember } from "./types"
+import { teamMemberVariants, type TeamMemberVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"article">, "role"> &
+  TeamMemberVariants &
+  TeamMember & {
+    headingLevel?: HeadingLevel
+  }
+
+const {
+  name,
+  role,
+  bio,
+  image,
+  imageAlt,
+  links = [],
+  headingLevel = 3,
+  variant = "cards",
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+const compact = variant === "compact"
+const initials = name
+  .split(/\s+/)
+  .map((part) => part[0])
+  .join("")
+  .slice(0, 2)
+  .toUpperCase()
+---
+
+<article
+  data-slot="team-member"
+  class={cn(teamMemberVariants({ variant }), className)}
+  {...rest}
+>
+  {image ? (
+    <Image
+      data-slot="team-member-photo"
+      src={image}
+      alt={imageAlt}
+      width={compact ? 80 : 480}
+      height={compact ? 80 : 576}
+      layout={compact ? "fixed" : undefined}
+      class={cn(
+        "object-cover",
+        compact
+          ? "size-16 shrink-0 rounded-full sm:size-20"
+          : "aspect-5/6 w-full",
+        variant === "plain" && "rounded-xl"
+      )}
+    />
+  ) : (
+    <span
+      data-slot="team-member-photo"
+      class={cn(
+        "flex items-center justify-center bg-muted font-heading font-semibold text-muted-foreground",
+        compact
+          ? "size-16 shrink-0 rounded-full text-lg sm:size-20"
+          : "aspect-5/6 w-full text-4xl",
+        variant === "plain" && "rounded-xl"
+      )}
+      aria-hidden="true"
+    >
+      {initials}
+    </span>
+  )}
+  <div
+    data-slot="team-member-body"
+    class={cn("flex flex-1 flex-col gap-1", variant === "cards" && "p-6")}
+  >
+    <Heading data-slot="team-member-name" class="text-lg">
+      {name}
+    </Heading>
+    <p
+      data-slot="team-member-role"
+      class="text-sm font-medium text-primary in-[.bg-primary]:text-current"
+    >
+      {role}
+    </p>
+    {bio && (
+      <p
+        data-slot="team-member-bio"
+        class="mt-2 text-sm text-pretty text-muted-foreground"
+      >
+        {bio}
+      </p>
+    )}
+    {links.length > 0 && (
+      <ul
+        data-slot="team-member-links"
+        class={cn(
+          "-ms-2 flex flex-wrap gap-1",
+          variant === "cards" ? "mt-auto pt-3" : "pt-2"
+        )}
+      >
+        {links.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class={buttonVariants({ variant: "ghost", size: "icon-sm" })}
+            >
+              <Icon name={link.icon} aria-hidden="true" />
+              <span class="sr-only">{link.label}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</article>

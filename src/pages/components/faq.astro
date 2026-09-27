@@ -1,0 +1,123 @@
+---
+import Faq from "@/components/blocks/faq/Faq.astro"
+import FaqItem from "@/components/blocks/faq/FaqItem.astro"
+import type { FaqEntry } from "@/components/blocks/faq/schema"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+import { buttonVariants } from "@/components/ui/button"
+
+const plumbing: FaqEntry[] = [
+  {
+    question: "Do you charge a call-out fee?",
+    answer:
+      "No. We quote a fixed price before starting any work, and there's no charge for coming out to look at the job.",
+  },
+  {
+    question: "Which areas do you cover?",
+    answer:
+      "Leeds and the surrounding towns, including Horsforth, Otley, Wetherby and Garforth. If you're just outside, give us a ring and we'll do our best.",
+  },
+  {
+    question: "Are you Gas Safe registered?",
+    answer:
+      "Yes. Every engineer carries their registration card; ask to see it when they arrive. You can also check our number on the register.",
+  },
+  {
+    question: "How quickly can you come out for an emergency?",
+    answer:
+      "For leaks, no heating or no hot water we aim to be with you within two hours, seven days a week.\n\nOut-of-hours visits are charged at a fixed emergency rate, which we'll confirm on the phone.",
+  },
+  {
+    question: "Do you offer a guarantee?",
+    answer:
+      "All labour is guaranteed for 12 months, and new boilers come with a manufacturer's warranty of up to 10 years when registered and serviced annually.",
+  },
+]
+
+const salon: FaqEntry[] = [
+  {
+    question: "Do I need a patch test before colouring?",
+    answer:
+      "Yes, at least 48 hours before any colour service if you're new to us or haven't had colour here in six months. It takes five minutes and is free.",
+  },
+  {
+    question: "What's your cancellation policy?",
+    answer:
+      "Please give us 24 hours' notice. Late cancellations and no-shows may be charged 50% of the booked service.",
+  },
+  {
+    question: "Is there parking nearby?",
+    answer:
+      "There's free two-hour parking on Market Street, a minute's walk away, and a pay-and-display car park behind the library.",
+  },
+]
+---
+
+<Showcase
+  title="FAQ"
+  description="Native details/summary accordion with optional exclusive mode and FAQPage JSON-LD. List, cards and split layouts."
+>
+  <Demo
+    title="Bordered list"
+    description="variant='list' (default), exclusive (one open at a time), first item open, schema (emits FAQPage JSON-LD)."
+    bleed
+  >
+    <Faq
+      id="faq-list"
+      headingLevel={3}
+      title="Frequently asked questions"
+      lede="Straight answers about call-outs, coverage and guarantees."
+      items={plumbing}
+      exclusive
+      defaultOpen={0}
+      schema
+    />
+  </Demo>
+
+  <Demo
+    title="Cards"
+    description="variant='cards', centred header on a muted band. Several answers can be open at once."
+    bleed
+  >
+    <Faq
+      id="faq-cards"
+      variant="cards"
+      tone="muted"
+      align="center"
+      headingLevel={3}
+      eyebrow="Before your visit"
+      title="Salon questions"
+      items={salon}
+    />
+  </Demo>
+
+  <Demo
+    title="Split"
+    description="layout='split': header on the left (sticky on large screens) with a call to action in the header slot; an extra rich FaqItem passed through the default slot."
+    bleed
+  >
+    <Faq
+      id="faq-split"
+      layout="split"
+      headingLevel={3}
+      title="Questions about your boiler"
+      lede="Can't see your question? We're happy to help on the phone."
+      items={plumbing.slice(0, 4)}
+      exclusive
+    >
+      <a
+        slot="header"
+        href="/contact"
+        class={buttonVariants({ variant: "outline" })}
+      >
+        Contact us
+      </a>
+      <FaqItem question="Can I pay in instalments?" name="faq-split-group">
+        <p>
+          Yes, on new boilers over £1,500 we offer 0% finance over 12 months,
+          subject to status. <a href="/contact">Ask us for a quote</a>.
+        </p>
+      </FaqItem>
+    </Faq>
+  </Demo>
+</Showcase>

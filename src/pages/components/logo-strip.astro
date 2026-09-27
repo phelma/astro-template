@@ -1,0 +1,114 @@
+---
+import chronicle from "@/assets/placeholders/content/logo-chronicle.svg"
+import fairTrader from "@/assets/placeholders/content/logo-fairtrader.svg"
+import heatSafe from "@/assets/placeholders/content/logo-heatsafe.svg"
+import homeWeekly from "@/assets/placeholders/content/logo-homeweekly.svg"
+import tradeCheck from "@/assets/placeholders/content/logo-tradecheck.svg"
+import wiredRight from "@/assets/placeholders/content/logo-wiredright.svg"
+import LogoStrip from "@/components/blocks/logo-strip/LogoStrip.astro"
+import type { Logo } from "@/components/blocks/logo-strip/types"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+// Fictional schemes and publications: placeholders, not real logos.
+const accreditations: Logo[] = [
+  {
+    name: "HeatSafe Registered Engineer",
+    image: heatSafe,
+    href: "https://example.com/register",
+  },
+  { name: "WiredRight Approved Contractor", image: wiredRight },
+  { name: "TradeCheck vetted and monitored", image: tradeCheck },
+  { name: "Fair Trader Scheme member", image: fairTrader },
+]
+
+const press: Logo[] = [
+  { name: "The Dale Chronicle", image: chronicle },
+  { name: "Home Weekly", image: homeWeekly },
+  ...accreditations,
+]
+
+const placeholders: Logo[] = [
+  { name: "Gas registered", icon: "lucide:flame" },
+  { name: "Approved electrician", icon: "lucide:zap" },
+  { name: "Vetted trader", icon: "lucide:shield-check" },
+  { name: "Council-approved trader", icon: "lucide:badge-check" },
+  { name: "Fully insured", icon: "lucide:shield" },
+]
+---
+
+<Showcase
+  title="Logo strip"
+  description="Accreditations and 'as featured in' logos: static, grayscale-until-hover and marquee. Images or token-styled text placeholders."
+>
+  <Demo
+    title="Static"
+    description="variant='static' (default) with a label caption; the first logo links to a register entry."
+    bleed
+  >
+    <LogoStrip
+      id="logos-static"
+      label="Registered and accredited with"
+      items={accreditations}
+    />
+  </Demo>
+
+  <Demo
+    title="Text placeholders"
+    description="No image: a badge with an icon and the name, styled from tokens. Useful until the client supplies artwork."
+    bleed
+  >
+    <LogoStrip
+      id="logos-placeholders"
+      tone="muted"
+      headingLevel={3}
+      title="Fully qualified and insured"
+      items={placeholders}
+      size="sm"
+    />
+  </Demo>
+
+  <Demo
+    title="Grayscale until hover"
+    description="variant='grayscale': a CSS filter desaturates logos; colour returns on hover or focus. Left aligned, large."
+    bleed
+  >
+    <LogoStrip
+      id="logos-grayscale"
+      variant="grayscale"
+      align="start"
+      size="lg"
+      label="As featured in"
+      items={press.slice(0, 4)}
+    />
+  </Demo>
+
+  <Demo
+    title="Marquee"
+    description="variant='marquee': continuous scroll; pauses on hover, focus or the toggle; static under reduced motion. Duplicate copy is aria-hidden."
+    bleed
+  >
+    <LogoStrip
+      id="logos-marquee"
+      variant="marquee"
+      label="Trusted by homeowners and featured in"
+      items={press}
+      bordered
+    />
+  </Demo>
+
+  <Demo
+    title="Marquee, text placeholders, fast"
+    description="speed='fast' with placeholder badges."
+    bleed
+  >
+    <LogoStrip
+      id="logos-marquee-text"
+      variant="marquee"
+      speed="fast"
+      size="sm"
+      label="Accreditations"
+      items={placeholders}
+    />
+  </Demo>
+</Showcase>

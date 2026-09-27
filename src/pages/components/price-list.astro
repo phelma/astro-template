@@ -1,0 +1,166 @@
+---
+import PriceList from "@/components/blocks/price-list/PriceList.astro"
+import type { PriceListGroup } from "@/components/blocks/price-list/types"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const salon: PriceListGroup[] = [
+  {
+    title: "Cuts",
+    items: [
+      {
+        name: "Cut & finish",
+        description: "Consultation, wash, cut and blow-dry.",
+        price: 45,
+        badge: "Popular",
+      },
+      {
+        name: "Restyle",
+        description: "A big change, with time to plan it.",
+        price: 55,
+      },
+      { name: "Blow-dry", price: 28 },
+      { name: "Kids' cut (under 12)", price: 18 },
+    ],
+  },
+  {
+    title: "Colour",
+    description: "Patch test required 48 hours before your first colour.",
+    items: [
+      { name: "Roots", price: 55 },
+      { name: "Full head colour", price: 70 },
+      { name: "Balayage", price: "from £120", badge: "New" },
+      { name: "Toner / gloss", price: 25 },
+    ],
+  },
+]
+
+const cafe: PriceListGroup[] = [
+  {
+    title: "Breakfast",
+    description: "Served until 11:30.",
+    items: [
+      {
+        name: "Full Yorkshire",
+        description:
+          "Bacon, sausage, egg, black pudding, beans, mushrooms, toast.",
+        price: 11.5,
+        badge: "Popular",
+      },
+      {
+        name: "Veggie breakfast",
+        description: "Halloumi, veggie sausage, egg, beans, mushrooms, toast.",
+        price: 10.5,
+        badge: "V",
+      },
+      { name: "Bacon sandwich", price: 5.5 },
+      { name: "Porridge with berries", price: 4.75, badge: "Vegan" },
+    ],
+  },
+  {
+    title: "Drinks",
+    items: [
+      { name: "Flat white", price: 3.3 },
+      { name: "Cappuccino", price: 3.4 },
+      { name: "Pot of Yorkshire tea", price: 2.8 },
+      {
+        name: "Hot chocolate",
+        description: "With cream and marshmallows.",
+        price: 3.9,
+      },
+    ],
+  },
+]
+
+const trades: PriceListGroup[] = [
+  {
+    title: "Call-outs",
+    items: [
+      {
+        name: "Standard call-out",
+        description: "Mon–Fri, 8am–6pm.",
+        price: 65,
+        unit: "first hour",
+      },
+      { name: "Additional time", price: 45, unit: "per hour" },
+      { name: "Evening & weekend", price: 95, unit: "first hour" },
+    ],
+  },
+  {
+    title: "Fixed-price jobs",
+    items: [
+      { name: "Boiler service", price: 80, badge: "Popular" },
+      { name: "Landlord gas safety certificate", price: 70 },
+      { name: "Power flush", description: "Up to 10 radiators.", price: 350 },
+      { name: "New boiler", price: "POA" },
+    ],
+  },
+]
+---
+
+<Showcase
+  title="Price list"
+  description="Menus and price lists for salons, cafés and trades: grouped items with prices, units, badges and descriptions."
+>
+  <Demo
+    title="Plain"
+    description="variant='plain' (default): ruled rows in a narrow column. Numbers format as £, text prices show as given."
+    bleed
+  >
+    <PriceList
+      id="prices-plain"
+      headingLevel={3}
+      eyebrow="Price list"
+      title="Hair prices"
+      lede="All prices include a consultation. Prices may vary with hair length."
+      groups={salon}
+    />
+  </Demo>
+
+  <Demo
+    title="Dotted leaders, two columns"
+    description="variant='leader', columns={2}: a printed-menu look for cafés. Footnote in the default slot."
+    bleed
+  >
+    <PriceList
+      id="prices-leader"
+      variant="leader"
+      columns={2}
+      tone="muted"
+      headingLevel={3}
+      title="Menu"
+      groups={cafe}
+    >
+      <p>V = vegetarian. Please tell us about any allergies when you order.</p>
+    </PriceList>
+  </Demo>
+
+  <Demo
+    title="Cards"
+    description="variant='cards', columns={2}: each group in a card; units like 'per hour'."
+    bleed
+  >
+    <PriceList
+      id="prices-cards"
+      variant="cards"
+      columns={2}
+      headingLevel={3}
+      title="Plumbing prices"
+      lede="Clear, upfront pricing. All prices include VAT."
+      groups={trades}
+    />
+  </Demo>
+
+  <Demo
+    title="Single ungrouped list"
+    description="One group with no title, no section heading."
+  >
+    <PriceList
+      id="prices-single"
+      variant="leader"
+      spacing="none"
+      width="full"
+      groups={[{ items: trades[0].items }]}
+    />
+  </Demo>
+</Showcase>

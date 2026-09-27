@@ -1,0 +1,215 @@
+---
+import service1 from "@/assets/placeholders/content/service-1.jpg"
+import service2 from "@/assets/placeholders/content/service-2.jpg"
+import service3 from "@/assets/placeholders/content/service-3.jpg"
+import service4 from "@/assets/placeholders/content/service-4.jpg"
+import Services from "@/components/blocks/services/Services.astro"
+import type { Service } from "@/components/blocks/services/types"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+import { buttonVariants } from "@/components/ui/button"
+
+const trades: Service[] = [
+  {
+    title: "Boiler installation",
+    description:
+      "New combi, system and heat-only boilers from leading makers, fitted in a day with up to 10 years' warranty.",
+    icon: "lucide:flame",
+    price: 1850,
+    href: "/contact",
+  },
+  {
+    title: "Boiler servicing",
+    description:
+      "Annual safety check and service to keep your warranty valid and your bills down. Landlord certificates available.",
+    icon: "lucide:wrench",
+    price: 80,
+    href: "/contact",
+  },
+  {
+    title: "Emergency repairs",
+    description:
+      "Leaks, no heating or no hot water? We aim to be with you within two hours, seven days a week.",
+    icon: "lucide:droplets",
+    price: "Fixed call-out",
+    pricePrefix: "",
+    href: "/contact",
+  },
+  {
+    title: "Bathroom fitting",
+    description:
+      "Full refits from design to tiling, or just a new shower or suite. One team, one point of contact.",
+    icon: "lucide:bath",
+    href: "/contact",
+  },
+  {
+    title: "Radiators & pipework",
+    description:
+      "Replacements, moves and power flushes to get cold spots and noisy pipes sorted.",
+    icon: "lucide:heater",
+    price: 120,
+  },
+  {
+    title: "Smart controls",
+    description:
+      "Smart thermostats and TRVs set up and explained, so you only heat the rooms you use.",
+    icon: "lucide:thermometer",
+    price: 195,
+  },
+]
+
+const builders: Service[] = [
+  {
+    title: "Extensions",
+    description:
+      "Single and double-storey extensions, from planning drawings to the final coat of paint.",
+    image: service1,
+    imageAlt: "",
+    price: "Free quotes",
+    pricePrefix: "",
+    href: "/contact",
+    linkLabel: "See extensions",
+    features: [
+      "Planning and building regs handled",
+      "Fixed-price contracts",
+      "10-year insurance-backed guarantee",
+    ],
+  },
+  {
+    title: "Loft conversions",
+    description:
+      "Dormer, hip-to-gable and Velux conversions that add a bedroom and value to your home.",
+    image: service2,
+    imageAlt: "",
+    price: 38000,
+    href: "/contact",
+    features: ["Structural engineer included", "Typically 6–8 weeks on site"],
+  },
+  {
+    title: "Kitchens",
+    description:
+      "Knock-throughs and full kitchen fits, including electrics, plumbing and plastering.",
+    image: service3,
+    imageAlt: "",
+    price: 9500,
+    href: "/contact",
+    features: ["Free design visit", "Trusted local fitters"],
+  },
+  {
+    title: "Garden rooms",
+    description:
+      "Insulated garden offices and studios built on a solid base, ready to use all year round.",
+    image: service4,
+    imageAlt: "",
+    price: 14000,
+    href: "/contact",
+  },
+]
+
+const salon: Service[] = [
+  {
+    title: "Cut & finish",
+    description: "Consultation, wash, cut and blow-dry.",
+    icon: "lucide:scissors",
+    price: 45,
+  },
+  {
+    title: "Colour",
+    description: "Full head, roots or gloss, with a free patch test.",
+    icon: "lucide:palette",
+    price: 65,
+  },
+  {
+    title: "Balayage",
+    description: "Hand-painted, natural-looking highlights.",
+    icon: "lucide:sparkles",
+    price: 120,
+  },
+  {
+    title: "Bridal hair",
+    description: "Trial plus on-the-day styling at your venue.",
+    icon: "lucide:heart",
+    price: 150,
+  },
+  {
+    title: "Treatments",
+    description: "Bond repair and deep conditioning add-ons.",
+    icon: "lucide:droplet",
+    price: 15,
+  },
+  {
+    title: "Kids' cuts",
+    description: "Under 12s, Monday to Thursday.",
+    icon: "lucide:smile",
+    price: 18,
+  },
+]
+---
+
+<Showcase
+  title="Services"
+  description="What the business offers: icon cards, image cards, a compact list and alternating feature rows, with optional prices and links."
+>
+  <Demo
+    title="Icon cards"
+    description="variant='icon' (default), columns={3}. Linked cards are fully clickable; price shows as 'From £X' or custom text."
+    bleed
+  >
+    <Services
+      id="services-icon"
+      headingLevel={3}
+      eyebrow="Services"
+      title="Heating and plumbing, done properly"
+      lede="Gas Safe registered engineers covering Leeds and the surrounding towns."
+      items={trades}
+    >
+      <a href="/contact" class={buttonVariants({ size: "lg" })}>
+        Get a free quote
+      </a>
+    </Services>
+  </Demo>
+
+  <Demo
+    title="Image cards"
+    description="variant='image', columns={4}, on a muted band."
+    bleed
+  >
+    <Services
+      id="services-image"
+      variant="image"
+      columns={4}
+      tone="muted"
+      headingLevel={3}
+      title="What we build"
+      items={builders}
+    />
+  </Demo>
+
+  <Demo
+    title="Simple list"
+    description="variant='list': small icons, no frames; good for longer menus of services."
+    bleed
+  >
+    <Services
+      id="services-list"
+      variant="list"
+      headingLevel={3}
+      title="Salon services"
+      items={salon}
+    />
+  </Demo>
+
+  <Demo
+    title="Feature rows"
+    description="variant='rows': alternating image/text with bullet points, price and a button."
+    bleed
+  >
+    <Services
+      id="services-rows"
+      variant="rows"
+      headingLevel={3}
+      title="Our specialities"
+      items={builders.slice(0, 3)}
+    />
+  </Demo>
+</Showcase>

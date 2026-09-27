@@ -1,0 +1,120 @@
+---
+/**
+ * Services section: what the business offers, with optional "from £X"
+ * prices and links to service pages.
+ *
+ * - `icon`: cards with an icon badge (default).
+ * - `image`: cards with a photo on top.
+ * - `list`: compact two/three-column list with small icons, no frames.
+ * - `rows`: large alternating image/text feature rows with bullet points.
+ *
+ * `columns` (2, 3, 4) sets the grid width for card and list variants.
+ * Extra content (e.g. an "All services" button) goes in the default slot.
+ *
+ *   <Services title="Our services" items={services} variant="image" columns={3} />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionHeaderVariants,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import ServiceCard from "./ServiceCard.astro"
+import ServiceRow from "./ServiceRow.astro"
+import type { Service } from "./types"
+import { servicesListVariants, type ServicesListVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  ServicesListVariants & {
+    items: Service[]
+    /** Prefix for element ids; unique per page. */
+    id?: string
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    align?: SectionHeaderVariants["align"]
+  }
+
+const {
+  items,
+  id = "services",
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  variant = "icon",
+  columns,
+  tone,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  ...rest
+} = Astro.props
+
+const headingId = `${id}-title`
+const itemHeadingLevel = Math.min(
+  title ? headingLevel + 1 : headingLevel,
+  6
+) as HeadingLevel
+---
+
+<Section
+  data-slot="services"
+  tone={tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width}
+  aria-labelledby={title ? headingId : undefined}
+  as={title ? "section" : "div"}
+  class={className}
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align}
+    />
+  )}
+  <ul
+    data-slot="services-list"
+    class={cn(servicesListVariants({ variant, columns }))}
+  >
+    {items.map((item, index) => (
+      <li data-slot="services-item">
+        {variant === "rows" ? (
+          <ServiceRow
+            {...item}
+            headingLevel={itemHeadingLevel}
+            reverse={index % 2 === 1}
+          />
+        ) : (
+          <ServiceCard
+            {...item}
+            variant={variant}
+            headingLevel={itemHeadingLevel}
+          />
+        )}
+      </li>
+    ))}
+  </ul>
+  {Astro.slots.has("default") && (
+    <div data-slot="services-footer" class="mt-10 flex flex-wrap gap-3">
+      <slot />
+    </div>
+  )}
+</Section>

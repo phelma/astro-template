@@ -1,0 +1,90 @@
+---
+/**
+ * One priced line: name, optional badge, price (with optional unit) and a
+ * short description. `leader` draws a dotted line from name to price, like a
+ * printed menu. Renders an <li>; use inside PriceListGroup's list.
+ *
+ *   <PriceListItem name="Cut & finish" price={45} badge="Popular" leader />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { badgeVariants } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+
+import { formatPrice } from "./price"
+import type { PriceListItem } from "./types"
+
+type Props = Omit<HTMLAttributes<"li">, "name"> &
+  PriceListItem & {
+    /** Dotted leader between name and price. */
+    leader?: boolean
+  }
+
+const {
+  name,
+  description,
+  price,
+  unit,
+  badge,
+  leader = false,
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+<li
+  data-slot="price-list-item"
+  class={cn("flex flex-col gap-1 py-3", className)}
+  {...rest}
+>
+  <div class="flex items-baseline gap-x-3">
+    <span class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+      <span data-slot="price-list-name" class="font-medium">
+        {name}
+      </span>
+      {badge && (
+        <span
+          data-slot="price-list-badge"
+          class={cn(badgeVariants({ variant: "secondary" }), "self-center")}
+        >
+          {badge}
+        </span>
+      )}
+    </span>
+    <span
+      data-slot="price-list-leader"
+      class={cn(
+        "min-w-6 flex-1",
+        leader &&
+          "-translate-y-1 border-b-2 border-dotted border-muted-foreground/50"
+      )}
+      aria-hidden="true"
+    ></span>
+    <span
+      data-slot="price-list-price"
+      class="shrink-0 text-right font-semibold whitespace-nowrap tabular-nums"
+    >
+      {typeof price === "number" ? (
+        <data value={price.toFixed(2)}>{formatPrice(price)}</data>
+      ) : (
+        price
+      )}
+      {unit && (
+        <span
+          data-slot="price-list-unit"
+          class="text-sm font-normal text-muted-foreground"
+        >
+          {` ${unit}`}
+        </span>
+      )}
+    </span>
+  </div>
+  {description && (
+    <p
+      data-slot="price-list-description"
+      class="max-w-prose text-sm text-muted-foreground"
+    >
+      {description}
+    </p>
+  )}
+</li>

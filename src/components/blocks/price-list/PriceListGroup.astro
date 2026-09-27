@@ -1,0 +1,69 @@
+---
+/**
+ * A titled group of priced items ("Cuts", "Breakfast", "Call-outs"). The
+ * heading is optional for a single, ungrouped list. Extra items or notes can
+ * be passed in the default slot (inside the <ul>, so wrap them in <li>).
+ *
+ *   <PriceListGroup title="Colour" items={colour} variant="leader" headingLevel={3} />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import PriceListItem from "./PriceListItem.astro"
+import type { PriceListGroup } from "./types"
+import {
+  priceListGroupVariants,
+  priceListItemsVariants,
+  type PriceListGroupVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  PriceListGroupVariants &
+  PriceListGroup & {
+    headingLevel?: HeadingLevel
+  }
+
+const {
+  title,
+  description,
+  items,
+  headingLevel = 3,
+  variant,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+---
+
+<div
+  data-slot="price-list-group"
+  class={cn(priceListGroupVariants({ variant }), className)}
+  {...rest}
+>
+  {(title || description) && (
+    <div data-slot="price-list-group-header" class="flex flex-col gap-1">
+      {title && (
+        <Heading data-slot="price-list-group-title" class="text-xl">
+          {title}
+        </Heading>
+      )}
+      {description && (
+        <p
+          data-slot="price-list-group-description"
+          class="text-sm text-muted-foreground"
+        >
+          {description}
+        </p>
+      )}
+    </div>
+  )}
+  <ul data-slot="price-list-items" class={priceListItemsVariants({ variant })}>
+    {items.map((item) => (
+      <PriceListItem {...item} leader={variant === "leader"} />
+    ))}
+    <slot />
+  </ul>
+</div>

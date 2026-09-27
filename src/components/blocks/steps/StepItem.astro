@@ -1,0 +1,89 @@
+---
+/**
+ * One step in a process: number, title and description. Renders an <li>
+ * for use inside Steps' <ol>; the number is decorative because the ordered
+ * list already conveys position. `last` hides the connector line.
+ *
+ *   <StepItem number={1} title="Get in touch" description="..." variant="timeline" />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import {
+  stepItemVariants,
+  stepNumberVariants,
+  type StepItemVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"li">, "title"> &
+  StepItemVariants & {
+    number: number
+    title: string
+    description?: string
+    headingLevel?: HeadingLevel
+    /** Last step: no connector after it. */
+    last?: boolean
+  }
+
+const {
+  number,
+  title,
+  description,
+  headingLevel = 3,
+  last = false,
+  variant = "horizontal",
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+const connector = !last && (variant === "timeline" || variant === "horizontal")
+---
+
+<li
+  data-slot="step"
+  class={cn(stepItemVariants({ variant }), className)}
+  {...rest}
+>
+  <span
+    data-slot="step-number"
+    class={stepNumberVariants({ variant })}
+    aria-hidden="true"
+  >
+    {variant === "cards" ? String(number).padStart(2, "0") : number}
+  </span>
+  {connector && (
+    <span
+      data-slot="step-connector"
+      class={cn(
+        "absolute top-13 bottom-1 left-[1.3125rem] w-0.5 bg-border in-[.bg-primary]:bg-current/40",
+        variant === "horizontal" &&
+          "-bottom-7 md:top-[1.3125rem] md:-right-3 md:bottom-auto md:left-14 md:h-0.5 md:w-auto"
+      )}
+      aria-hidden="true"
+    ></span>
+  )}
+  <div
+    data-slot="step-body"
+    class={cn(
+      "flex flex-col gap-1.5",
+      variant !== "cards" && "pt-2 md:pt-0",
+      variant === "timeline" && "md:pt-2"
+    )}
+  >
+    <Heading data-slot="step-title" class="text-lg">
+      {title}
+    </Heading>
+    {description && (
+      <p
+        data-slot="step-description"
+        class="text-sm text-pretty text-muted-foreground"
+      >
+        {description}
+      </p>
+    )}
+    <slot />
+  </div>
+</li>

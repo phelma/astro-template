@@ -1,0 +1,111 @@
+---
+/**
+ * Feature row: a large image beside the service title, description, bullet
+ * points, price and a link button. `reverse` puts the image on the right
+ * (Services alternates it). Stacks image-first on small screens.
+ *
+ *   <ServiceRow title="Kitchens" description="..." image={photo} imageAlt="" features={["Free design visit"]} href="/kitchens" />
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+import { Image } from "astro:assets"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+import ServicePrice from "./ServicePrice.astro"
+import type { Service } from "./types"
+import { serviceIconVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"article">, "title"> &
+  Service & {
+    headingLevel?: HeadingLevel
+    /** Image on the right from medium screens up. */
+    reverse?: boolean
+  }
+
+const {
+  title,
+  description,
+  icon,
+  image,
+  imageAlt,
+  price,
+  pricePrefix,
+  href,
+  linkLabel = "Find out more",
+  features = [],
+  headingLevel = 3,
+  reverse = false,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+---
+
+<article
+  data-slot="service-row"
+  class={cn(
+    "grid items-center gap-8 md:grid-cols-2 md:gap-12 lg:gap-16",
+    className
+  )}
+  {...rest}
+>
+  {image && (
+    <Image
+      data-slot="service-row-image"
+      src={image}
+      alt={imageAlt}
+      width={720}
+      height={480}
+      class={cn(
+        "aspect-3/2 w-full rounded-xl border object-cover shadow-sm",
+        reverse && "md:order-last"
+      )}
+    />
+  )}
+  <div data-slot="service-row-body" class="flex flex-col items-start gap-4">
+    {icon && (
+      <span data-slot="service-icon" class={serviceIconVariants()}>
+        <Icon name={icon} aria-hidden="true" />
+      </span>
+    )}
+    <Heading data-slot="service-title" class="text-2xl sm:text-3xl">
+      {title}
+    </Heading>
+    <p
+      data-slot="service-description"
+      class="text-pretty text-muted-foreground"
+    >
+      {description}
+    </p>
+    {features.length > 0 && (
+      <ul data-slot="service-features" class="flex flex-col gap-2">
+        {features.map((feature) => (
+          <li data-slot="service-feature" class="flex items-start gap-2">
+            <Icon
+              name="lucide:check"
+              class="mt-0.5 size-5 shrink-0 text-primary"
+              aria-hidden="true"
+            />
+            {feature}
+          </li>
+        ))}
+      </ul>
+    )}
+    {price !== undefined && <ServicePrice price={price} prefix={pricePrefix} />}
+    {href && (
+      <a
+        data-slot="service-row-link"
+        href={href}
+        class={cn(buttonVariants({ variant: "outline", size: "lg" }), "mt-2")}
+      >
+        {linkLabel}
+        <span class="sr-only">: {title}</span>
+        <Icon name="lucide:arrow-right" aria-hidden="true" />
+      </a>
+    )}
+  </div>
+</article>

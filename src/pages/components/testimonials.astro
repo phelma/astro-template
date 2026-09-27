@@ -1,0 +1,159 @@
+---
+import avatar1 from "@/assets/placeholders/content/avatar-1.jpg"
+import avatar2 from "@/assets/placeholders/content/avatar-2.jpg"
+import avatar3 from "@/assets/placeholders/content/avatar-3.jpg"
+import avatar4 from "@/assets/placeholders/content/avatar-4.jpg"
+import StarRating from "@/components/blocks/testimonials/StarRating.astro"
+import TestimonialCard from "@/components/blocks/testimonials/TestimonialCard.astro"
+import Testimonials from "@/components/blocks/testimonials/Testimonials.astro"
+import type { Testimonial } from "@/components/blocks/testimonials/types"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const items: Testimonial[] = [
+  {
+    quote:
+      "Dave fitted our new combi boiler in a day and left the airing cupboard cleaner than he found it. Clear quote, no surprises on the bill.",
+    name: "Sarah Patel",
+    context: "Boiler installation, Headingley",
+    rating: 5,
+    source: "Google",
+    sourceHref: "https://example.com/reviews",
+    avatar: avatar1,
+    avatarAlt: "",
+  },
+  {
+    quote:
+      "Came out the same evening for a burst pipe under the kitchen sink. Friendly, quick and very fairly priced for an emergency call-out.",
+    name: "Tom Hughes",
+    context: "Emergency repair, Chapel Allerton",
+    rating: 5,
+    source: "Google",
+    avatar: avatar2,
+    avatarAlt: "",
+  },
+  {
+    quote:
+      "Our bathroom refit was finished on schedule. The tiling is spotless and they kept us updated every step of the way.",
+    name: "Margaret Ellis",
+    context: "Bathroom refit, Roundhay",
+    rating: 4.5,
+    source: "Checkatrade",
+  },
+  {
+    quote:
+      "Annual service booked online in two minutes, engineer arrived in the slot they gave me. Will use again.",
+    name: "James O'Connor",
+    context: "Boiler service, Horsforth",
+    rating: 5,
+    avatar: avatar3,
+    avatarAlt: "",
+  },
+  {
+    quote:
+      "Honest advice: they told us our radiators only needed bleeding rather than replacing. That's why we keep coming back.",
+    name: "Priya Shah",
+    context: "Heating check, Meanwood",
+    rating: 5,
+    avatar: avatar4,
+    avatarAlt: "",
+  },
+]
+
+const summary = {
+  rating: 4.9,
+  count: 128,
+  source: "Google",
+  href: "https://example.com/reviews",
+}
+---
+
+<Showcase
+  title="Testimonials"
+  description="Customer quotes with ratings, context and an optional aggregate score. Grid, featured and scrolling layouts."
+>
+  <Demo
+    title="Grid"
+    description="layout='grid' (default) with a summary. Cards show rating, quote, name, job and place, avatar or initials, and source."
+    bleed
+  >
+    <Testimonials
+      id="testimonials-grid"
+      headingLevel={3}
+      eyebrow="Reviews"
+      title="What our customers say"
+      summary={summary}
+      items={items.slice(0, 3)}
+    />
+  </Demo>
+
+  <Demo
+    title="Featured quote"
+    description="layout='featured' with one item: a large centred quote. On tone='muted'."
+    bleed
+  >
+    <Testimonials
+      id="testimonials-featured"
+      layout="featured"
+      tone="muted"
+      spacing="lg"
+      items={[items[1]]}
+    />
+  </Demo>
+
+  <Demo
+    title="Scrolling row"
+    description="layout='scroll': CSS scroll-snap, keyboard scrollable; previous/next buttons appear when JS runs."
+    bleed
+  >
+    <Testimonials
+      id="testimonials-scroll"
+      layout="scroll"
+      headingLevel={3}
+      title="Rated 4.9 by local homeowners"
+      lede="A few recent reviews from customers across north Leeds."
+      summary={{ ...summary, href: undefined }}
+      items={items}
+    />
+  </Demo>
+
+  <Demo
+    title="On a primary band"
+    description="tone='primary' with a centred header; stars switch to the foreground colour."
+    bleed
+  >
+    <Testimonials
+      id="testimonials-primary"
+      tone="primary"
+      layout="featured"
+      headingLevel={3}
+      title="Five stars, every time"
+      summary={summary}
+      items={[items[0]]}
+    />
+  </Demo>
+
+  <Demo
+    title="Parts"
+    description="TestimonialCard (card and plain variants, rich quote via slot) and StarRating on their own."
+  >
+    <div class="grid gap-6 md:grid-cols-2">
+      <TestimonialCard {...items[2]} />
+      <TestimonialCard
+        variant="plain"
+        name="Helen Clarke"
+        context="Wedding hair, Harrogate"
+        rating={5}
+        quote=""
+      >
+        <p>Calm, organised and my hair lasted all night.</p>
+        <p>Couldn't recommend the team more.</p>
+      </TestimonialCard>
+    </div>
+    <div class="mt-6 flex flex-wrap items-center gap-6">
+      <StarRating rating={5} size="sm" />
+      <StarRating rating={3.5} />
+      <StarRating rating={4.9} showValue size="lg" />
+    </div>
+  </Demo>
+</Showcase>

@@ -1,0 +1,246 @@
+---
+/**
+ * Customer testimonials section: optional heading and aggregate score, then
+ * the quotes in one of three layouts:
+ *
+ * - `grid`: cards in a responsive grid (default).
+ * - `featured`: large, centred, unframed quotes; best with one to three.
+ * - `scroll`: a horizontal row with CSS scroll-snap. Works without JS
+ *   (swipe, shift+wheel, or focus the row and use the arrow keys); a small
+ *   script adds previous/next buttons as progressive enhancement.
+ *
+ * No Review/AggregateRating JSON-LD on purpose: Google treats reviews a
+ * business publishes about itself as "self-serving" and ineligible for
+ * review rich results, so the markup would only add risk.
+ *
+ *   <Testimonials
+ *     title="What our customers say"
+ *     summary={{ rating: 4.9, count: 120, source: "Google", href: "https://..." }}
+ *     items={testimonials}
+ *     layout="scroll"
+ *   />
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionHeaderVariants,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+import TestimonialCard from "./TestimonialCard.astro"
+import TestimonialsSummary from "./TestimonialsSummary.astro"
+import type { Testimonial, TestimonialsSummary as Summary } from "./types"
+import {
+  testimonialsListVariants,
+  type TestimonialsListVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  TestimonialsListVariants & {
+    items: Testimonial[]
+    /** Prefix for element ids; must be unique on the page. */
+    id?: string
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    align?: SectionHeaderVariants["align"]
+    /** Aggregate score shown under the heading. */
+    summary?: Summary
+    /** Accessible name for the scrolling row (layout="scroll"). */
+    scrollLabel?: string
+  }
+
+const {
+  items,
+  id = "testimonials",
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  summary,
+  scrollLabel = title ?? "Customer reviews",
+  layout = "grid",
+  tone,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  ...rest
+} = Astro.props
+
+const headingId = `${id}-title`
+const listId = `${id}-list`
+const cardProps =
+  layout === "featured"
+    ? ({ variant: "plain", size: "lg" } as const)
+    : ({ variant: "card", size: "default" } as const)
+---
+
+<Section
+  data-slot="testimonials"
+  tone={tone}
+  spacing={spacing}
+  bordered={bordered}
+  width={width}
+  aria-labelledby={title ? headingId : undefined}
+  as={title ? "section" : "div"}
+  class={className}
+  {...rest}
+>
+  {title ? (
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align ?? (layout === "featured" ? "center" : "start")}
+    >
+      {summary && <TestimonialsSummary {...summary} />}
+    </SectionHeader>
+  ) : (
+    summary && <TestimonialsSummary {...summary} class="mb-8" />
+  )}
+
+  {layout === "scroll" ? (
+    <div data-slot="testimonials-carousel" class="flex flex-col gap-4">
+      {/* A scrollable region must be keyboard focusable so arrow keys can
+          scroll it (WCAG 2.1.1). */}
+      {/* eslint-disable astro/jsx-a11y/no-noninteractive-tabindex */}
+      <div
+        data-slot="testimonials-viewport"
+        role="region"
+        aria-label={scrollLabel}
+        tabindex="0"
+        class="-mx-1 snap-x snap-mandatory scroll-px-1 overflow-x-auto overscroll-x-contain px-1 pt-1 pb-4 [scrollbar-width:thin]"
+      >
+        {/* eslint-enable astro/jsx-a11y/no-noninteractive-tabindex */}
+        <ul
+          id={listId}
+          data-slot="testimonials-list"
+          class={testimonialsListVariants({ layout })}
+        >
+          {items.map((item) => (
+            <li data-slot="testimonials-item">
+              <TestimonialCard {...item} {...cardProps} />
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div
+        data-slot="testimonials-controls"
+        class="flex justify-end gap-2"
+        hidden
+      >
+        <button
+          type="button"
+          data-testimonials-scroll="-1"
+          aria-controls={listId}
+          class={cn(
+            buttonVariants({ variant: "outline", size: "icon" }),
+            "aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+          )}
+        >
+          <Icon name="lucide:chevron-left" aria-hidden="true" />
+          <span class="sr-only">Previous reviews</span>
+        </button>
+        <button
+          type="button"
+          data-testimonials-scroll="1"
+          aria-controls={listId}
+          class={cn(
+            buttonVariants({ variant: "outline", size: "icon" }),
+            "aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+          )}
+        >
+          <Icon name="lucide:chevron-right" aria-hidden="true" />
+          <span class="sr-only">Next reviews</span>
+        </button>
+      </div>
+    </div>
+  ) : layout === "featured" && items.length === 1 ? (
+    <TestimonialCard {...items[0]} {...cardProps} class="mx-auto max-w-3xl" />
+  ) : (
+    <ul
+      data-slot="testimonials-list"
+      class={testimonialsListVariants({ layout })}
+    >
+      {items.map((item) => (
+        <li data-slot="testimonials-item">
+          <TestimonialCard {...item} {...cardProps} />
+        </li>
+      ))}
+    </ul>
+  )}
+  <slot />
+</Section>
+
+<script>
+  // Progressive enhancement for layout="scroll": reveal previous/next
+  // buttons, scroll by one viewport, disable at either end.
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)")
+
+  function update(carousel: HTMLElement) {
+    const viewport = carousel.querySelector<HTMLElement>(
+      "[data-slot=testimonials-viewport]"
+    )
+    if (!viewport) return
+    const max = viewport.scrollWidth - viewport.clientWidth
+    for (const button of carousel.querySelectorAll<HTMLButtonElement>(
+      "[data-testimonials-scroll]"
+    )) {
+      const direction = Number(button.dataset.testimonialsScroll)
+      const atEnd =
+        direction < 0
+          ? viewport.scrollLeft <= 1
+          : viewport.scrollLeft >= max - 1
+      // aria-disabled (not disabled) so a focused button keeps focus.
+      button.setAttribute("aria-disabled", String(atEnd))
+    }
+  }
+
+  for (const carousel of document.querySelectorAll<HTMLElement>(
+    "[data-slot=testimonials-carousel]"
+  )) {
+    const viewport = carousel.querySelector<HTMLElement>(
+      "[data-slot=testimonials-viewport]"
+    )
+    const controls = carousel.querySelector<HTMLElement>(
+      "[data-slot=testimonials-controls]"
+    )
+    if (!viewport || !controls) continue
+    controls.hidden = false
+    viewport.addEventListener("scroll", () => update(carousel), {
+      passive: true,
+    })
+    new ResizeObserver(() => update(carousel)).observe(viewport)
+    update(carousel)
+  }
+
+  document.addEventListener("click", (event) => {
+    const button =
+      event.target instanceof Element
+        ? event.target.closest<HTMLButtonElement>("[data-testimonials-scroll]")
+        : null
+    const viewport = button
+      ?.closest("[data-slot=testimonials-carousel]")
+      ?.querySelector<HTMLElement>("[data-slot=testimonials-viewport]")
+    if (!button || !viewport || button.ariaDisabled === "true") return
+    const direction = Number(button.dataset.testimonialsScroll)
+    viewport.scrollBy({
+      left: direction * viewport.clientWidth * 0.9,
+      behavior: reducedMotion.matches ? "auto" : "smooth",
+    })
+  })
+</script>

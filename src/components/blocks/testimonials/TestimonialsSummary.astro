@@ -1,0 +1,54 @@
+---
+/**
+ * Aggregate review score: stars plus "4.9 from 120 Google reviews", linked to
+ * the review platform when `href` is set. Visual only: no AggregateRating
+ * JSON-LD (see Testimonials.astro for why).
+ *
+ *   <TestimonialsSummary rating={4.9} count={120} source="Google" href="https://g.page/..." />
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { cn } from "@/lib/utils"
+
+import StarRating from "./StarRating.astro"
+import type { TestimonialsSummary } from "./types"
+
+type Props = HTMLAttributes<"p"> & TestimonialsSummary
+
+const {
+  rating,
+  count,
+  source,
+  href,
+  max = 5,
+  class: className,
+  ...rest
+} = Astro.props
+
+const reviews = `${count.toLocaleString("en-GB")} ${source ? `${source} ` : ""}review${count === 1 ? "" : "s"}`
+---
+
+<p
+  data-slot="testimonials-summary"
+  class={cn("flex flex-wrap items-center gap-x-3 gap-y-1", className)}
+  {...rest}
+>
+  <StarRating rating={rating} max={max} aria-hidden="true" />
+  <span data-slot="testimonials-summary-text" class="font-medium">
+    <strong class="font-semibold">{rating}</strong>
+    <span class="sr-only"> out of {max}</span>
+    from
+    {href ? (
+      <a
+        href={href}
+        class="inline-flex min-h-6 items-center gap-1 underline underline-offset-4 hover:decoration-2"
+      >
+        {reviews}
+        <Icon name="lucide:arrow-up-right" class="size-4" aria-hidden="true" />
+      </a>
+    ) : (
+      reviews
+    )}
+  </span>
+</p>
