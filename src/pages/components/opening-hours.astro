@@ -1,0 +1,160 @@
+---
+import OpeningHours from "@/components/blocks/opening-hours/OpeningHours.astro"
+import OpeningHoursList from "@/components/blocks/opening-hours/OpeningHoursList.astro"
+import OpeningHoursStatus from "@/components/blocks/opening-hours/OpeningHoursStatus.astro"
+import OpeningHoursSummary from "@/components/blocks/opening-hours/OpeningHoursSummary.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+import { addDays, todayIn } from "@/lib/hours"
+import type { BusinessHours, SpecialHours } from "@/site.config"
+
+// Example data (the default demo uses siteConfig.business).
+const salon: BusinessHours = [
+  { days: ["Tu", "We"], opens: "09:00", closes: "17:30" },
+  { days: ["Th", "Fr"], opens: "09:00", closes: "20:00" },
+  { days: ["Sa"], opens: "08:30", closes: "16:00" },
+]
+const cafe: BusinessHours = [
+  { days: ["Mo", "Tu", "We", "Th", "Fr"], opens: "07:30", closes: "11:30" },
+  { days: ["Mo", "Tu", "We", "Th", "Fr"], opens: "12:00", closes: "15:00" },
+  { days: ["Sa", "Su"], opens: "09:00", closes: "16:00" },
+]
+const pub: BusinessHours = [
+  { days: ["Mo", "Tu", "We", "Th"], opens: "12:00", closes: "23:00" },
+  { days: ["Fr", "Sa"], opens: "12:00", closes: "01:00" },
+  { days: ["Su"], opens: "12:00", closes: "22:30" },
+]
+const plumber: BusinessHours = [
+  {
+    days: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+    opens: "00:00",
+    closes: "00:00",
+  },
+]
+
+// Dates relative to the build so the demo always has upcoming entries.
+const today = todayIn("Europe/London")
+const year = today.slice(0, 4)
+const special: SpecialHours = [
+  {
+    from: addDays(today, 2),
+    opens: "10:00",
+    closes: "14:00",
+    label: "Staff training",
+  },
+  {
+    from: `${year}-12-24`,
+    opens: "09:00",
+    closes: "13:00",
+    label: "Christmas Eve",
+  },
+  { from: `${year}-12-25`, until: `${year}-12-26`, label: "Christmas" },
+  { from: `${Number(year) + 1}-01-01`, label: "New Year's Day" },
+]
+---
+
+<Showcase
+  title="Opening hours"
+  description="Weekly hours with today highlighted, a live open/closed status, special hours and a one-line summary. Hours default to siteConfig.business."
+>
+  <Demo
+    title="Default"
+    description="Card, one row per day, status badge. Data from siteConfig.business."
+  >
+    <OpeningHours headingLevel={3} class="max-w-md" />
+  </Demo>
+
+  <Demo
+    title="Special hours"
+    description="specialHours: upcoming changes are listed, and ones in the next 7 days replace that day's hours in the list (client-side)."
+  >
+    <OpeningHours
+      headingLevel={3}
+      title="Salon hours"
+      hours={salon}
+      specialHours={special}
+      class="max-w-md"
+    >
+      <p class="text-sm text-muted-foreground">
+        Late appointments on Thursdays and Fridays. Closed Sundays and Mondays.
+      </p>
+    </OpeningHours>
+  </Demo>
+
+  <Demo
+    title="Compact"
+    description={`density="compact": days with identical hours are grouped; closed days included.`}
+  >
+    <OpeningHours
+      headingLevel={3}
+      title="Café hours"
+      density="compact"
+      hours={cafe}
+      class="max-w-sm"
+    />
+  </Demo>
+
+  <Demo
+    title="Horizontal, bare"
+    description={`orientation="horizontal" variant="bare": days as columns from md up (a list on phones).`}
+  >
+    <OpeningHours
+      headingLevel={3}
+      title="The Red Lion"
+      orientation="horizontal"
+      variant="bare"
+      hours={pub}
+      specialTitle="Holiday hours"
+      specialHours={special.slice(1)}
+    />
+  </Demo>
+
+  <Demo
+    title="Overnight and 24 hours"
+    description="Ranges past midnight (Fri 12pm–1am) count towards the opening day; opens === closes means 24 hours."
+  >
+    <div class="grid gap-6 md:grid-cols-2">
+      <OpeningHours headingLevel={3} title="Late opening" hours={pub} />
+      <OpeningHours
+        headingLevel={3}
+        title="Emergency call-outs"
+        hours={plumber}
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="List only"
+    description="OpeningHoursList on its own, e.g. inside a contact card."
+  >
+    <OpeningHoursList hours={salon} class="max-w-xs" />
+  </Demo>
+
+  <Demo
+    title="Status"
+    description="OpeningHoursStatus variants: badge, outline, plain; sizes sm/md/lg; compact hides the detail. Shows the week summary until the script runs."
+  >
+    <div class="flex flex-col items-start gap-4">
+      <OpeningHoursStatus />
+      <OpeningHoursStatus variant="outline" hours={cafe} />
+      <OpeningHoursStatus variant="plain" hours={pub} />
+      <OpeningHoursStatus size="sm" density="compact" hours={salon} />
+      <OpeningHoursStatus size="lg" hours={plumber} />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Summary"
+    description="OpeningHoursSummary one-liner for footers and top bars."
+  >
+    <div class="flex flex-col gap-3 text-sm">
+      <OpeningHoursSummary />
+      <OpeningHoursSummary status hours={salon} />
+      <OpeningHoursSummary includeClosed hours={cafe} />
+      <OpeningHoursSummary longDays icon={false} hours={pub} />
+      <div class="rounded-md bg-primary px-4 py-2 text-primary-foreground">
+        <OpeningHoursSummary status class="text-xs" />
+      </div>
+    </div>
+  </Demo>
+</Showcase>

@@ -1,7 +1,9 @@
 ---
 /**
  * Base document layout: <head> (SEO, social, icons, fonts, theme bootstrap,
- * JSON-LD) and page chrome (skip link, header, <main id="main">, footer).
+ * JSON-LD: LocalBusiness + WebSite) and page chrome (skip link, header,
+ * <main id="main">, footer, and the mobile action bar when
+ * `siteConfig.mobileActions.enabled`).
  *
  * Every page should use this layout and pass at least `title` and
  * `description`. Extra head tags go in the `head` slot:
@@ -11,6 +13,7 @@ import type { ImageMetadata } from "astro"
 import { Font, getImage } from "astro:assets"
 import type { CssVariable } from "astro:assets"
 
+import MobileActions from "@/components/blocks/mobile-actions/MobileActions.astro"
 import Footer from "@/components/layout/Footer.astro"
 import Header from "@/components/layout/Header.astro"
 import Breadcrumbs from "@/components/seo/Breadcrumbs.astro"
@@ -22,7 +25,7 @@ import {
   markdownPath,
   ogLocale,
   pagePath,
-  organizationSchema,
+  localBusinessSchema,
   websiteSchema,
   type BreadcrumbItem,
 } from "@/lib/seo"
@@ -119,7 +122,7 @@ const fontVariables = [
 ] as CssVariable[]
 
 const structuredData = jsonLdGraph(
-  organizationSchema(site),
+  localBusinessSchema(site),
   websiteSchema(site)
 )
 ---
@@ -128,7 +131,12 @@ const structuredData = jsonLdGraph(
 <html
   lang={siteConfig.lang}
   data-theme={defaultTheme}
-  class:list={{ dark: defaultMode === "dark" }}
+  class:list={[
+    { dark: defaultMode === "dark" },
+    // Keep focused/scrolled-to elements clear of a fixed mobile action bar
+    // (WCAG 2.4.11 Focus Not Obscured).
+    "max-md:has-[[data-slot=mobile-actions][data-position=fixed]]:scroll-pb-[calc(5rem+env(safe-area-inset-bottom))]",
+  ]}
 >
   <head>
     <meta charset="utf-8" />
@@ -215,7 +223,16 @@ const structuredData = jsonLdGraph(
 
     <slot name="head" />
   </head>
-  <body class="flex min-h-dvh flex-col">
+  <!-- Bottom padding = height of a fixed MobileActions bar (per variant), so
+       it never covers the end of the page. -->
+  <body
+    class:list={[
+      "flex min-h-dvh flex-col",
+      "max-md:has-[[data-slot=mobile-actions][data-position=fixed][data-variant=bar]]:pb-[calc(3.5rem+1px+env(safe-area-inset-bottom))]",
+      "max-md:has-[[data-slot=mobile-actions][data-position=fixed][data-variant=split]]:pb-[calc(4rem+1px+env(safe-area-inset-bottom))]",
+      "max-md:has-[[data-slot=mobile-actions][data-position=fixed][data-variant=floating]]:pb-[calc(5rem+env(safe-area-inset-bottom))]",
+    ]}
+  >
     <a
       href="#main"
       class="sr-only z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
@@ -233,6 +250,7 @@ const structuredData = jsonLdGraph(
       <slot />
     </main>
     <Footer />
+    {siteConfig.mobileActions.enabled && <MobileActions />}
 
     {import.meta.env.DEV && <script is:inline set:html={h1Check} />}
   </body>

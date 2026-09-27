@@ -1,0 +1,97 @@
+---
+/**
+ * Opening hours block: heading, live status badge, the week (today
+ * highlighted) and upcoming special hours / closures. Hours default to
+ * `siteConfig.business` (hours, specialHours, timeZone); override with props.
+ * Works without JS (status shows the week summary until the script runs).
+ * Default slot renders after the list (e.g. "Appointments outside these
+ * hours on request").
+ *
+ *   <OpeningHours />
+ *   <OpeningHours variant="bare" density="compact" title={false} />
+ *   <OpeningHours orientation="horizontal" headingLevel={3} />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import type { HoursProps } from "./data"
+import OpeningHoursList from "./OpeningHoursList.astro"
+import OpeningHoursSpecial from "./OpeningHoursSpecial.astro"
+import OpeningHoursStatus from "./OpeningHoursStatus.astro"
+import {
+  openingHoursVariants,
+  type OpeningHoursListVariants,
+  type OpeningHoursVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  OpeningHoursVariants &
+  OpeningHoursListVariants &
+  HoursProps & {
+    /** Heading text; `false` for none. */
+    title?: string | false
+    headingLevel?: HeadingLevel
+    /** Show the live "Open now" badge. */
+    showStatus?: boolean
+    /** Heading of the special hours list; `false` for none. */
+    specialTitle?: string | false
+    /** Id for the heading, to reference from a wrapping `aria-labelledby`. */
+    headingId?: string
+  }
+
+const {
+  hours,
+  specialHours,
+  timeZone,
+  locale,
+  labels,
+  title = "Opening hours",
+  headingLevel = 2,
+  showStatus = true,
+  specialTitle = "Upcoming changes",
+  headingId,
+  variant,
+  orientation,
+  density,
+  class: className,
+  ...rest
+} = Astro.props
+
+const hoursProps = { hours, specialHours, timeZone, locale, labels }
+const Heading = `h${headingLevel}` as const
+const subLevel = Math.min(headingLevel + 1, 6) as HeadingLevel
+---
+
+<div
+  data-slot="opening-hours"
+  class={cn(openingHoursVariants({ variant }), className)}
+  {...rest}
+>
+  {(title || showStatus) && (
+    <div
+      data-slot="opening-hours-header"
+      class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
+    >
+      {title && (
+        <Heading id={headingId} data-slot="opening-hours-title" class="text-xl">
+          {title}
+        </Heading>
+      )}
+      {showStatus && <OpeningHoursStatus {...hoursProps} size="sm" />}
+    </div>
+  )}
+  <OpeningHoursList
+    {...hoursProps}
+    orientation={orientation}
+    density={density}
+  />
+  <slot />
+  <OpeningHoursSpecial
+    {...hoursProps}
+    title={specialTitle || undefined}
+    headingLevel={title ? subLevel : headingLevel}
+    class="border-t pt-4"
+  />
+</div>

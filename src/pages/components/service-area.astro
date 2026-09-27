@@ -1,0 +1,108 @@
+---
+import ServiceArea from "@/components/blocks/service-area/ServiceArea.astro"
+import ServiceAreaList from "@/components/blocks/service-area/ServiceAreaList.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const towns = [
+  "Bristol",
+  "Bath",
+  "Keynsham",
+  "Portishead",
+  "Clevedon",
+  "Nailsea",
+  "Thornbury",
+  "Yate",
+  "Chipping Sodbury",
+  "Weston-super-Mare",
+  "Midsomer Norton",
+  "Radstock",
+]
+---
+
+<Showcase
+  title="Service area"
+  description="Towns and areas a business covers, from siteConfig.business.areaServed, with a call-to-action for everyone else."
+>
+  <Demo
+    title="Chips"
+    description="Default variant. The CTA defaults to calling siteConfig.contact.phone."
+    bleed
+  >
+    <ServiceArea
+      areas={towns}
+      headingLevel={3}
+      headingId="service-area-chips"
+      eyebrow="Plumbing and heating"
+      lede="Same-day call-outs across Bristol, Bath and North Somerset."
+    />
+  </Demo>
+
+  <Demo
+    title="Columns"
+    description={`variant="columns" tone="muted", custom CTA.`}
+    bleed
+  >
+    <ServiceArea
+      areas={towns}
+      variant="columns"
+      tone="muted"
+      headingLevel={3}
+      headingId="service-area-columns"
+      title="Where we work"
+      cta={{
+        text: "Outside these areas?",
+        label: "Ask for a quote",
+        href: "/contact",
+        icon: "lucide:message-square",
+      }}
+    />
+  </Demo>
+
+  <Demo
+    title="Inline, centred"
+    description={`variant="inline" align="center" tone="primary", prefix and suffix.`}
+    bleed
+  >
+    <ServiceArea
+      areas={["Harrogate", "Knaresborough", "Ripon", "Wetherby"]}
+      variant="inline"
+      align="center"
+      tone="primary"
+      width="narrow"
+      headingLevel={3}
+      headingId="service-area-inline"
+      title="Mobile dog grooming"
+      prefix="Our van visits"
+      suffix="and the villages in between."
+    />
+  </Demo>
+
+  <Demo
+    title="Site config, no CTA"
+    description="No props except cta={false}: areas from siteConfig.business.areaServed."
+    bleed
+  >
+    <ServiceArea headingLevel={3} headingId="service-area-config" cta={false} />
+  </Demo>
+
+  <Demo
+    title="List only"
+    description="ServiceAreaList on its own (e.g. in a footer or sidebar)."
+  >
+    <div class="flex flex-col gap-6">
+      <ServiceAreaList areas={towns.slice(0, 6)} />
+      <ServiceAreaList
+        areas={towns.slice(0, 6)}
+        variant="columns"
+        icon="lucide:check"
+      />
+      <ServiceAreaList
+        areas={towns.slice(0, 4)}
+        variant="inline"
+        prefix="Covering"
+        class="text-base text-muted-foreground"
+      />
+    </div>
+  </Demo>
+</Showcase>

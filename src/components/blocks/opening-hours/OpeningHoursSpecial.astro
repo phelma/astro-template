@@ -1,0 +1,94 @@
+---
+/**
+ * Upcoming special hours and closures ("Thu 25 – Fri 26 Dec: Closed
+ * (Christmas)"). Entries that ended before the build are left out; the
+ * bundled script hides ones that end after it. Renders nothing when there
+ * are none. Heading optional (`title`, `headingLevel`).
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import {
+  formatDateSpan,
+  formatRanges,
+  specialRanges,
+  todayIn,
+  upcomingSpecialHours,
+} from "@/lib/hours"
+import { cn } from "@/lib/utils"
+
+import { hoursJson, resolveHours, type HoursProps } from "./data"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  HoursProps & {
+    title?: string
+    headingLevel?: HeadingLevel
+    /** Only list entries starting within this many days. */
+    withinDays?: number
+  }
+
+const {
+  hours,
+  specialHours,
+  timeZone,
+  locale,
+  labels,
+  title,
+  headingLevel = 3,
+  withinDays = 90,
+  class: className,
+  ...rest
+} = Astro.props
+
+const data = resolveHours({ hours, specialHours, timeZone, locale, labels })
+const entries = upcomingSpecialHours(
+  data.specialHours,
+  todayIn(data.timeZone),
+  withinDays
+)
+const Heading = `h${headingLevel}` as const
+---
+
+{entries.length > 0 && (
+  <div
+    data-slot="opening-hours-special"
+    data-hours={hoursJson({ ...data, hours: [], specialHours: [] })}
+    class={cn("flex flex-col gap-2", className)}
+    {...rest}
+  >
+    {title && (
+      <Heading data-slot="opening-hours-special-title" class="text-base">
+        {title}
+      </Heading>
+    )}
+    <ul data-slot="opening-hours-special-list" class="flex flex-col gap-1">
+      {entries.map((entry) => {
+        const ranges = specialRanges(entry)
+        return (
+          <li
+            data-slot="opening-hours-special-item"
+            data-until={entry.until ?? entry.from}
+            data-closed={ranges.length === 0 ? "" : undefined}
+            class="flex flex-wrap items-baseline justify-between gap-x-4 text-sm"
+          >
+            <span>
+              <span class="font-medium">
+                {formatDateSpan(entry, data.locale)}
+              </span>
+              {entry.label && (
+                <span class="text-muted-foreground"> ({entry.label})</span>
+              )}
+            </span>
+            <span class="tabular-nums">
+              {formatRanges(ranges, data.locale, data.labels)}
+            </span>
+          </li>
+        )
+      })}
+    </ul>
+  </div>
+)}
+
+<script>
+  import "./client"
+</script>

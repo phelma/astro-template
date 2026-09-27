@@ -1,0 +1,99 @@
+---
+/**
+ * Live open/closed badge: "Open now · closes 5:30pm", "Closed · opens Mon
+ * 9am". The build can't know the time, so it renders the week summary
+ * (`data-state="unknown"`); the bundled script (./client.ts) replaces it with
+ * the live status and refreshes every minute. Hours default to
+ * `siteConfig.business`; pass `hours`, `specialHours`, `timeZone` to override.
+ *
+ *   <OpeningHoursStatus />
+ *   <OpeningHoursStatus variant="plain" density="compact" size="sm" />
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { summariseHours } from "@/lib/hours"
+import { cn } from "@/lib/utils"
+
+import { hoursJson, resolveHours, type HoursProps } from "./data"
+import {
+  openingHoursStatusDotVariants,
+  openingHoursStatusVariants,
+  type OpeningHoursStatusVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"p"> &
+  OpeningHoursStatusVariants &
+  HoursProps & {
+    /** Minutes before closing that count as "closing soon". */
+    soonMinutes?: number
+    /** Element to render; "span" inside inline text. */
+    as?: "p" | "span" | "div"
+  }
+
+const {
+  hours,
+  specialHours,
+  timeZone,
+  locale,
+  labels,
+  soonMinutes = 30,
+  as: Tag = "p",
+  variant,
+  size,
+  density,
+  class: className,
+  ...rest
+} = Astro.props
+
+const data = resolveHours({ hours, specialHours, timeZone, locale, labels })
+const summary = summariseHours(data.hours, data.locale, {
+  labels: data.labels,
+})
+---
+
+{data.hours.length > 0 && (
+  <Tag
+    data-slot="opening-hours-status"
+    data-state="unknown"
+    data-hours={hoursJson(data, { soonMinutes })}
+    class={cn(
+      openingHoursStatusVariants({ variant, size, density }),
+      className
+    )}
+    {...rest}
+  >
+    <span
+      data-slot="opening-hours-status-dot"
+      class={openingHoursStatusDotVariants()}
+      aria-hidden="true"
+    />
+    <Icon
+      name="lucide:clock"
+      data-slot="opening-hours-status-icon"
+      class="hidden size-[1.1em] shrink-0 group-data-[state=unknown]/status:inline-block"
+      aria-hidden="true"
+    />
+    <span class="flex flex-wrap items-baseline gap-x-1.5">
+      <span data-slot="opening-hours-status-label" hidden />
+      <span
+        data-slot="opening-hours-status-separator"
+        class="text-muted-foreground group-data-[state=unknown]/status:hidden"
+        aria-hidden="true"
+        hidden
+      >
+        ·
+      </span>
+      <span
+        data-slot="opening-hours-status-detail"
+        class="font-normal group-data-[state=unknown]/status:block!"
+      >
+        {summary}
+      </span>
+    </span>
+  </Tag>
+)}
+
+<script>
+  import "./client"
+</script>

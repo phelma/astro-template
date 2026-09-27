@@ -1,0 +1,99 @@
+---
+/**
+ * The weekly hours as a definition list (day → times). `density="full"` has
+ * one row per day (Monday first, closed days included); `"compact"` groups
+ * days with identical hours ("Mon–Fri"). Today's row is highlighted by the
+ * bundled script (`data-today`, `aria-current="date"`), which also swaps in
+ * special hours that fall in the coming week.
+ *
+ *   <OpeningHoursList orientation="horizontal" />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import {
+  DAYS,
+  formatDay,
+  formatDays,
+  formatRanges,
+  groupWeek,
+  normaliseWeek,
+} from "@/lib/hours"
+import { cn } from "@/lib/utils"
+
+import { hoursJson, resolveHours, type HoursProps } from "./data"
+import {
+  openingHoursListVariants,
+  openingHoursRowVariants,
+  type OpeningHoursListVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"dl"> & OpeningHoursListVariants & HoursProps
+
+const {
+  hours,
+  specialHours,
+  timeZone,
+  locale,
+  labels,
+  orientation,
+  density,
+  class: className,
+  ...rest
+} = Astro.props
+
+const data = resolveHours({ hours, specialHours, timeZone, locale, labels })
+const week = normaliseWeek(data.hours)
+const dayWidth = orientation === "horizontal" ? "short" : "long"
+
+const rows =
+  density === "compact"
+    ? groupWeek(week).map((group) => ({
+        days: group.days,
+        label: formatDays(group.days, data.locale),
+        times: formatRanges(group.ranges, data.locale, data.labels),
+        closed: group.ranges.length === 0,
+      }))
+    : DAYS.map((day) => ({
+        days: [day],
+        label: formatDay(day, data.locale, dayWidth),
+        times: formatRanges(week[day], data.locale, data.labels),
+        closed: week[day].length === 0,
+      }))
+---
+
+<dl
+  data-slot="opening-hours-list"
+  data-hours={hoursJson(data)}
+  class={cn(openingHoursListVariants({ orientation, density }), className)}
+  {...rest}
+>
+  {rows.map((row) => (
+    <div
+      data-slot="opening-hours-row"
+      data-days={row.days.join(" ")}
+      data-closed={row.closed ? "" : undefined}
+      class={openingHoursRowVariants({ orientation, density })}
+    >
+      <dt data-slot="opening-hours-day">
+        {row.label}
+        <span data-slot="opening-hours-today" class="sr-only" hidden>
+          ({data.labels.today})
+        </span>
+      </dt>
+      <dd
+        data-slot="opening-hours-times"
+        class={cn(
+          "text-right tabular-nums",
+          orientation === "horizontal" && "md:text-center",
+          row.closed && "text-muted-foreground"
+        )}
+      >
+        {row.times}
+      </dd>
+    </div>
+  ))}
+</dl>
+
+<script>
+  import "./client"
+</script>

@@ -1,0 +1,103 @@
+---
+import MobileActions from "@/components/blocks/mobile-actions/MobileActions.astro"
+import type { ActionData } from "@/components/blocks/mobile-actions/actions"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+// Example business (props, not global config).
+const salon: Partial<ActionData> = {
+  name: "Tresses Hair Studio",
+  phone: "0161 496 0321",
+  whatsapp: "447700900321",
+  whatsappText: "Hi, I'd like to book an appointment",
+  email: "hello@tresses.example",
+  address: {
+    streetAddress: "14 Market Street",
+    addressLocality: "Hebden Bridge",
+    postalCode: "HX7 6AA",
+    addressCountry: "GB",
+  },
+  bookingUrl: "https://example.com/book",
+}
+---
+
+<Showcase
+  title="Mobile actions"
+  description="Bottom action bar for phones: call, WhatsApp, email, directions, book. Actions with missing data are skipped. Enable site-wide with siteConfig.mobileActions."
+>
+  <Demo
+    title="Bar"
+    description={`variant="bar" (default). Shown with position="static" here; on the site it's fixed to the bottom below md.`}
+  >
+    <MobileActions
+      position="static"
+      label="Quick contact (bar example)"
+      actions={["call", "whatsapp", "directions", "book"]}
+      data={salon}
+      class="mx-auto max-w-md"
+    />
+  </Demo>
+
+  <Demo
+    title="Floating"
+    description={`variant="floating": a pill above the bottom edge.`}
+  >
+    <MobileActions
+      variant="floating"
+      position="static"
+      label="Quick contact (floating example)"
+      actions={["call", "directions"]}
+      data={salon}
+    />
+  </Demo>
+
+  <Demo
+    title="Split"
+    description={`variant="split": the first action is the main call to action.`}
+  >
+    <MobileActions
+      variant="split"
+      position="static"
+      label="Quick contact (split example)"
+      actions={["book", "call", "whatsapp", "email"]}
+      data={salon}
+      labels={{ book: "Book online" }}
+      class="mx-auto max-w-md"
+    />
+  </Demo>
+
+  <Demo
+    title="Missing data is skipped"
+    description="Asked for call, WhatsApp, book and directions with only a phone number and map coordinates: WhatsApp and Book are skipped, Directions uses the coordinates."
+  >
+    <MobileActions
+      variant="split"
+      position="static"
+      label="Quick contact (skipped example)"
+      actions={["call", "whatsapp", "book", "directions"]}
+      data={{
+        phone: "01632 960123",
+        whatsapp: undefined,
+        bookingUrl: undefined,
+        address: undefined,
+        geo: { latitude: 53.74212, longitude: -2.01446 },
+      }}
+      class="mx-auto max-w-md"
+    />
+  </Demo>
+
+  <Demo
+    title="Fixed (live)"
+    description="The real thing: below the md breakpoint it's pinned to the bottom of the viewport, and the page gets bottom padding so the footer isn't covered."
+  >
+    <p class="text-sm text-muted-foreground">
+      Look at the bottom of the viewport on a phone-sized window.
+    </p>
+    <MobileActions
+      variant="bar"
+      label="Quick contact (fixed example)"
+      actions={["call", "whatsapp", "directions", "book"]}
+      data={salon}
+    />
+  </Demo>
+</Showcase>

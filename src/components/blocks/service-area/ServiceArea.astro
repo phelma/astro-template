@@ -1,0 +1,145 @@
+---
+/**
+ * Service area section: heading group, the towns covered
+ * (`siteConfig.business.areaServed` by default) and a call to action for
+ * everyone else ("Not listed? Call us on …", from `siteConfig.contact.phone`
+ * unless `cta` is given; `cta={false}` hides it). Default slot renders
+ * between the list and the CTA (e.g. a map).
+ *
+ *   <ServiceArea />
+ *   <ServiceArea variant="columns" tone="muted" title="Where we work" />
+ *   <ServiceArea variant="inline" prefix="We cover" cta={false} />
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { telHref } from "@/components/blocks/mobile-actions/actions"
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionHeaderVariants,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import ServiceAreaList from "./ServiceAreaList.astro"
+import type { ServiceAreaListVariants } from "./variants"
+
+interface Cta {
+  /** Lead-in text before the button ("Not listed?"). */
+  text?: string
+  label: string
+  href: string
+  icon?: string
+}
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  SectionVariants &
+  ContainerVariants &
+  Pick<ServiceAreaListVariants, "variant"> &
+  SectionHeaderVariants & {
+    areas?: string[]
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    /** Id for the heading; also labels the section. */
+    headingId?: string
+    /** Inline variant: text before the list. */
+    prefix?: string
+    /** Inline variant: text after the list. */
+    suffix?: string
+    /** Call to action below the list; `false` for none. */
+    cta?: Cta | false
+  }
+
+const { contact } = siteConfig
+const defaultCta: Cta | undefined = contact.phone
+  ? {
+      text: "Not listed? We may still be able to help.",
+      label: `Call ${contact.phone}`,
+      href: telHref(contact.phone),
+      icon: "lucide:phone",
+    }
+  : undefined
+
+const {
+  areas = siteConfig.business.areaServed,
+  title = "Areas we cover",
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  headingId = "service-area-title",
+  prefix,
+  suffix,
+  cta = defaultCta,
+  variant,
+  align,
+  tone,
+  spacing,
+  bordered,
+  width,
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+{areas.length > 0 && (
+  <Section
+    data-slot="service-area"
+    aria-labelledby={headingId}
+    tone={tone}
+    spacing={spacing}
+    bordered={bordered}
+    width={width}
+    class={className}
+    {...rest}
+  >
+    <SectionHeader
+      headingId={headingId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align}
+    />
+    <ServiceAreaList
+      areas={areas}
+      variant={variant}
+      align={align}
+      prefix={prefix}
+      suffix={suffix}
+    />
+    <slot />
+    {cta && (
+      <div
+        data-slot="service-area-cta"
+        class={cn(
+          "mt-8 flex flex-wrap items-center gap-x-4 gap-y-3",
+          align === "center" && "justify-center"
+        )}
+      >
+        {cta.text && (
+          <p data-slot="service-area-cta-text" class="text-muted-foreground">
+            {cta.text}
+          </p>
+        )}
+        <a
+          href={cta.href}
+          data-slot="service-area-cta-link"
+          class={cn(
+            buttonVariants({ variant: "outline", size: "lg" }),
+            "text-foreground"
+          )}
+        >
+          {cta.icon && <Icon name={cta.icon} aria-hidden="true" />}
+          {cta.label}
+        </a>
+      </div>
+    )}
+  </Section>
+)}
