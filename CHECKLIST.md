@@ -6,6 +6,68 @@ Every spec item, grouped by category. Copy into an issue or a note and tick as y
 
 Source: https://specification.website/checklist/ · Licensed CC BY 4.0
 
+## Follow-ups after the blocks work
+
+Checklist items that land with the local-business blocks (`feat/local-business-blocks`). Check each block against these once it's merged, then tick the items below. Several blocks were in progress when this was written (form, hours, map/embed/booking, gallery, testimonials, navbar, hero); FAQ was not started.
+
+### Every block
+
+- [ ] **Trusted Types is enforced** (`require-trusted-types-for 'script'; trusted-types 'none'`). Client scripts must not assign strings to `innerHTML` / `outerHTML` / `insertAdjacentHTML`, call `document.write` or `eval`, or set `script.src` from a string. Build DOM with `createElement` + `textContent`, or clone a `<template>`. Test each block's JS in `pnpm preview` (the CSP isn't applied in dev) and watch the console.
+- [ ] **CSP**: every new origin (embed, map, booking widget, form target, image host) is in the matching `security.csp.directives` entry in `astro.config.ts`.
+- [ ] **Permissions-Policy** in `public/_headers` denies `autoplay`, `encrypted-media`, `geolocation` and others for the page _and every iframe_. Video and booking embeds need some of these: allow per origin (e.g. `encrypted-media=(self "https://www.youtube-nocookie.com")`) and match the iframe's `allow` attribute.
+- [ ] **Markdown export**: open each block's output in `dist/*.md` (from a real page, not the `noindex` showcase). Mark controls that aren't content (lightbox buttons, map placeholders, carousel arrows) with `data-markdown-ignore`.
+- [ ] **Targets and motion**: interactive parts are at least 24px (44px for primary mobile actions such as call and directions), and animations respect `prefers-reduced-motion`.
+
+### Form block → Form labels, Accessible form errors, Status messages, Mobile-friendly form inputs, Redundant entry, Accessible authentication
+
+The field parts already handle labels, `aria-invalid`, `aria-describedby`, `autocomplete` and `inputmode`. Still needed:
+
+- [ ] A `Form` wrapper with the target as a prop (form service or Worker) and a honeypot field. The target's origin goes in CSP `form-action`.
+- [ ] Errors: on a failed submit, move focus to the first invalid field or to an error summary that links to each field. Error text is specific ("Enter an email address like name@example.com"), not colour-only, and `aria-invalid` is only set after the user has interacted or submitted.
+- [ ] Status: announce the submission result with `role="status"` (success) or `role="alert"` (failure), and keep the user's input on failure. Without JS, post to a thank-you page (`noindex` + `noindexPaths`).
+- [ ] Inputs: correct `type` (`email`, `tel`, `url`), `autocomplete` tokens (`name`, `email`, `tel`, `postal-code`, ...), `enterkeyhint` where useful. Don't ask for anything twice (no "confirm email").
+- [ ] Bot protection: honeypot or an invisible check (e.g. Turnstile, with its CSP origins). No puzzle CAPTCHAs.
+- [ ] Privacy: link the privacy policy next to submit, ask only for what's needed, and name the form processor on `/privacy`.
+
+### FAQ block (not started) → Hidden until found, Structured data
+
+- [ ] Exclusive accordion with `<details name="...">` / `<summary>`: no JS, keyboard-accessible, and find-in-page opens the matching answer.
+- [ ] `FAQPage` JSON-LD via a builder in `src/lib/seo.ts`, from the same data as the visible questions.
+- [ ] Markdown export: `<summary>` currently comes out as a plain paragraph. Render questions as bold or a heading in `src/lib/markdown-export.ts`.
+
+### Opening hours → Accessible data tables, Locale-aware content
+
+- [ ] A real `<table>` with a `<caption>`, `<th scope="row">` for days and `<th scope="col">` headers. Today's row is marked with text or `aria-current`, not only colour.
+- [ ] Day names and times formatted with `Intl` in `siteConfig.locale`. An "open now" state is computed in the business's time zone, and is updated client-side on a cached static page.
+- [ ] `openingHoursSpecification` (with special or holiday hours) in the `LocalBusiness` JSON-LD, from the same data as the table.
+- [ ] Markdown export: `<caption>` is dropped and the first row becomes the header. Emit the caption as a line before the table.
+
+### Map, embed and booking → Lazy loading, Captions and transcripts, Third-party scripts and privacy
+
+- [ ] Iframes have a descriptive `title` and `loading="lazy"`; nothing third-party loads before the click on a facade.
+- [ ] Privacy-friendly hosts (`youtube-nocookie.com`). Say on `/privacy` that loading an embed shares data with, and may set cookies for, the provider.
+- [ ] Video embeds take a transcript link or slot; captions are the provider's, so note it in the launch checklist.
+- [ ] A text alternative next to the map: address, a directions link and opening hours.
+
+### Gallery lightbox → Dragging movements, The inert attribute, Image alt text
+
+- [ ] Built on `<dialog>` with `showModal()` (makes the page behind it inert, closes on Esc, returns focus to the thumbnail).
+- [ ] Swipe gestures have next and previous buttons as an alternative.
+- [ ] Every image has meaningful `alt` (or `alt=""` with a caption); thumbnails lazy-load.
+
+### Testimonials → Structured data
+
+- [ ] `<figure>` / `<blockquote>` / `<figcaption>` markup.
+- [ ] No `Review` or `AggregateRating` JSON-LD about your own business: Google treats it as self-serving and it can trigger a manual action.
+
+### Navbar → Consistent help, Focus not obscured
+
+- [ ] Contact and phone links are in the same place on every page; the sticky header never covers focused elements (`scroll-padding-top` stays in sync with the header height, including the announcement bar).
+
+### Docs
+
+- [ ] README launch checklist: add uptime monitoring (Cloudflare health checks or an uptime service) under "After launch".
+
 ## Foundations
 
 The HTML, head, and document basics every page needs.
