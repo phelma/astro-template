@@ -1,0 +1,89 @@
+---
+import PageHeader from "@/components/sections/PageHeader.astro"
+import Prose from "@/components/sections/Prose.astro"
+import BaseLayout from "@/layouts/BaseLayout.astro"
+import { siteConfig } from "@/site.config"
+
+// TODO: replace this stub with a policy reviewed for your jurisdiction.
+// Update `lastUpdated` whenever the policy changes.
+const lastUpdated = new Date("2026-09-27")
+const owner = siteConfig.organisation.legalName ?? siteConfig.organisation.name
+const { email } = siteConfig.contact
+---
+
+<BaseLayout
+  title="Privacy policy"
+  description={`How ${siteConfig.name} handles your personal data.`}
+  breadcrumbs={[{ name: "Home", href: "/" }, { name: "Privacy policy" }]}
+>
+  <PageHeader title="Privacy policy" />
+  <Prose>
+    <aside
+      aria-label="Template note"
+      class="rounded-lg border border-dashed bg-muted p-4 text-sm text-muted-foreground"
+    >
+      <p>
+        <strong class="text-foreground">Replace this page.</strong> This is a
+        starting point, not legal advice. Edit{" "}
+        <code>src/pages/privacy.astro</code> to describe what you actually
+        collect, and update it whenever you add analytics, forms, embeds or
+        other third-party services.
+      </p>
+    </aside>
+
+    <p>
+      Last updated:
+      <time datetime={lastUpdated.toISOString().slice(0, 10)}>
+        {lastUpdated.toLocaleDateString(siteConfig.locale, {
+          dateStyle: "long",
+        })}
+      </time>
+    </p>
+
+    <h2>Who we are</h2>
+    <p>
+      This website is operated by {owner}. [Replace: add your registered address
+      and company number if applicable.]
+    </p>
+
+    <h2>Cookies and tracking</h2>
+    <p>
+      This website does not set cookies and does not use analytics, advertising
+      or tracking scripts. Your colour mode preference (light, dark or system)
+      is stored in your browser's local storage; it never leaves your device.
+    </p>
+    <p>
+      [Replace: if you add analytics, embeds, fonts from third-party servers or
+      a contact form, list them here with what they collect, why, and for how
+      long.]
+    </p>
+
+    <h2>Server logs</h2>
+    <p>
+      Our hosting provider may process technical data such as your IP address
+      and browser type to deliver and secure the site. [Replace: name your
+      hosting provider and link to its privacy policy.]
+    </p>
+
+    <h2>Your rights</h2>
+    <p>
+      Depending on where you live, you may have the right to access, correct or
+      delete personal data we hold about you. [Replace: describe how people can
+      exercise their rights and the lawful basis for processing.]
+    </p>
+
+    <h2>Contact</h2>
+    {email ? (
+      <p>
+        Questions about this policy? Email{" "}
+        <a href={`mailto:${email}`}>{email}</a> or see our{" "}
+        <a href="/contact">contact details</a>.
+      </p>
+    ) : (
+      <p>
+        Questions about this policy? See our{" "}
+        <a href="/contact">contact details</a>.
+      </p>
+    )}
+  </Prose>
+</BaseLayout>

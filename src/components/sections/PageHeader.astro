@@ -1,0 +1,16 @@
+---
+/**
+ * Simple header for content pages: the page's single <h1> and an optional lede.
+ */
+interface Props {
+  title: string
+  lede?: string
+}
+
+const { title, lede } = Astro.props
+---
+
+<header class="mx-auto flex max-w-6xl flex-col gap-4 px-4 pt-10 pb-8 sm:px-6">
+  <h1 class="text-4xl sm:text-5xl">{title}</h1>
+  {lede && <p class="max-w-prose text-lg text-muted-foreground">{lede}</p>}
+</header>

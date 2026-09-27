@@ -1,0 +1,36 @@
+---
+import PageHeader from "@/components/sections/PageHeader.astro"
+import Prose from "@/components/sections/Prose.astro"
+import BaseLayout from "@/layouts/BaseLayout.astro"
+import { siteConfig } from "@/site.config"
+---
+
+<BaseLayout
+  title="About"
+  description={`About ${siteConfig.name}: who we are and how we work.`}
+  breadcrumbs={[{ name: "Home", href: "/" }, { name: "About" }]}
+>
+  <PageHeader
+    title={`About ${siteConfig.name}`}
+    lede="Placeholder copy. Replace this page with your own story."
+  />
+  <Prose>
+    <p>
+      {siteConfig.name} is a small studio that designs and builds websites. This
+      paragraph is template placeholder text: say who you are, who you help and
+      why it matters.
+    </p>
+
+    <h2>How we work</h2>
+    <ul>
+      <li>Start with content and the people reading it.</li>
+      <li>Ship small, fast pages that work without JavaScript.</li>
+      <li>Measure, learn and improve.</li>
+    </ul>
+
+    <h2>Work with us</h2>
+    <p>
+      Have a project in mind? <a href="/contact">Get in touch with our team</a>.
+    </p>
+  </Prose>
+</BaseLayout>

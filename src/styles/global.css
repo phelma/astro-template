@@ -10,8 +10,10 @@
 @import "./themes/default.css";
 @import "./themes/bold.css";
 
-/* shadcn dark variant: `.dark` class on <html>, set by the head script. */
-@custom-variant dark (&:is(.dark *));
+/* shadcn dark variant: `.dark` class on <html>, set by the head script.
+   A `.light` element inside `.dark` opts its subtree back out (used by the
+   styleguide to preview light and dark side by side). */
+@custom-variant dark (&:is(.dark *):not(:where(.dark .light *)));
 
 /* Per-theme variants for structural tweaks tokens can't express,
    e.g. `theme-bold:uppercase`. Add one per theme. */

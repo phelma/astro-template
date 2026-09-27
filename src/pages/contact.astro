@@ -1,0 +1,142 @@
+---
+import { Icon } from "astro-icon/components"
+
+import PageHeader from "@/components/sections/PageHeader.astro"
+import JsonLd from "@/components/seo/JsonLd.astro"
+import BaseLayout from "@/layouts/BaseLayout.astro"
+import { absoluteUrl, organizationId, pagePath, websiteId } from "@/lib/seo"
+import { siteConfig } from "@/site.config"
+
+const { email, phone, address, socials } = siteConfig.contact
+const title = "Contact"
+const description = `How to contact ${siteConfig.name}: email, phone, address and social profiles.`
+
+// "+44 20 7946 0000" -> "tel:+442079460000"
+const telHref = phone ? `tel:${phone.replace(/[^\d+]/g, "")}` : undefined
+const countryName = address
+  ? new Intl.DisplayNames([siteConfig.locale], { type: "region" }).of(
+      address.addressCountry
+    )
+  : undefined
+
+const contactPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  url: absoluteUrl(pagePath(Astro.url.pathname), Astro.site),
+  name: `${title} | ${siteConfig.name}`,
+  description,
+  isPartOf: { "@id": websiteId(Astro.site) },
+  about: { "@id": organizationId(Astro.site) },
+}
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  breadcrumbs={[{ name: "Home", href: "/" }, { name: title }]}
+>
+  <JsonLd slot="head" data={contactPageSchema} />
+
+  <PageHeader
+    title={`Contact ${siteConfig.name}`}
+    lede="We usually reply within two working days."
+  />
+
+  <div class="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+    <dl class="grid max-w-3xl gap-8 sm:grid-cols-2">
+      {email && (
+        <div class="flex flex-col gap-1">
+          <dt class="flex items-center gap-2 font-medium">
+            <Icon name="lucide:mail" class="size-4" aria-hidden="true" />
+            Email
+          </dt>
+          <dd>
+            <a
+              href={`mailto:${email}`}
+              class="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              {email}
+            </a>
+          </dd>
+        </div>
+      )}
+
+      {phone && (
+        <div class="flex flex-col gap-1">
+          <dt class="flex items-center gap-2 font-medium">
+            <Icon name="lucide:phone" class="size-4" aria-hidden="true" />
+            Phone
+          </dt>
+          <dd>
+            <a
+              href={telHref}
+              class="text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              {phone}
+            </a>
+          </dd>
+        </div>
+      )}
+
+      {address && (
+        <div class="flex flex-col gap-1">
+          <dt class="flex items-center gap-2 font-medium">
+            <Icon name="lucide:map-pin" class="size-4" aria-hidden="true" />
+            Address
+          </dt>
+          <dd>
+            <address class="text-muted-foreground not-italic">
+              {siteConfig.organisation.legalName ??
+                siteConfig.organisation.name}
+              <br />
+              {address.streetAddress}
+              <br />
+              {address.addressLocality}
+              {address.addressRegion && (
+                <>
+                  <br />
+                  {address.addressRegion}
+                </>
+              )}
+              <br />
+              {address.postalCode}
+              <br />
+              {countryName}
+            </address>
+          </dd>
+        </div>
+      )}
+
+      {socials.length > 0 && (
+        <div class="flex flex-col gap-1">
+          <dt class="flex items-center gap-2 font-medium">
+            <Icon name="lucide:at-sign" class="size-4" aria-hidden="true" />
+            Social
+          </dt>
+          <dd>
+            <ul class="flex flex-col gap-1">
+              {socials.map((social) => (
+                <li>
+                  <a
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer me"
+                    class="inline-flex min-h-6 items-center gap-2 text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                  >
+                    <Icon
+                      name={social.icon}
+                      class="size-4"
+                      aria-hidden="true"
+                    />
+                    {siteConfig.name} on {social.label}
+                    <span class="sr-only">(opens in a new tab)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      )}
+    </dl>
+  </div>
+</BaseLayout>

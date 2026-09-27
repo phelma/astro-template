@@ -1,0 +1,44 @@
+---
+import { Icon } from "astro-icon/components"
+
+import { buttonVariants } from "@/components/ui/button"
+import BaseLayout from "@/layouts/BaseLayout.astro"
+import { siteConfig } from "@/site.config"
+
+const links = siteConfig.nav.filter((link) => link.href !== "/")
+---
+
+<BaseLayout
+  title="Page not found"
+  description="The page you are looking for could not be found."
+  noindex
+>
+  <section class="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-24 sm:px-6">
+    <p class="font-mono text-sm text-muted-foreground">Error 404</p>
+    <h1 class="text-4xl sm:text-5xl">Page not found</h1>
+    <p class="max-w-prose text-lg text-muted-foreground">
+      The page may have moved or no longer exists. Check the address, or use one
+      of the links below.
+    </p>
+    <a href="/" class={buttonVariants({ size: "lg" })}>
+      <Icon name="lucide:house" aria-hidden="true" />
+      Go to the home page
+    </a>
+    {links.length > 0 && (
+      <nav aria-label="Helpful links">
+        <ul class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          {links.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="inline-flex min-h-6 items-center underline underline-offset-4 hover:text-muted-foreground"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
+  </section>
+</BaseLayout>

@@ -1,0 +1,572 @@
+---
+/**
+ * Living styleguide (noindex, excluded from the sitemap in astro.config.ts).
+ *
+ * Shows every colour token, each available theme in light and dark, the
+ * type scale, radius/shadow scales and every installed shadcn component.
+ * Theme previews are scoped with `data-theme` + `.light`/`.dark` on a
+ * wrapper, which the theme CSS and the `dark:` variant both support.
+ */
+import { Icon } from "astro-icon/components"
+
+import ThemeSwitcher from "@/components/theme/ThemeSwitcher.astro"
+import ThemeToggle from "@/components/theme/ThemeToggle.astro"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
+import BaseLayout from "@/layouts/BaseLayout.astro"
+import { siteConfig } from "@/site.config"
+import { themes } from "@/styles/themes"
+
+// Class names are spelled out in full so Tailwind can detect them.
+const colorGroups = [
+  {
+    name: "Base",
+    tokens: [
+      ["background", "bg-background"],
+      ["foreground", "bg-foreground"],
+      ["card", "bg-card"],
+      ["card-foreground", "bg-card-foreground"],
+      ["popover", "bg-popover"],
+      ["popover-foreground", "bg-popover-foreground"],
+      ["primary", "bg-primary"],
+      ["primary-foreground", "bg-primary-foreground"],
+      ["secondary", "bg-secondary"],
+      ["secondary-foreground", "bg-secondary-foreground"],
+      ["muted", "bg-muted"],
+      ["muted-foreground", "bg-muted-foreground"],
+      ["accent", "bg-accent"],
+      ["accent-foreground", "bg-accent-foreground"],
+      ["destructive", "bg-destructive"],
+      ["border", "bg-border"],
+      ["input", "bg-input"],
+      ["ring", "bg-ring"],
+    ],
+  },
+  {
+    name: "Chart",
+    tokens: [
+      ["chart-1", "bg-chart-1"],
+      ["chart-2", "bg-chart-2"],
+      ["chart-3", "bg-chart-3"],
+      ["chart-4", "bg-chart-4"],
+      ["chart-5", "bg-chart-5"],
+    ],
+  },
+  {
+    name: "Sidebar",
+    tokens: [
+      ["sidebar", "bg-sidebar"],
+      ["sidebar-foreground", "bg-sidebar-foreground"],
+      ["sidebar-primary", "bg-sidebar-primary"],
+      ["sidebar-primary-foreground", "bg-sidebar-primary-foreground"],
+      ["sidebar-accent", "bg-sidebar-accent"],
+      ["sidebar-accent-foreground", "bg-sidebar-accent-foreground"],
+      ["sidebar-border", "bg-sidebar-border"],
+      ["sidebar-ring", "bg-sidebar-ring"],
+    ],
+  },
+] as const
+
+const previewSwatches = [
+  "bg-primary",
+  "bg-secondary",
+  "bg-muted",
+  "bg-accent",
+  "bg-destructive",
+  "bg-chart-1",
+  "bg-chart-2",
+  "bg-chart-3",
+] as const
+
+const modes = ["light", "dark"] as const
+
+// Mirrors the heading sizes used across the template's pages.
+const typeScale = [
+  {
+    label: "h1",
+    classes: "text-4xl sm:text-5xl",
+    note: "text-4xl sm:text-5xl",
+  },
+  { label: "h2", classes: "text-3xl", note: "text-3xl" },
+  { label: "h3", classes: "text-2xl", note: "text-2xl" },
+  { label: "h4", classes: "text-xl", note: "text-xl" },
+  { label: "h5", classes: "text-lg", note: "text-lg" },
+  { label: "h6", classes: "text-base", note: "text-base" },
+] as const
+
+const radii = [
+  "rounded-sm",
+  "rounded-md",
+  "rounded-lg",
+  "rounded-xl",
+  "rounded-2xl",
+  "rounded-3xl",
+  "rounded-4xl",
+] as const
+
+const shadows = [
+  "shadow-2xs",
+  "shadow-xs",
+  "shadow-sm",
+  "shadow-md",
+  "shadow-lg",
+  "shadow-xl",
+  "shadow-2xl",
+] as const
+
+const buttonVariantNames = [
+  "default",
+  "secondary",
+  "outline",
+  "ghost",
+  "destructive",
+  "link",
+] as const
+const buttonSizes = ["xs", "sm", "default", "lg"] as const
+const iconSizes = ["icon-xs", "icon-sm", "icon", "icon-lg"] as const
+const badgeVariantNames = [
+  "default",
+  "secondary",
+  "outline",
+  "ghost",
+  "destructive",
+  "link",
+] as const
+
+const sections = [
+  ["controls", "Controls"],
+  ["colours", "Colour tokens"],
+  ["themes", "Themes"],
+  ["typography", "Typography"],
+  ["radius", "Radius"],
+  ["shadows", "Shadows"],
+  ["components", "Components"],
+] as const
+
+const headingStyle =
+  "font-heading font-(--heading-weight) tracking-(--heading-tracking) text-balance"
+---
+
+<BaseLayout
+  title="Styleguide"
+  description="Design tokens, themes, typography and components used by this site."
+  noindex
+>
+  <div class="mx-auto flex max-w-6xl flex-col gap-16 px-4 py-12 sm:px-6">
+    <header class="flex flex-col gap-4">
+      <h1 class="text-4xl sm:text-5xl">Styleguide</h1>
+      <p class="max-w-prose text-lg text-muted-foreground">
+        Tokens, themes and components for {siteConfig.name}. This page is not
+        indexed and is excluded from the sitemap.
+      </p>
+      <nav aria-label="Styleguide sections">
+        <ul class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          {sections.map(([id, label]) => (
+            <li>
+              <a
+                href={`#${id}`}
+                class="inline-flex min-h-6 items-center underline underline-offset-4 hover:text-muted-foreground"
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+
+    <section aria-labelledby="controls" class="flex flex-col gap-4">
+      <h2 id="controls" class="text-3xl">
+        Controls
+      </h2>
+      <p class="max-w-prose text-muted-foreground">
+        Change the colour mode and theme for the whole site. The theme picker
+        only renders when <code class="font-mono text-sm">theme.switcher</code>
+        is <code class="font-mono text-sm">true</code> in
+        <code class="font-mono text-sm">src/site.config.ts</code>; every theme
+        is previewed below regardless.
+      </p>
+      <div class="flex flex-wrap items-center gap-3">
+        <ThemeToggle name="color-mode-styleguide" />
+        <ThemeSwitcher id="theme-switcher-styleguide" />
+      </div>
+    </section>
+
+    <section aria-labelledby="colours" class="flex flex-col gap-6">
+      <h2 id="colours" class="text-3xl">
+        Colour tokens
+      </h2>
+      <p class="max-w-prose text-muted-foreground">
+        Current theme and colour mode. Use these via Tailwind utilities such as
+        <code class="font-mono text-sm">bg-primary</code> or
+        <code class="font-mono text-sm">text-muted-foreground</code>; never
+        hard-code colours.
+      </p>
+      {colorGroups.map((group) => (
+        <div class="flex flex-col gap-3">
+          <h3 class="text-xl">{group.name}</h3>
+          <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {group.tokens.map(([token, bgClass]) => (
+              <li class="flex flex-col gap-2">
+                <span class={`h-14 rounded-md border ${bgClass}`} />
+                <code class="font-mono text-xs break-all">--{token}</code>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
+
+    <section aria-labelledby="themes" class="flex flex-col gap-6">
+      <h2 id="themes" class="text-3xl">
+        Themes
+      </h2>
+      <p class="max-w-prose text-muted-foreground">
+        Every available theme (
+        <code class="font-mono text-sm">siteConfig.theme.available</code>) in
+        light and dark. Default:
+        <strong>{themes[siteConfig.theme.default].label}</strong>.
+      </p>
+      {siteConfig.theme.available.map((name) => (
+        <div class="flex flex-col gap-3">
+          <h3 class="text-xl">
+            {themes[name].label}
+            <code class="ml-2 font-mono text-sm font-normal text-muted-foreground">
+              data-theme="{name}"
+            </code>
+          </h3>
+          <div class="grid gap-4 lg:grid-cols-2">
+            {modes.map((mode) => (
+              <div
+                data-theme={name}
+                class:list={[
+                  mode,
+                  mode === "dark" ? "scheme-dark" : "scheme-light",
+                  "flex flex-col gap-4 rounded-xl border bg-background p-6 font-sans tracking-normal text-foreground",
+                ]}
+              >
+                <p class="font-mono text-xs text-muted-foreground uppercase">
+                  {themes[name].label} / {mode}
+                </p>
+                <p class:list={[headingStyle, "text-2xl"]}>
+                  The quick brown fox
+                </p>
+                <p class="text-sm text-muted-foreground">
+                  Body text in muted foreground with a{" "}
+                  <a
+                    href="#themes"
+                    class="text-primary underline underline-offset-4"
+                  >
+                    sample link
+                  </a>
+                  .
+                </p>
+                <ul class="flex flex-wrap gap-1.5" aria-label="Key colours">
+                  {previewSwatches.map((bgClass) => (
+                    <li class={`size-6 rounded-sm border ${bgClass}`}>
+                      <span class="sr-only">{bgClass.replace("bg-", "")}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div class="flex flex-wrap items-center gap-2">
+                  <Button>Primary</Button>
+                  <Button variant="secondary">Secondary</Button>
+                  <Button variant="outline">Outline</Button>
+                  <Button variant="destructive">Delete</Button>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <Badge>Badge</Badge>
+                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge variant="outline">Outline</Badge>
+                </div>
+                <Card size="sm">
+                  <CardHeader>
+                    <CardTitle>Card title</CardTitle>
+                    <CardDescription>
+                      Cards use the card, border and shadow tokens.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Label htmlFor={`preview-${name}-${mode}`}>Email</Label>
+                    <Input
+                      id={`preview-${name}-${mode}`}
+                      type="email"
+                      placeholder="you@example.com"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
+
+    <section aria-labelledby="typography" class="flex flex-col gap-6">
+      <h2 id="typography" class="text-3xl">
+        Typography
+      </h2>
+      <p class="max-w-prose text-muted-foreground">
+        Headings use <code class="font-mono text-sm">--heading-font</code>,
+        <code class="font-mono text-sm">--heading-weight</code> and
+        <code class="font-mono text-sm">--heading-tracking</code> from the
+        theme. Samples below are styled like headings without adding to the
+        document outline.
+      </p>
+      <ul class="flex flex-col divide-y rounded-xl border">
+        {typeScale.map((item) => (
+          <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+            <code class="w-40 shrink-0 font-mono text-xs text-muted-foreground">
+              {item.label} / {item.note}
+            </code>
+            <p class:list={[headingStyle, item.classes]}>
+              Build fast, accessible websites
+            </p>
+          </li>
+        ))}
+        <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+          <code class="w-40 shrink-0 font-mono text-xs text-muted-foreground">
+            lead / text-lg
+          </code>
+          <p class="text-lg text-muted-foreground">
+            A lede paragraph introduces the page in a sentence or two.
+          </p>
+        </li>
+        <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+          <code class="w-40 shrink-0 font-mono text-xs text-muted-foreground">
+            body / text-base
+          </code>
+          <p class="max-w-prose">
+            Body copy is set in the theme's sans font. It should be comfortable
+            to read at around 60 to 75 characters per line.
+          </p>
+        </li>
+        <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+          <code class="w-40 shrink-0 font-mono text-xs text-muted-foreground">
+            small / text-sm
+          </code>
+          <p class="text-sm text-muted-foreground">
+            Small text for captions, metadata and help text.
+          </p>
+        </li>
+        <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+          <code class="w-40 shrink-0 font-mono text-xs text-muted-foreground">
+            mono / font-mono
+          </code>
+          <p class="font-mono text-sm">const answer = 42 // 0O 1lI</p>
+        </li>
+        <li class="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:gap-6">
+          <code class="w-40 shrink-0 font-mono text-xs text-muted-foreground">
+            serif / font-serif
+          </code>
+          <p class="font-serif">Serif text for quotes or editorial accents.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="radius" class="flex flex-col gap-6">
+      <h2 id="radius" class="text-3xl">
+        Radius
+      </h2>
+      <p class="max-w-prose text-muted-foreground">
+        Derived from the theme's <code class="font-mono text-sm">--radius</code>
+        .
+      </p>
+      <ul class="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-7">
+        {radii.map((radius) => (
+          <li class="flex flex-col gap-2">
+            <span
+              class={`h-16 border-2 border-foreground bg-muted ${radius}`}
+            />
+            <code class="font-mono text-xs">{radius}</code>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section aria-labelledby="shadows" class="flex flex-col gap-6">
+      <h2 id="shadows" class="text-3xl">
+        Shadows
+      </h2>
+      <ul class="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-7">
+        {shadows.map((shadow) => (
+          <li class="flex flex-col gap-3">
+            <span class={`h-16 rounded-lg border bg-card ${shadow}`} />
+            <code class="font-mono text-xs">{shadow}</code>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section aria-labelledby="components" class="flex flex-col gap-10">
+      <h2 id="components" class="text-3xl">
+        Components
+      </h2>
+
+      <div class="flex flex-col gap-4">
+        <h3 class="text-xl">Button</h3>
+        <div class="flex flex-col gap-3">
+          {buttonVariantNames.map((variant) => (
+            <div class="flex flex-wrap items-center gap-2">
+              <code class="w-24 font-mono text-xs text-muted-foreground">
+                {variant}
+              </code>
+              {buttonSizes.map((size) => (
+                <Button variant={variant} size={size}>
+                  {size}
+                </Button>
+              ))}
+            </div>
+          ))}
+          <div class="flex flex-wrap items-center gap-2">
+            <code class="w-24 font-mono text-xs text-muted-foreground">
+              icon
+            </code>
+            {iconSizes.map((size) => (
+              <Button
+                variant="outline"
+                size={size}
+                aria-label={`Add (${size})`}
+              >
+                <Icon name="lucide:plus" aria-hidden="true" />
+              </Button>
+            ))}
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <code class="w-24 font-mono text-xs text-muted-foreground">
+              states
+            </code>
+            <Button>
+              <Icon
+                name="lucide:send"
+                aria-hidden="true"
+                data-icon="inline-start"
+              />
+              With icon
+            </Button>
+            <Button disabled>Disabled</Button>
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div class="flex flex-col gap-4">
+        <h3 class="text-xl">Badge</h3>
+        <div class="flex flex-wrap items-center gap-2">
+          {badgeVariantNames.map((variant) => (
+            <Badge variant={variant}>{variant}</Badge>
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      <div class="flex flex-col gap-4">
+        <h3 class="text-xl">Card</h3>
+        <div class="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Card title</CardTitle>
+              <CardDescription>Card description goes here.</CardDescription>
+              <CardAction>
+                <Badge variant="secondary">New</Badge>
+              </CardAction>
+            </CardHeader>
+            <CardContent>
+              <p>
+                Card content. Cards are rendered at build time with no client
+                JavaScript.
+              </p>
+            </CardContent>
+            <CardFooter className="gap-2">
+              <Button size="sm">Action</Button>
+              <Button size="sm" variant="ghost">
+                Cancel
+              </Button>
+            </CardFooter>
+          </Card>
+          <Card size="sm">
+            <CardHeader>
+              <CardTitle>Small card</CardTitle>
+              <CardDescription>size="sm" tightens the spacing.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>Compact content.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div class="flex flex-col gap-4">
+        <h3 class="text-xl">Separator</h3>
+        <div class="flex h-6 items-center gap-4 text-sm">
+          <span>Horizontal above</span>
+          <Separator orientation="vertical" />
+          <span>Vertical between</span>
+          <Separator orientation="vertical" />
+          <span>Items</span>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div class="flex flex-col gap-4">
+        <h3 class="text-xl">Form controls</h3>
+        <p class="max-w-prose text-sm text-muted-foreground">
+          Demo only: the template ships without a form handler.
+        </p>
+        <div class="grid max-w-xl gap-6">
+          <div class="grid gap-2">
+            <Label htmlFor="sg-name">Name</Label>
+            <Input
+              id="sg-name"
+              name="name"
+              autoComplete="name"
+              placeholder="Ada Lovelace"
+            />
+          </div>
+          <div class="grid gap-2">
+            <Label htmlFor="sg-email">Email (invalid)</Label>
+            <Input
+              id="sg-email"
+              type="email"
+              defaultValue="not-an-email"
+              aria-invalid="true"
+              aria-describedby="sg-email-error"
+            />
+            <p id="sg-email-error" class="text-sm text-destructive">
+              Enter a valid email address.
+            </p>
+          </div>
+          <div class="grid gap-2">
+            <Label htmlFor="sg-disabled">Disabled</Label>
+            <Input id="sg-disabled" disabled placeholder="Disabled input" />
+          </div>
+          <div class="grid gap-2">
+            <Label htmlFor="sg-message">Message</Label>
+            <Textarea
+              id="sg-message"
+              placeholder="Tell us about your project"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
