@@ -1,0 +1,43 @@
+---
+/**
+ * Native radio button styled with tokens to match the shadcn Input: an
+ * `appearance: none` circle plus an overlaid dot. States: checked,
+ * focus-visible, disabled, `aria-invalid` and `:user-invalid`. Keyboard
+ * behaviour (arrow keys within a group) is the browser's; in forced-colours
+ * mode the native control is restored.
+ *
+ * `class` styles the wrapper; every other attribute goes on the <input>.
+ * Needs a label: use `ChoiceItem` / `ChoiceGroup`, or your own <label for>.
+ *
+ *   <Radio id="contact-phone" name="contact" value="phone" />
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import { radioVariants, type RadioVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"input">, "type"> & RadioVariants
+
+const { size, class: className, ...rest } = Astro.props
+---
+
+<span
+  data-slot="form-radio"
+  class={cn("inline-grid shrink-0 place-items-center", className)}
+>
+  <input
+    type="radio"
+    data-slot="form-radio-input"
+    class={cn(radioVariants({ size }))}
+    {...rest}
+  />
+  <span
+    aria-hidden="true"
+    data-slot="form-radio-indicator"
+    class={cn(
+      "pointer-events-none relative col-start-1 row-start-1 rounded-full bg-primary-foreground opacity-0 peer-checked:opacity-100 forced-colors:hidden",
+      size === "sm" ? "size-1.5" : "size-2"
+    )}
+  ></span>
+</span>

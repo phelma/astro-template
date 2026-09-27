@@ -1,0 +1,46 @@
+---
+/**
+ * Native file input in a dashed drop area (drop files onto the button, or
+ * click it). The browser's own "No file chosen" / "3 files" status stays, so
+ * it works without JS. States: focus-visible, disabled, `aria-invalid` and
+ * `:user-invalid`. The form needs `enctype="multipart/form-data"`.
+ *
+ * `class` styles the drop area; every other attribute (name, accept,
+ * multiple, required, id...) goes on the <input>. Label it with
+ * `FormField control="file"` or your own <label for>.
+ *
+ *   <FileInput id="photos" name="photos" accept="image/*" multiple />
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = Omit<HTMLAttributes<"input">, "type"> & {
+  /** astro-icon name shown above the button. */
+  icon?: string
+}
+
+const { icon = "lucide:image-plus", class: className, ...rest } = Astro.props
+---
+
+<div
+  data-slot="form-file"
+  class={cn(
+    "flex flex-col items-center gap-3 rounded-lg border border-dashed border-input bg-transparent p-6 text-center transition-[color,border-color,box-shadow] has-disabled:opacity-50 has-focus-visible:border-ring has-focus-visible:ring-3 has-focus-visible:ring-ring/50 has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 has-user-invalid:border-destructive dark:bg-input/30",
+    className
+  )}
+>
+  <Icon
+    name={icon}
+    aria-hidden="true"
+    data-slot="form-file-icon"
+    class="size-8 text-muted-foreground"
+  />
+  <input
+    type="file"
+    data-slot="form-file-input"
+    class="w-full max-w-full cursor-pointer text-sm text-muted-foreground outline-none file:mr-3 file:inline-flex file:min-h-11 file:cursor-pointer file:items-center file:rounded-md file:border file:border-border file:bg-background file:px-4 file:text-sm file:font-medium file:text-foreground file:shadow-xs hover:file:bg-muted disabled:cursor-not-allowed sm:w-auto md:file:min-h-9 dark:file:border-input dark:file:bg-input/30"
+    {...rest}
+  />
+</div>

@@ -1,0 +1,85 @@
+---
+/**
+ * Form root: a native <form> plus the progressive-enhancement validation
+ * script (./validate.ts), a honeypot, optional error summary and optional
+ * "sent" panel. Put `FormField`, `ChoiceGroup`, `CheckboxField` and a
+ * `FormSubmit` inside.
+ *
+ *   <Form id="enquiry" action="https://formspree.io/f/abcd" errorSummary
+ *     hiddenFields={{ _subject: "New enquiry" }}
+ *     success={{ title: "Thanks!", message: "We'll reply within a day." }}>
+ *     ...fields...
+ *   </Form>
+ *
+ * Works with Formspree, Web3Forms, Netlify Forms etc.: set `action`, pass
+ * their extra fields in `hiddenFields`, and match `honeypot` to their name.
+ * A third-party `action` origin must be added to `form-action` in the CSP
+ * (astro.config.ts). File inputs need `enctype="multipart/form-data"`.
+ * `validate={false}` leaves validation entirely to the browser.
+ * `class` and other attributes go on the <form>.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import FormErrorSummary from "./FormErrorSummary.astro"
+import FormHoneypot from "./FormHoneypot.astro"
+import FormSuccess from "./FormSuccess.astro"
+
+type Props = HTMLAttributes<"form"> & {
+  /** Extra `<input type="hidden">` fields (provider settings, subject...). */
+  hiddenFields?: Record<string, string>
+  /** Honeypot field name, or false for none. */
+  honeypot?: string | false
+  /** Enhance with inline validation (./validate.ts). */
+  validate?: boolean
+  /** Show an error summary on invalid submit; a string sets its title. */
+  errorSummary?: boolean | string
+  /** Panel shown when the URL has `?<sentParam>` (see FormSuccess). */
+  success?: { title?: string; message?: string }
+  /** Query parameter that shows the success panel. */
+  sentParam?: string
+}
+
+const {
+  id = "form",
+  method = "post",
+  hiddenFields = {},
+  honeypot = "_gotcha",
+  validate = true,
+  errorSummary = false,
+  success,
+  sentParam = "sent",
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+<form
+  id={id}
+  method={method}
+  data-slot="form"
+  data-form-validate={validate ? "" : undefined}
+  data-sent-param={success ? sentParam : undefined}
+  class={cn("flex flex-col gap-6", className)}
+  {...rest}
+>
+  {success && <FormSuccess {...success} />}
+  {errorSummary && (
+    <FormErrorSummary
+      id={`${id}-summary`}
+      title={typeof errorSummary === "string" ? errorSummary : undefined}
+    />
+  )}
+  {Object.entries(hiddenFields).map(([name, value]) => (
+    <input type="hidden" name={name} value={value} />
+  ))}
+  {honeypot && <FormHoneypot name={honeypot} idPrefix={id ?? "form"} />}
+  <slot />
+</form>
+
+<script>
+  import { initForms } from "./validate"
+
+  initForms()
+</script>

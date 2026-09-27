@@ -1,0 +1,143 @@
+---
+/**
+ * A group of radios or checkboxes in a <fieldset> with a legend,
+ * description and error message. Options come from `options` (or pass
+ * `ChoiceItem`s in the default slot). `variant="card"` renders large
+ * selectable cards with icons; `layout` arranges them (stack, inline, grid).
+ *
+ *   <ChoiceGroup type="radio" name="contact" legend="How should we contact you?"
+ *     options={[{ value: "phone", label: "Phone" }, { value: "email", label: "Email" }]}
+ *     value="phone" layout="inline" required />
+ *
+ * `required` on radios is native. On checkboxes it means "tick at least
+ * one", enforced by the `Form` validation script (not without JS).
+ * `class` and other attributes go on the <fieldset>.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import ChoiceItem from "./ChoiceItem.astro"
+import {
+  describedBy,
+  fieldIds,
+  messageAttributes,
+  slugify,
+  type FieldMessages,
+  type FormOption,
+} from "./form"
+import FormDescription from "./FormDescription.astro"
+import FormError from "./FormError.astro"
+import FormLabel from "./FormLabel.astro"
+import {
+  choiceGroupVariants,
+  formFieldVariants,
+  type ChoiceGroupVariants,
+  type ChoiceItemVariants,
+  type FormFieldVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"fieldset">, "id"> &
+  ChoiceGroupVariants &
+  ChoiceItemVariants &
+  FormFieldVariants & {
+    name: string
+    legend: string
+    /** Base for option ids; defaults to `name`. */
+    id?: string
+    type?: "radio" | "checkbox"
+    options?: FormOption[]
+    /** Checked value(s). */
+    value?: string | string[]
+    description?: string
+    error?: string
+    required?: boolean
+    disabled?: boolean
+    indicator?: "required" | "optional" | "none"
+    messages?: FieldMessages
+    size?: "default" | "sm"
+    legendClass?: string
+    optionsClass?: string
+  }
+
+const {
+  name,
+  legend,
+  id = name,
+  type = "radio",
+  options = [],
+  value,
+  description,
+  error,
+  required = false,
+  disabled,
+  indicator,
+  messages,
+  size,
+  variant,
+  layout,
+  span,
+  legendClass,
+  optionsClass,
+  class: className,
+  ...rest
+} = Astro.props
+
+const ids = fieldIds(id)
+const checkedValues = new Set([value ?? []].flat())
+const hasDescription = Boolean(description) || Astro.slots.has("description")
+---
+
+<fieldset
+  data-slot="form-choice-group"
+  data-form-field
+  data-form-group={type}
+  data-required-group={type === "checkbox" && required ? "" : undefined}
+  aria-describedby={describedBy(
+    hasDescription && ids.description,
+    error && ids.error
+  )}
+  disabled={disabled}
+  class={cn(formFieldVariants({ span }), "min-w-0 gap-3", className)}
+  {...messageAttributes(messages)}
+  {...rest}
+>
+  <FormLabel
+    as="legend"
+    required={required}
+    indicator={indicator}
+    class={cn("mb-2 w-full", legendClass)}
+  >
+    {legend}
+  </FormLabel>
+  {hasDescription && (
+    <FormDescription id={ids.description} class="-mt-1">
+      <slot name="description">{description}</slot>
+    </FormDescription>
+  )}
+  <div
+    data-slot="form-choice-options"
+    class={cn(choiceGroupVariants({ layout }), optionsClass)}
+  >
+    <slot>
+      {options.map((option) => (
+        <ChoiceItem
+          type={type}
+          variant={variant}
+          size={size}
+          id={`${id}-${slugify(option.value)}`}
+          name={name}
+          value={option.value}
+          label={option.label}
+          description={option.description}
+          icon={option.icon}
+          checked={checkedValues.has(option.value)}
+          disabled={option.disabled}
+          required={type === "radio" && required}
+          inputProps={{ "aria-invalid": error ? "true" : undefined }}
+        />
+      ))}
+    </slot>
+  </div>
+  <FormError id={ids.error} message={error} />
+</fieldset>

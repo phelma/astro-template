@@ -1,0 +1,642 @@
+---
+import CheckboxField from "@/components/blocks/form/CheckboxField.astro"
+import ChoiceGroup from "@/components/blocks/form/ChoiceGroup.astro"
+import type { FormOption } from "@/components/blocks/form/form"
+import Form from "@/components/blocks/form/Form.astro"
+import FormErrorSummary from "@/components/blocks/form/FormErrorSummary.astro"
+import FormField from "@/components/blocks/form/FormField.astro"
+import FormSubmit from "@/components/blocks/form/FormSubmit.astro"
+import FormSuccess from "@/components/blocks/form/FormSuccess.astro"
+import ContactForm from "@/components/blocks/contact-form/ContactForm.astro"
+import QuoteForm from "@/components/blocks/quote-form/QuoteForm.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const plumbingServices: FormOption[] = [
+  {
+    value: "leak",
+    label: "Leak or burst pipe",
+    description: "Dripping taps to emergency call-outs.",
+    icon: "lucide:droplets",
+  },
+  {
+    value: "boiler",
+    label: "Boiler service or repair",
+    description: "Gas Safe registered engineers.",
+    icon: "lucide:flame",
+  },
+  {
+    value: "bathroom",
+    label: "Bathroom fitting",
+    description: "Full refits, showers and suites.",
+    icon: "lucide:bath",
+  },
+  {
+    value: "drains",
+    label: "Blocked drain",
+    description: "Sinks, toilets and outside drains.",
+    icon: "lucide:waves",
+  },
+  {
+    value: "radiators",
+    label: "Radiators and heating",
+    description: "Power flushing, new radiators, valves.",
+    icon: "lucide:thermometer",
+  },
+  {
+    value: "other",
+    label: "Something else",
+    description: "Tell us about it below.",
+    icon: "lucide:wrench",
+  },
+]
+
+const salonServices: FormOption[] = [
+  { value: "cut", label: "Cut and blow-dry", icon: "lucide:scissors" },
+  { value: "colour", label: "Colour", icon: "lucide:palette" },
+  { value: "bridal", label: "Bridal and events", icon: "lucide:sparkles" },
+]
+
+const treatments: FormOption[] = [
+  { value: "check-up", label: "Check-up" },
+  { value: "hygienist", label: "Hygienist" },
+  { value: "whitening", label: "Whitening" },
+  { value: "emergency", label: "Emergency appointment", disabled: true },
+]
+
+const timeSlots: FormOption[] = [
+  {
+    value: "morning",
+    label: "Morning",
+    description: "8am to 12pm",
+  },
+  {
+    value: "afternoon",
+    label: "Afternoon",
+    description: "12pm to 5pm",
+  },
+  {
+    value: "evening",
+    label: "Evening",
+    description: "5pm to 7pm, Thursdays only",
+    disabled: true,
+  },
+]
+---
+
+<Showcase
+  title="Forms"
+  description="Native, token-styled form controls with inline validation, plus contact and quote form blocks. Tab through to see focus rings; submit the forms empty to see validation."
+>
+  <Demo
+    title="Text inputs"
+    description="FormField renders the shadcn Input. Default and lg (44px, the form blocks' size); description, optional marker, disabled and a server-side error."
+  >
+    <div class="grid gap-6 md:grid-cols-2">
+      <FormField
+        id="demo-input-default"
+        name="name"
+        label="Full name"
+        autocomplete="name"
+        placeholder="Jane Smith"
+      />
+      <FormField
+        id="demo-input-lg"
+        name="name-lg"
+        label="Full name (lg)"
+        size="lg"
+        placeholder="Jane Smith"
+      />
+      <FormField
+        id="demo-input-required"
+        name="email"
+        type="email"
+        label="Email"
+        description="We'll only use this to reply to you."
+        required
+        size="lg"
+      />
+      <FormField
+        id="demo-input-optional"
+        name="company"
+        label="Company"
+        indicator="optional"
+        size="lg"
+      />
+      <FormField
+        id="demo-input-disabled"
+        name="account"
+        label="Account number"
+        value="ACME-00412"
+        disabled
+        size="lg"
+      />
+      <FormField
+        id="demo-input-invalid"
+        name="phone"
+        type="tel"
+        label="Phone"
+        value="0207 946"
+        error="Enter a phone number, like 020 7946 0000"
+        required
+        size="lg"
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Textarea and select"
+    description="control='textarea' (shadcn Textarea) and control='select' (shadcn NativeSelect) with a placeholder option."
+  >
+    <div class="grid gap-6 md:grid-cols-2">
+      <FormField
+        id="demo-textarea"
+        name="message"
+        control="textarea"
+        label="Message"
+        placeholder="How can we help?"
+        size="lg"
+        span="full"
+      />
+      <FormField
+        id="demo-select"
+        name="treatment"
+        control="select"
+        label="Treatment"
+        placeholder="Choose a treatment"
+        options={treatments}
+        size="lg"
+      />
+      <FormField
+        id="demo-select-invalid"
+        name="treatment-invalid"
+        control="select"
+        label="Treatment"
+        placeholder="Choose a treatment"
+        options={treatments}
+        required
+        error="Choose a treatment"
+        size="lg"
+      />
+      <FormField
+        id="demo-select-disabled"
+        name="branch"
+        control="select"
+        label="Branch"
+        options={[{ value: "high-street", label: "High Street" }]}
+        disabled
+        size="lg"
+      />
+      <FormField
+        id="demo-textarea-invalid"
+        name="notes"
+        control="textarea"
+        label="Access notes"
+        error="Enter at least 10 characters"
+        size="lg"
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Checkboxes and switches"
+    description="CheckboxField with control='checkbox' or 'switch': unchecked, checked, with description, disabled, invalid, and the small size."
+  >
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="flex flex-col gap-4">
+        <CheckboxField
+          id="demo-cb-1"
+          name="newsletter"
+          label="Send me seasonal offers"
+        />
+        <CheckboxField
+          id="demo-cb-2"
+          name="reminder"
+          label="Remind me the day before"
+          checked
+        />
+        <CheckboxField
+          id="demo-cb-3"
+          name="new-customer"
+          label="I'm a new customer"
+          description="New customers get 10% off their first visit."
+        />
+        <CheckboxField
+          id="demo-cb-4"
+          name="parking"
+          label="I need parking (none available)"
+          disabled
+        />
+        <CheckboxField
+          id="demo-cb-5"
+          name="parking-2"
+          label="Disabled and checked"
+          checked
+          disabled
+        />
+        <CheckboxField
+          id="demo-cb-6"
+          name="terms"
+          required
+          error="Tick the box to accept the terms"
+        >
+          I accept the <a href="/privacy">terms and privacy policy</a>
+        </CheckboxField>
+        <CheckboxField
+          id="demo-cb-7"
+          name="small"
+          label="Small checkbox"
+          size="sm"
+          checked
+        />
+      </div>
+      <div class="flex flex-col gap-4">
+        <CheckboxField
+          id="demo-sw-1"
+          control="switch"
+          name="sms"
+          label="Text me appointment reminders"
+        />
+        <CheckboxField
+          id="demo-sw-2"
+          control="switch"
+          name="email-updates"
+          label="Email me when you have a cancellation"
+          description="Get an earlier slot if one comes up."
+          checked
+        />
+        <CheckboxField
+          id="demo-sw-3"
+          control="switch"
+          name="disabled-switch"
+          label="Disabled switch"
+          disabled
+        />
+        <CheckboxField
+          id="demo-sw-4"
+          control="switch"
+          name="disabled-switch-on"
+          label="Disabled switch, on"
+          checked
+          disabled
+        />
+        <CheckboxField
+          id="demo-sw-5"
+          control="switch"
+          name="invalid-switch"
+          label="Invalid switch"
+          error="Turn this on to continue"
+        />
+        <CheckboxField
+          id="demo-sw-6"
+          control="switch"
+          name="small-switch"
+          label="Small switch"
+          size="sm"
+          checked
+        />
+      </div>
+    </div>
+  </Demo>
+
+  <Demo
+    title="Radio and checkbox groups"
+    description="ChoiceGroup: a fieldset with legend. Layouts stack, inline and grid; option descriptions; a disabled option; required groups and a server-side error."
+  >
+    <div class="grid gap-8 md:grid-cols-2">
+      <ChoiceGroup
+        id="demo-rg-time"
+        name="time"
+        legend="When suits you?"
+        options={timeSlots}
+        value="morning"
+      />
+      <ChoiceGroup
+        id="demo-rg-contact"
+        name="contact"
+        legend="How should we contact you?"
+        description="We'll use this to confirm your booking."
+        options={[
+          { value: "phone", label: "Phone" },
+          { value: "email", label: "Email" },
+          { value: "text", label: "Text" },
+        ]}
+        layout="inline"
+        required
+      />
+      <ChoiceGroup
+        id="demo-cg-treatments"
+        name="treatments"
+        type="checkbox"
+        legend="Treatments you're interested in"
+        options={treatments}
+        value={["hygienist"]}
+        layout="grid"
+        indicator="optional"
+      />
+      <ChoiceGroup
+        id="demo-rg-invalid"
+        name="size"
+        legend="Party size"
+        options={[
+          { value: "1-2", label: "1 to 2" },
+          { value: "3-4", label: "3 to 4" },
+          { value: "5+", label: "5 or more" },
+        ]}
+        layout="inline"
+        required
+        error="Choose how many people are coming"
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Choice cards"
+    description="ChoiceGroup variant='card': large selectable cards with icons, as radios or checkboxes, in grid layouts. Includes a checked, a disabled and an invalid group."
+  >
+    <div class="flex flex-col gap-10">
+      <ChoiceGroup
+        id="demo-cards-plumbing"
+        name="service"
+        legend="What do you need?"
+        variant="card"
+        layout="grid-3"
+        options={plumbingServices}
+        value="boiler"
+        required
+      />
+      <ChoiceGroup
+        id="demo-cards-salon"
+        name="salon"
+        type="checkbox"
+        legend="Which services would you like?"
+        description="Choose all that apply."
+        variant="card"
+        layout="grid-3"
+        options={[
+          ...salonServices,
+          {
+            value: "extensions",
+            label: "Extensions",
+            description: "Fully booked until March.",
+            icon: "lucide:calendar-x",
+            disabled: true,
+          },
+        ]}
+        value={["cut", "colour"]}
+      />
+      <ChoiceGroup
+        id="demo-cards-invalid"
+        name="salon-invalid"
+        legend="Which service?"
+        variant="card"
+        layout="grid-3"
+        options={salonServices}
+        required
+        error="Choose a service"
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="File upload"
+    description="control='file': native file input in a drop area. Default and invalid."
+  >
+    <div class="grid gap-6 md:grid-cols-2">
+      <FormField
+        id="demo-file"
+        name="photos"
+        control="file"
+        label="Photos of the problem"
+        description="Optional. Up to 5 images."
+        accept="image/*"
+        multiple
+      />
+      <FormField
+        id="demo-file-invalid"
+        name="cv"
+        control="file"
+        label="Your CV"
+        accept=".pdf,.doc,.docx"
+        required
+        error="Choose a file to upload"
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Error summary and sent state"
+    description="FormErrorSummary (filled by the script on an invalid submit) and FormSuccess (shown when the URL has ?sent), rendered open here."
+  >
+    <div class="flex flex-col gap-4">
+      <FormErrorSummary
+        id="demo-summary"
+        errors={[
+          { href: "#demo-input-invalid", message: "Enter a phone number" },
+          { href: "#demo-select-invalid", message: "Choose a treatment" },
+        ]}
+      />
+      <FormSuccess
+        open
+        title="Thanks, your message has been sent"
+        message="We'll get back to you within one working day."
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Validation"
+    description="A Form with errorSummary. Submit it empty: the summary lists each problem and takes focus; errors clear as you fix them. Custom messages come from the messages prop."
+  >
+    <Form
+      id="demo-validate"
+      action="/components/forms"
+      method="get"
+      errorSummary
+      honeypot={false}
+    >
+      <div class="grid gap-6 sm:grid-cols-2">
+        <FormField
+          id="demo-validate-name"
+          name="name"
+          label="Name"
+          autocomplete="name"
+          required
+          size="lg"
+          messages={{ valueMissing: "Enter your name" }}
+        />
+        <FormField
+          id="demo-validate-email"
+          name="email"
+          type="email"
+          label="Email"
+          autocomplete="email"
+          required
+          size="lg"
+        />
+        <FormField
+          id="demo-validate-postcode"
+          name="postcode"
+          label="Postcode"
+          autocomplete="postal-code"
+          required
+          size="lg"
+          pattern="[A-Za-z]{1,2}[0-9][A-Za-z0-9]? ?[0-9][A-Za-z]{2}"
+          messages={{
+            patternMismatch: "Enter a real postcode, like SW1A 1AA",
+          }}
+        />
+        <FormField
+          id="demo-validate-date"
+          name="date"
+          type="date"
+          label="Preferred date"
+          required
+          size="lg"
+          controlProps={{ "data-min-today": "" }}
+          messages={{ rangeUnderflow: "Choose today or a later date" }}
+        />
+        <ChoiceGroup
+          id="demo-validate-days"
+          name="days"
+          type="checkbox"
+          legend="Which days can you do?"
+          options={[
+            { value: "mon", label: "Mon" },
+            { value: "tue", label: "Tue" },
+            { value: "wed", label: "Wed" },
+            { value: "thu", label: "Thu" },
+            { value: "fri", label: "Fri" },
+          ]}
+          layout="inline"
+          required
+          span="full"
+          messages={{ valueMissing: "Choose at least one day" }}
+        />
+        <CheckboxField
+          id="demo-validate-consent"
+          name="consent"
+          required
+          span="full"
+        >
+          I agree to the <a href="/privacy">privacy policy</a>
+        </CheckboxField>
+      </div>
+      <FormSubmit>Check my answers</FormSubmit>
+    </Form>
+  </Demo>
+
+  <Demo
+    title="Contact form: card, stacked"
+    description="ContactForm defaults: card surface, stacked layout, phone field, consent and a click-to-call note from siteConfig. Submitting it valid reloads with ?sent=contact-card to show the sent state (GET for the demo only; real forms POST)."
+  >
+    <div class="max-w-xl">
+      <ContactForm
+        id="contact-card"
+        action="/components/forms"
+        method="get"
+        hiddenFields={{ sent: "contact-card" }}
+        honeypot={false}
+        title="Send us a message"
+        description="We usually reply within a working day."
+        headingLevel={3}
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Contact form: two-column, bare"
+    description="layout='two-column' surface='bare', error summary on, optional-field markers, and an extra field in the default slot."
+  >
+    <ContactForm
+      id="contact-bare"
+      layout="two-column"
+      surface="bare"
+      indicator="optional"
+      errorSummary
+      title="Book a table"
+      headingLevel={3}
+      submitLabel="Send booking request"
+    >
+      <FormField
+        id="contact-bare-guests"
+        name="guests"
+        type="number"
+        label="Number of guests"
+        min={1}
+        max={12}
+        size="lg"
+        indicator="optional"
+        messages={{ rangeOverflow: "For groups over 12, please call us" }}
+      />
+      <FormField
+        id="contact-bare-date"
+        name="date"
+        type="date"
+        label="Date"
+        size="lg"
+        indicator="optional"
+        controlProps={{ "data-min-today": "" }}
+      />
+    </ContactForm>
+  </Demo>
+
+  <Demo
+    title="Contact form: muted, minimal"
+    description="surface='muted', no phone field, no consent box, no call note, custom footer slot."
+  >
+    <div class="max-w-xl">
+      <ContactForm
+        id="contact-muted"
+        surface="muted"
+        showPhone={false}
+        consent={false}
+        phone={false}
+        submitLabel="Ask a question"
+      >
+        <p slot="footer" class="text-sm text-muted-foreground">
+          We never share your details.
+        </p>
+      </ContactForm>
+    </div>
+  </Demo>
+
+  <Demo
+    title="Quote form: card, stacked"
+    description="QuoteForm for a plumber: service cards, job details, photos, postcode (UK pattern), date, budget, contact details and contact method."
+  >
+    <div class="max-w-2xl">
+      <QuoteForm
+        id="quote-card"
+        title="Get a free quote"
+        description="Tell us what you need and we'll reply with a price, usually the same day."
+        headingLevel={3}
+        services={plumbingServices}
+        postcodePattern="[A-Za-z]{1,2}[0-9][A-Za-z0-9]? ?[0-9][A-Za-z]{2}"
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Quote form: two-column, bare, multiple services"
+    description="layout='two-column' surface='bare' for a salon, several services allowed, no photos or budget, posting to a provider with hidden fields."
+  >
+    <QuoteForm
+      id="quote-salon"
+      layout="two-column"
+      surface="bare"
+      title="Request an appointment"
+      headingLevel={3}
+      services={salonServices}
+      multipleServices
+      serviceLegend="Which services would you like?"
+      photos={false}
+      budgets={false}
+      postcode={false}
+      submitLabel="Request appointment"
+      action="/components/forms"
+      method="get"
+      hiddenFields={{ _subject: "New appointment request" }}
+    />
+  </Demo>
+</Showcase>

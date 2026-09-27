@@ -1,0 +1,129 @@
+---
+/**
+ * One labelled checkbox, radio or switch, with an optional description.
+ * `variant="card"` turns it into a large selectable tile (whole card is
+ * clickable, optional icon) for choices like "What do you need?".
+ * Usually rendered by `ChoiceGroup` or `CheckboxField`; use it directly for
+ * custom layouts. The label can be rich (e.g. a link) via the default slot.
+ *
+ *   <ChoiceItem type="radio" id="when-asap" name="when" value="asap" label="As soon as possible" />
+ *   <ChoiceItem variant="card" type="radio" icon="lucide:droplets" ... />
+ *
+ * `class` and other attributes go on the wrapper; control attributes
+ * (`aria-describedby`, `aria-invalid`, data-*) go in `inputProps`.
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import Checkbox from "./Checkbox.astro"
+import { describedBy } from "./form"
+import Radio from "./Radio.astro"
+import Switch from "./Switch.astro"
+import { choiceItemVariants, type ChoiceItemVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "id"> &
+  ChoiceItemVariants & {
+    type?: "checkbox" | "radio" | "switch"
+    id: string
+    name: string
+    value?: string
+    /** Label text; the default slot overrides it (for links etc.). */
+    label?: string
+    description?: string
+    /** astro-icon name (card variant). */
+    icon?: string
+    checked?: boolean
+    disabled?: boolean
+    required?: boolean
+    size?: "default" | "sm"
+    inputProps?: Record<string, unknown>
+  }
+
+const {
+  type = "checkbox",
+  id,
+  name,
+  value = "on",
+  label,
+  description,
+  icon,
+  checked,
+  disabled,
+  required,
+  size,
+  variant,
+  inputProps = {},
+  class: className,
+  ...rest
+} = Astro.props
+
+const isCard = variant === "card"
+const descriptionId = description ? `${id}-description` : undefined
+const { "aria-describedby": extraDescribedBy, ...otherInputProps } =
+  inputProps as { "aria-describedby"?: string }
+const Control = type === "radio" ? Radio : type === "switch" ? Switch : Checkbox
+---
+
+<div
+  data-slot="form-choice"
+  data-variant={variant ?? "default"}
+  class={cn(choiceItemVariants({ variant }), className)}
+  {...rest}
+>
+  <Control
+    id={id}
+    name={name}
+    value={value}
+    checked={checked}
+    disabled={disabled}
+    required={required}
+    size={size}
+    aria-describedby={describedBy(descriptionId, extraDescribedBy)}
+    class={cn(type === "switch" ? "" : "mt-px", isCard && "order-last ml-auto")}
+    {...otherInputProps}
+  />
+  {isCard && icon && (
+    <span
+      data-slot="form-choice-icon"
+      class="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary dark:bg-primary/15"
+    >
+      <Icon name={icon} aria-hidden="true" class="size-5" />
+    </span>
+  )}
+  <div
+    data-slot="form-choice-content"
+    class={cn(
+      "flex min-w-0 flex-1 flex-col gap-1",
+      type === "switch" && "pt-0.5"
+    )}
+  >
+    <label
+      for={id}
+      data-slot="form-choice-label"
+      class={cn(
+        "cursor-pointer text-sm leading-5",
+        isCard
+          ? "font-medium after:absolute after:inset-0 after:rounded-[inherit]"
+          : "[&_a]:relative [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-primary",
+        disabled && "cursor-not-allowed",
+        disabled && !isCard && "opacity-50"
+      )}
+    >
+      <slot>{label}</slot>
+    </label>
+    {description && (
+      <p
+        id={descriptionId}
+        data-slot="form-choice-description"
+        class={cn(
+          "text-sm text-muted-foreground",
+          disabled && !isCard && "opacity-50"
+        )}
+      >
+        {description}
+      </p>
+    )}
+  </div>
+</div>

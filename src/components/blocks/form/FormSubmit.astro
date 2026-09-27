@@ -1,0 +1,51 @@
+---
+/**
+ * Submit button with shadcn Button styles (`buttonVariants`). While a valid
+ * form is being sent the validation script sets `data-pending`, which shows
+ * a spinner and blocks repeat clicks. Label via the default slot; optional
+ * trailing `icon`. Defaults to a 44px-tall button, full width on mobile.
+ *
+ *   <FormSubmit icon="lucide:send">Send message</FormSubmit>
+ */
+import { Icon } from "astro-icon/components"
+import type { VariantProps } from "class-variance-authority"
+import type { HTMLAttributes } from "astro/types"
+
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+type Props = Omit<HTMLAttributes<"button">, "type"> &
+  VariantProps<typeof buttonVariants> & {
+    /** astro-icon name after the label. */
+    icon?: string
+  }
+
+const { variant, size = "lg", icon, class: className, ...rest } = Astro.props
+---
+
+<button
+  type="submit"
+  data-slot="form-submit"
+  class={cn(
+    buttonVariants({ variant, size }),
+    "group/submit h-11 w-full px-5 text-base data-pending:cursor-progress data-pending:opacity-80 sm:w-auto sm:self-start",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+  {icon && (
+    <Icon
+      name={icon}
+      aria-hidden="true"
+      data-icon="inline-end"
+      class="group-data-pending/submit:hidden"
+    />
+  )}
+  <Icon
+    name="lucide:loader-circle"
+    aria-hidden="true"
+    data-icon="inline-end"
+    class="hidden group-data-pending/submit:block motion-safe:animate-spin"
+  />
+</button>

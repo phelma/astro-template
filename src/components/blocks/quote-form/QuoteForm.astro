@@ -1,0 +1,317 @@
+---
+/**
+ * Quote / booking request form for trades and services: service choice
+ * cards, job details, optional photo upload, postcode, preferred date,
+ * budget, contact details, preferred contact method and consent. Inline
+ * validation, error summary, honeypot and "sent" state come from
+ * blocks/form/Form.astro.
+ *
+ *   <QuoteForm action="https://api.web3forms.com/submit"
+ *     hiddenFields={{ access_key: "..." }} honeypot="botcheck"
+ *     services={[{ value: "leak", label: "Leak or repair", icon: "lucide:droplets" }]} />
+ *
+ * Props: `services` (required; `multipleServices` for checkboxes),
+ * `contactMethods` (defaults to phone and email, plus WhatsApp when
+ * siteConfig.business.whatsapp is set), `budgets` (false hides), `postcode`,
+ * `date`, `photos` (file upload; switches the form to multipart), `consent`,
+ * `privacyHref`, `submitLabel`, `success`; `layout` (stacked | two-column),
+ * `surface` (card | muted | bare), `title`, `description`, `headingLevel`;
+ * `action` / `method` / `hiddenFields` / `honeypot` for the provider (add
+ * its origin to CSP `form-action` in astro.config.ts; check it accepts file
+ * uploads). Slots: default = extra fields (before consent), `footer`.
+ * `class` and other attributes go on the wrapper.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import CheckboxField from "@/components/blocks/form/CheckboxField.astro"
+import ChoiceGroup from "@/components/blocks/form/ChoiceGroup.astro"
+import type { FormOption } from "@/components/blocks/form/form"
+import Form from "@/components/blocks/form/Form.astro"
+import FormField from "@/components/blocks/form/FormField.astro"
+import FormSubmit from "@/components/blocks/form/FormSubmit.astro"
+import {
+  formGridVariants,
+  formSurfaceVariants,
+  type FormGridVariants,
+  type FormSurfaceVariants,
+} from "@/components/blocks/form/variants"
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+type Props = HTMLAttributes<"div"> &
+  FormGridVariants &
+  FormSurfaceVariants & {
+    /** Services shown as choice cards. */
+    services: FormOption[]
+    /** Let visitors pick several services (checkboxes). */
+    multipleServices?: boolean
+    serviceLegend?: string
+    contactMethods?: FormOption[]
+    /** Budget select options; false hides the field. */
+    budgets?: FormOption[] | false
+    postcode?: boolean
+    /** `pattern` for the postcode, e.g. a UK postcode regex. */
+    postcodePattern?: string
+    date?: boolean
+    photos?: boolean
+    consent?: boolean
+    privacyHref?: string
+    submitLabel?: string
+    success?: { title?: string; message?: string } | false
+    id?: string
+    action?: string
+    method?: "post" | "get"
+    hiddenFields?: Record<string, string>
+    honeypot?: string | false
+    errorSummary?: boolean
+    title?: string
+    description?: string
+    headingLevel?: HeadingLevel
+    indicator?: "required" | "optional" | "none"
+  }
+
+const defaultContactMethods: FormOption[] = [
+  { value: "phone", label: "Phone call" },
+  { value: "email", label: "Email" },
+  ...(siteConfig.business.whatsapp
+    ? [{ value: "whatsapp", label: "WhatsApp" }]
+    : []),
+]
+
+const defaultBudgets: FormOption[] = [
+  { value: "under-250", label: "Under £250" },
+  { value: "250-1000", label: "£250 to £1,000" },
+  { value: "1000-5000", label: "£1,000 to £5,000" },
+  { value: "over-5000", label: "Over £5,000" },
+  { value: "not-sure", label: "Not sure yet" },
+]
+
+const {
+  services,
+  multipleServices = false,
+  serviceLegend = "What do you need?",
+  contactMethods = defaultContactMethods,
+  budgets = defaultBudgets,
+  postcode = true,
+  postcodePattern,
+  date = true,
+  photos = true,
+  consent = true,
+  privacyHref = "/privacy",
+  submitLabel = "Get my free quote",
+  success = {
+    title: "Thanks, your quote request has been sent",
+    message: "We'll be in touch within one working day.",
+  },
+  id = "quote-form",
+  action,
+  method = "post",
+  hiddenFields,
+  honeypot,
+  errorSummary = true,
+  title,
+  description,
+  headingLevel = 2,
+  indicator,
+  layout,
+  surface,
+  class: className,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+const headingId = `${id}-title`
+const twoColumn = layout === "two-column"
+const field = (name: string) => `${id}-${name}`
+// Two-column: postcode, date and budget fill pairs; name completes an odd row.
+const jobFieldCount = [postcode, date, Boolean(budgets)].filter(Boolean).length
+---
+
+<div
+  data-slot="quote-form"
+  class={cn(formSurfaceVariants({ surface }), className)}
+  {...rest}
+>
+  {(title || description) && (
+    <div data-slot="quote-form-header" class="flex flex-col gap-2">
+      {title && (
+        <Heading id={headingId} data-slot="quote-form-title" class="text-2xl">
+          {title}
+        </Heading>
+      )}
+      {description && (
+        <p data-slot="quote-form-description" class="text-muted-foreground">
+          {description}
+        </p>
+      )}
+    </div>
+  )}
+  <Form
+    id={id}
+    action={action}
+    method={method}
+    enctype={photos && method === "post" ? "multipart/form-data" : undefined}
+    hiddenFields={hiddenFields}
+    honeypot={honeypot}
+    errorSummary={errorSummary}
+    success={success || undefined}
+    aria-labelledby={title ? headingId : undefined}
+  >
+    <div data-slot="quote-form-fields" class={formGridVariants({ layout })}>
+      <ChoiceGroup
+        id={field("service")}
+        name={multipleServices ? "services" : "service"}
+        type={multipleServices ? "checkbox" : "radio"}
+        legend={serviceLegend}
+        description={multipleServices ? "Choose all that apply." : undefined}
+        options={services}
+        variant="card"
+        layout={twoColumn ? "grid-3" : "grid"}
+        required
+        indicator={indicator}
+        span="full"
+        legendClass="text-base"
+        messages={{ valueMissing: "Choose the service you need" }}
+      />
+      <FormField
+        id={field("details")}
+        name="details"
+        control="textarea"
+        label="Tell us about the job"
+        description="What needs doing, how big the job is and anything we should know about access."
+        required
+        indicator={indicator}
+        rows={5}
+        size="lg"
+        span="full"
+        messages={{ valueMissing: "Tell us a little about the job" }}
+      />
+      {photos && (
+        <FormField
+          id={field("photos")}
+          name="photos"
+          control="file"
+          label="Photos"
+          description="Optional. Photos help us quote accurately. JPG, PNG or HEIC."
+          accept="image/*"
+          multiple
+          indicator={indicator}
+          span="full"
+        />
+      )}
+      {postcode && (
+        <FormField
+          id={field("postcode")}
+          name="postcode"
+          label="Postcode of the job"
+          autocomplete="postal-code"
+          required
+          indicator={indicator}
+          size="lg"
+          pattern={postcodePattern}
+          controlClass="uppercase sm:max-w-48"
+          messages={{
+            valueMissing: "Enter the postcode of the job",
+            patternMismatch: "Enter a real postcode, like SW1A 1AA",
+          }}
+        />
+      )}
+      {date && (
+        <FormField
+          id={field("date")}
+          name="preferred_date"
+          type="date"
+          label="Preferred date"
+          indicator={indicator}
+          size="lg"
+          controlClass="sm:max-w-56"
+          controlProps={{ "data-min-today": "" }}
+          messages={{ rangeUnderflow: "Choose today or a later date" }}
+        />
+      )}
+      {budgets && (
+        <FormField
+          id={field("budget")}
+          name="budget"
+          control="select"
+          label="Budget"
+          placeholder="Choose a range"
+          options={budgets}
+          indicator={indicator}
+          size="lg"
+        />
+      )}
+      <FormField
+        id={field("name")}
+        name="name"
+        label="Name"
+        autocomplete="name"
+        required
+        indicator={indicator}
+        size="lg"
+        span={twoColumn && jobFieldCount % 2 === 0 ? "full" : "auto"}
+        messages={{ valueMissing: "Enter your name" }}
+      />
+      <FormField
+        id={field("email")}
+        name="email"
+        type="email"
+        label="Email"
+        autocomplete="email"
+        required
+        indicator={indicator}
+        size="lg"
+        messages={{ valueMissing: "Enter your email address" }}
+      />
+      <FormField
+        id={field("phone")}
+        name="phone"
+        type="tel"
+        label="Phone"
+        autocomplete="tel"
+        indicator={indicator}
+        size="lg"
+      />
+      {contactMethods.length > 1 && (
+        <ChoiceGroup
+          id={field("contact-method")}
+          name="contact_method"
+          type="radio"
+          legend="How should we get in touch?"
+          options={contactMethods}
+          value={contactMethods[0]?.value}
+          layout="inline"
+          indicator={indicator}
+          span="full"
+        />
+      )}
+      <slot />
+      {consent && (
+        <CheckboxField
+          id={field("consent")}
+          name="consent"
+          span="full"
+          required
+          messages={{
+            valueMissing: "Tick the box so we can send your quote",
+          }}
+        >
+          I agree to {siteConfig.name} using my details to prepare and send my
+          quote. Read our <a href={privacyHref}>privacy policy</a>.
+        </CheckboxField>
+      )}
+    </div>
+    <div
+      data-slot="quote-form-footer"
+      class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <FormSubmit icon="lucide:arrow-right">{submitLabel}</FormSubmit>
+      <slot name="footer">
+        <p data-slot="quote-form-note" class="text-sm text-muted-foreground">
+          Free, no-obligation quote.
+        </p>
+      </slot>
+    </div>
+  </Form>
+</div>

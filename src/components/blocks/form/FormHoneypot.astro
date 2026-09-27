@@ -1,0 +1,46 @@
+---
+/**
+ * Spam trap: a text field hidden from people (visually and from assistive
+ * tech, and out of the tab order) that bots tend to fill. Form providers
+ * discard submissions where it has a value; the validation script also
+ * blocks them client-side. Match `name` to your provider: Formspree
+ * "_gotcha", Netlify "bot-field" (plus `data-netlify-honeypot="bot-field"`
+ * on the form), Web3Forms "botcheck".
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"div"> & {
+  name?: string
+  /** Unique id prefix when a page has several forms. */
+  idPrefix?: string
+  label?: string
+}
+
+const {
+  name = "_gotcha",
+  idPrefix = "form",
+  label = "Leave this field empty",
+  class: className,
+  ...rest
+} = Astro.props
+const id = `${idPrefix}-${name.replace(/[^a-zA-Z0-9-]/g, "")}`
+---
+
+<div
+  data-slot="form-honeypot"
+  aria-hidden="true"
+  class={cn("sr-only", className)}
+  {...rest}
+>
+  <label for={id}>{label}</label>
+  <input
+    type="text"
+    id={id}
+    name={name}
+    tabindex="-1"
+    autocomplete="off"
+    data-form-honeypot
+  />
+</div>

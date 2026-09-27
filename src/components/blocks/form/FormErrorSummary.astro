@@ -1,0 +1,65 @@
+---
+/**
+ * "There is a problem" box listing every invalid field as a link to it
+ * (GOV.UK pattern). Hidden until the validation script fills it on an invalid
+ * submit and moves focus to it. Render it inside a `Form` (the `errorSummary`
+ * prop does this). Pass `errors` to render server-side errors.
+ */
+import { Icon } from "astro-icon/components"
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"div"> & {
+  title?: string
+  /** Server-side errors: `href` is "#<control id>". */
+  errors?: Array<{ href: string; message: string }>
+}
+
+const {
+  title = "There is a problem",
+  errors = [],
+  class: className,
+  ...rest
+} = Astro.props
+const titleId = `${rest.id ?? "form"}-summary-title`
+---
+
+<div
+  data-slot="form-error-summary"
+  data-form-error-summary
+  role="group"
+  aria-labelledby={titleId}
+  tabindex="-1"
+  hidden={errors.length === 0}
+  class={cn(
+    "flex gap-3 rounded-lg border border-destructive bg-destructive/5 p-4 text-sm text-foreground focus-visible:ring-3 focus-visible:ring-destructive/30 focus-visible:outline-none dark:bg-destructive/10",
+    className
+  )}
+  {...rest}
+>
+  <Icon
+    name="lucide:circle-alert"
+    aria-hidden="true"
+    class="mt-0.5 size-5 shrink-0 text-destructive"
+  />
+  <div class="flex flex-col gap-2">
+    <p
+      id={titleId}
+      data-slot="form-error-summary-title"
+      class="font-semibold text-destructive"
+    >
+      {title}
+    </p>
+    <ul
+      data-slot="form-error-summary-list"
+      class="flex list-disc flex-col gap-1 pl-4 [&_a]:inline-flex [&_a]:min-h-6 [&_a]:items-center [&_a]:underline [&_a]:underline-offset-4 [&_a:hover]:text-destructive"
+    >
+      {errors.map((error) => (
+        <li>
+          <a href={error.href}>{error.message}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>

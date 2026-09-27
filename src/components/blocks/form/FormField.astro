@@ -1,0 +1,224 @@
+---
+/**
+ * One labelled form field: label (with required/optional marker), optional
+ * description, the control and an error message, wired together with ids and
+ * `aria-describedby`. Renders the shadcn Input / Textarea / NativeSelect, or
+ * the styled `FileInput`, so most fields are one line:
+ *
+ *   <FormField name="email" type="email" label="Email" autocomplete="email" required />
+ *   <FormField name="budget" control="select" label="Budget" options={budgets} />
+ *   <FormField name="message" control="textarea" label="Message" rows={5} />
+ *
+ * Custom control: put it in the default slot and wire it yourself with the
+ * ids from `fieldIds(id)` in ./form.ts (`id`, `${id}-description`,
+ * `${id}-error`). Rich descriptions (links) go in `slot="description"`.
+ *
+ * Validation: native attributes (`required`, `type`, `pattern`,
+ * `minlength`...) drive the `Form` validation script; `messages` overrides
+ * its wording per failure. `error` renders a server-side error.
+ * `class` and other attributes go on the wrapper; extra control attributes
+ * go in `controlProps`.
+ */
+import type { HTMLAttributes } from "astro/types"
+import type {
+  HTMLInputAutoCompleteAttribute,
+  HTMLInputTypeAttribute,
+} from "react"
+
+import { Input } from "@/components/ui/input"
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
+import { Textarea } from "@/components/ui/textarea"
+import { cn } from "@/lib/utils"
+
+import FileInput from "./FileInput.astro"
+import {
+  describedBy,
+  fieldIds,
+  messageAttributes,
+  type FieldMessages,
+  type FormOption,
+} from "./form"
+import FormDescription from "./FormDescription.astro"
+import FormError from "./FormError.astro"
+import FormLabel from "./FormLabel.astro"
+import {
+  formFieldVariants,
+  textControlVariants,
+  type FormFieldVariants,
+  type TextControlVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "id"> &
+  FormFieldVariants &
+  TextControlVariants & {
+    name: string
+    label: string
+    /** Control id; defaults to `name`. Prefix it when a page has several forms. */
+    id?: string
+    control?: "input" | "textarea" | "select" | "file"
+    /** Input type (control="input"). */
+    type?: HTMLInputTypeAttribute
+    description?: string
+    /** Server-side error message; marks the control invalid. */
+    error?: string
+    required?: boolean
+    disabled?: boolean
+    indicator?: "required" | "optional" | "none"
+    messages?: FieldMessages
+    value?: string
+    placeholder?: string
+    autocomplete?: HTMLInputAutoCompleteAttribute
+    inputmode?: HTMLAttributes<"input">["inputmode"]
+    pattern?: string
+    minlength?: number
+    maxlength?: number
+    min?: string | number
+    max?: string | number
+    /** Rows for control="textarea". */
+    rows?: number
+    /** Select options (control="select"). */
+    options?: FormOption[]
+    /** File types / multiple for control="file". */
+    accept?: string
+    multiple?: boolean
+    /** Extra attributes for the control element. */
+    controlProps?: Record<string, unknown>
+    controlClass?: string
+    labelClass?: string
+  }
+
+const {
+  name,
+  label,
+  id = name,
+  control = "input",
+  type = "text",
+  description,
+  error,
+  required = false,
+  disabled,
+  indicator,
+  messages,
+  value,
+  placeholder,
+  autocomplete,
+  inputmode,
+  pattern,
+  minlength,
+  maxlength,
+  min,
+  max,
+  rows = 4,
+  options = [],
+  accept,
+  multiple,
+  controlProps = {},
+  controlClass,
+  labelClass,
+  size,
+  span,
+  class: className,
+  ...rest
+} = Astro.props
+
+const ids = fieldIds(id)
+const hasDescription = Boolean(description) || Astro.slots.has("description")
+const shared = {
+  id,
+  name,
+  required,
+  disabled,
+  "aria-invalid": error ? ("true" as const) : undefined,
+  "aria-describedby": describedBy(
+    hasDescription && ids.description,
+    error && ids.error
+  ),
+  ...controlProps,
+}
+const textClass = cn(textControlVariants({ size }), controlClass)
+---
+
+<div
+  data-slot="form-field"
+  data-form-field
+  class={cn(formFieldVariants({ span }), className)}
+  {...messageAttributes(messages)}
+  {...rest}
+>
+  <FormLabel
+    id={ids.label}
+    for={id}
+    required={required}
+    indicator={indicator}
+    class={cn(disabled && "opacity-50", labelClass)}
+  >
+    {label}
+  </FormLabel>
+  {hasDescription && (
+    <FormDescription id={ids.description}>
+      <slot name="description">{description}</slot>
+    </FormDescription>
+  )}
+  {Astro.slots.has("default") ? (
+    <slot />
+  ) : control === "textarea" ? (
+    <Textarea
+      {...shared}
+      rows={rows}
+      placeholder={placeholder}
+      minLength={minlength}
+      maxLength={maxlength}
+      autoComplete={autocomplete}
+      defaultValue={value}
+      className={cn(
+        textControlVariants({ size }),
+        size === "lg" && "h-auto min-h-28 py-2.5",
+        controlClass
+      )}
+    />
+  ) : control === "select" ? (
+    <NativeSelect
+      {...shared}
+      autoComplete={autocomplete}
+      defaultValue={value ?? ""}
+      className={cn(
+        "w-full has-[select:user-invalid]:*:data-[slot=native-select]:border-destructive",
+        size === "lg" &&
+          "*:data-[slot=native-select]:h-11 *:data-[slot=native-select]:pl-3 *:data-[slot=native-select]:text-base",
+        controlClass
+      )}
+    >
+      {placeholder !== undefined && (
+        <NativeSelectOption value="">{placeholder}</NativeSelectOption>
+      )}
+      {options.map((option) => (
+        <NativeSelectOption value={option.value} disabled={option.disabled}>
+          {option.label}
+        </NativeSelectOption>
+      ))}
+    </NativeSelect>
+  ) : control === "file" ? (
+    <FileInput
+      {...shared}
+      accept={accept}
+      multiple={multiple}
+      class={controlClass}
+    />
+  ) : (
+    <Input
+      {...shared}
+      type={type}
+      placeholder={placeholder}
+      autoComplete={autocomplete}
+      inputMode={inputmode as never}
+      pattern={pattern}
+      minLength={minlength}
+      maxLength={maxlength}
+      min={min}
+      max={max}
+      defaultValue={value}
+      className={textClass}
+    />
+  )}
+  <FormError id={ids.error} message={error} />
+</div>
