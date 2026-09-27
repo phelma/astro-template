@@ -1,0 +1,188 @@
+---
+/**
+ * Mobile menu (below `md`): a menu button plus a native popover panel. No JS:
+ * the browser handles open/close, Esc, light dismiss, focus and exposes
+ * `aria-expanded` on the button. Page scroll is locked while it is open.
+ *
+ * Items with `children` render as collapsible `<details>` groups (open when
+ * the current page is inside them). Extra content (CTA, phone, theme
+ * controls) goes in the default slot, shown below the links; `title` (or the
+ * `title` slot) heads the panel.
+ *
+ *   <NavbarMobileMenu id="mobile-nav" items={nav} title={siteConfig.name} menu="sheet">
+ *     <NavbarCta href="/contact" label="Get a quote" />
+ *   </NavbarMobileMenu>
+ *
+ * `menu`: `fullscreen` (default) or `sheet` (slides in from the right). `id`
+ * must be unique per page.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { linkTarget, resolveNav } from "@/lib/nav"
+import { cn } from "@/lib/utils"
+import type { NavItem } from "@/site.config"
+
+import {
+  navbarIconButtonVariants,
+  navbarMobileMenuVariants,
+  type NavbarMobileMenuVariants,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  NavbarMobileMenuVariants & {
+    /** Popover id; unique per page. */
+    id?: string
+    items: readonly NavItem[]
+    /** Heading text at the top of the panel (usually the business name). */
+    title?: string
+    /** Accessible name of the nav landmark inside the panel. */
+    label?: string
+    openLabel?: string
+    closeLabel?: string
+    /** Path used for current-page state. Defaults to `Astro.url.pathname`. */
+    pathname?: string
+    triggerClass?: string
+  }
+
+const {
+  id = "mobile-nav",
+  items,
+  title,
+  label = "Main",
+  openLabel = "Menu",
+  closeLabel = "Close menu",
+  pathname = Astro.url.pathname,
+  menu = "fullscreen",
+  class: className,
+  triggerClass,
+  ...rest
+} = Astro.props
+
+const links = resolveNav(items, pathname)
+const hasTitle = Boolean(title) || Astro.slots.has("title")
+const hasFooter = Astro.slots.has("default")
+
+const linkClass =
+  "flex min-h-11 items-center rounded-md px-3 text-base font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground aria-[current]:bg-accent aria-[current]:text-accent-foreground"
+---
+
+<button
+  type="button"
+  popovertarget={id}
+  data-slot="navbar-mobile-trigger"
+  class={cn(navbarIconButtonVariants(), "md:hidden", triggerClass)}
+>
+  <Icon name="lucide:menu" class="size-5" aria-hidden="true" />
+  <span class="sr-only">{openLabel}</span>
+</button>
+
+<div
+  id={id}
+  popover
+  data-slot="navbar-mobile-menu"
+  data-menu={menu}
+  class={cn(navbarMobileMenuVariants({ menu }), className)}
+  {...rest}
+>
+  <div
+    data-slot="navbar-mobile-header"
+    class="flex h-(--header-height) shrink-0 items-center justify-between gap-4"
+  >
+    {hasTitle ? (
+      <span
+        data-slot="navbar-mobile-title"
+        class="font-heading text-lg font-semibold tracking-tight"
+      >
+        <slot name="title">{title}</slot>
+      </span>
+    ) : (
+      <span />
+    )}
+    <button
+      type="button"
+      popovertarget={id}
+      popovertargetaction="hide"
+      data-slot="navbar-mobile-close"
+      class={navbarIconButtonVariants()}
+    >
+      <Icon name="lucide:x" class="size-5" aria-hidden="true" />
+      <span class="sr-only">{closeLabel}</span>
+    </button>
+  </div>
+
+  <nav aria-label={label} data-slot="navbar-mobile-nav">
+    <ul class="flex flex-col gap-1">
+      {links.map((item) => (
+        <li>
+          {item.children.length > 0 ? (
+            <details
+              data-slot="navbar-mobile-group"
+              class="group/mobile-group"
+              open={item.active}
+            >
+              <summary
+                class={cn(
+                  linkClass,
+                  "cursor-pointer justify-between gap-2 list-none group-open/mobile-group:text-foreground [&::-webkit-details-marker]:hidden"
+                )}
+              >
+                {item.label}
+                <Icon
+                  name="lucide:chevron-down"
+                  class="size-5 shrink-0 transition-transform group-open/mobile-group:rotate-180"
+                  aria-hidden="true"
+                />
+              </summary>
+              <ul class="mt-1 ml-3 flex flex-col gap-1 border-l pl-3">
+                {[item, ...item.children].map((link) => (
+                  <li>
+                    <a
+                      href={link.href}
+                      aria-current={
+                        link.current === "page" ? "page" : undefined
+                      }
+                      data-slot="navbar-mobile-link"
+                      class={linkClass}
+                      {...linkTarget(link.external)}
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : (
+            <a
+              href={item.href}
+              aria-current={item.current}
+              data-slot="navbar-mobile-link"
+              class={linkClass}
+              {...linkTarget(item.external)}
+            >
+              {item.label}
+            </a>
+          )}
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  {hasFooter && (
+    <div
+      data-slot="navbar-mobile-footer"
+      class="flex flex-wrap items-center gap-3 border-t pt-6"
+    >
+      <slot />
+    </div>
+  )}
+</div>
+
+<style is:global>
+  /* Lock page scroll while a mobile menu is open (only where it's shown). */
+  @media (width < 48rem) {
+    html:has([data-slot="navbar-mobile-menu"]:popover-open) {
+      overflow: hidden;
+    }
+  }
+</style>

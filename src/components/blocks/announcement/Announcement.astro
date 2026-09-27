@@ -1,0 +1,155 @@
+---
+/**
+ * Site-wide announcement banner (closures, offers, holiday hours). Renders
+ * siteConfig.announcement by default, or pass `message` / the default slot
+ * and the other props directly. Renders nothing outside `from`..`until`
+ * (inclusive ISO dates, checked at build time in business.timeZone), so
+ * rebuild on the start/end dates (e.g. a scheduled deploy).
+ *
+ *   <Announcement />
+ *   <Announcement tone="destructive" icon="lucide:triangle-alert"
+ *     message="Closed Monday 25 August for the bank holiday."
+ *     link={{ label: "See opening hours", href: "/contact" }} />
+ *
+ * `tone`: primary (default) | secondary | muted | destructive.
+ * `dismissible`: a close button; the choice is kept in localStorage keyed by
+ * a hash of the message, so a new message shows again. Dismissed banners are
+ * hidden before first paint by a tiny same-origin script (see
+ * ./announcement-element.js); without JS the banner shows with no button.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { isExternal, linkTarget } from "@/lib/nav"
+import { cn } from "@/lib/utils"
+import { siteConfig, type NavLink } from "@/site.config"
+
+import { announcementKey, isoToday, isWithinDates } from "./announcement"
+import elementScript from "./announcement-element.js?url&no-inline"
+import { announcementVariants, type AnnouncementVariants } from "./variants"
+
+type Props = HTMLAttributes<"div"> &
+  AnnouncementVariants & {
+    message?: string
+    link?: NavLink
+    /** First day shown, "YYYY-MM-DD". */
+    from?: string
+    /** Last day shown, "YYYY-MM-DD". */
+    until?: string
+    dismissible?: boolean
+    /** Leading icon, e.g. "lucide:megaphone". */
+    icon?: string
+    /** Landmark name. */
+    label?: string
+    dismissLabel?: string
+    /** Storage key; defaults to a hash of the message. */
+    storageKey?: string
+    /** Time zone for the date window (defaults to business.timeZone). */
+    timeZone?: string
+    containerClass?: string
+  }
+
+const fromConfig = Astro.props.message || Astro.slots.has("default")
+const config = fromConfig ? undefined : siteConfig.announcement
+
+const {
+  message = config?.message,
+  link = config?.link,
+  from = config?.from,
+  until = config?.until,
+  dismissible = config?.dismissible ?? false,
+  icon,
+  label = "Announcement",
+  dismissLabel = "Dismiss announcement",
+  storageKey,
+  timeZone = siteConfig.business.timeZone,
+  tone,
+  class: className,
+  containerClass,
+  ...rest
+} = Astro.props
+
+const hasContent = Boolean(message) || Astro.slots.has("default")
+const active = hasContent && isWithinDates(isoToday(timeZone), from, until)
+const slotHtml = Astro.slots.has("default")
+  ? await Astro.slots.render("default")
+  : ""
+const key = storageKey ?? announcementKey(message ?? slotHtml)
+---
+
+{active && (
+  <>
+    {dismissible && <script is:inline src={elementScript} />}
+    <site-announcement
+      role="region"
+      aria-label={label}
+      data-slot="announcement"
+      data-key={key}
+      data-dismissible={dismissible ? "" : undefined}
+      class={cn(announcementVariants({ tone }), className)}
+      {...rest}
+    >
+      <div
+        data-slot="announcement-container"
+        class={cn(
+          "mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-2 sm:px-6",
+          containerClass
+        )}
+      >
+        {dismissible && (
+          <span class="hidden size-8 shrink-0 sm:block" aria-hidden="true" />
+        )}
+        <p
+          data-slot="announcement-message"
+          class="flex-1 text-pretty sm:text-center"
+        >
+          {icon && (
+            <Icon
+              name={icon}
+              data-slot="announcement-icon"
+              class="mr-1.5 inline-block size-4 -translate-y-px align-middle"
+              aria-hidden="true"
+            />
+          )}
+          {slotHtml ? <Fragment set:html={slotHtml} /> : message}
+          {link && (
+            <>
+              {" "}
+              <a
+                href={link.href}
+                data-slot="announcement-link"
+                class="inline-flex min-h-6 items-center gap-1 font-medium whitespace-nowrap underline underline-offset-4 hover:no-underline"
+                {...linkTarget(isExternal(link))}
+              >
+                {link.label}
+                <Icon
+                  name="lucide:arrow-right"
+                  class="size-3.5"
+                  aria-hidden="true"
+                />
+              </a>
+            </>
+          )}
+        </p>
+        {dismissible && (
+          <button
+            type="button"
+            data-announcement-dismiss
+            data-slot="announcement-dismiss"
+            class="inline-flex size-8 shrink-0 items-center justify-center rounded-md opacity-80 transition hover:bg-current/10 hover:opacity-100"
+          >
+            <Icon name="lucide:x" class="size-4" aria-hidden="true" />
+            <span class="sr-only">{dismissLabel}</span>
+          </button>
+        )}
+      </div>
+    </site-announcement>
+  </>
+)}
+
+<style is:global>
+  /* No JS (or the element script failed): the button couldn't do anything. */
+  site-announcement:not(:defined) [data-announcement-dismiss] {
+    display: none;
+  }
+</style>

@@ -1,0 +1,74 @@
+---
+/**
+ * Desktop nav: a labelled `<nav>` with a list of links. Items with
+ * `children` render as a NavbarDropdown. Current page state (`aria-current`)
+ * is worked out from `pathname` (defaults to the current URL).
+ *
+ *   <NavbarLinks items={siteConfig.nav} />
+ *   <NavbarLinks items={demoNav} label="Demo" idPrefix="demo" pathname="/services" />
+ *
+ * Several on one page: give each a unique `label` (landmark name) and
+ * `idPrefix` (dropdown popover ids).
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { linkTarget, resolveNav } from "@/lib/nav"
+import { cn } from "@/lib/utils"
+import type { NavItem } from "@/site.config"
+
+import NavbarDropdown from "./NavbarDropdown.astro"
+import { navbarLinkVariants } from "./variants"
+
+type Props = HTMLAttributes<"nav"> & {
+  items: readonly NavItem[]
+  /** Accessible name of the nav landmark. */
+  label?: string
+  /** Prefix for dropdown popover ids; unique per navbar on a page. */
+  idPrefix?: string
+  /** Path used for current-page state. Defaults to `Astro.url.pathname`. */
+  pathname?: string
+  listClass?: string
+}
+
+const {
+  items,
+  label = "Main",
+  idPrefix = "nav",
+  pathname = Astro.url.pathname,
+  class: className,
+  listClass,
+  ...rest
+} = Astro.props
+
+const links = resolveNav(items, pathname)
+---
+
+<nav
+  aria-label={label}
+  data-slot="navbar-links"
+  class={cn(className)}
+  {...rest}
+>
+  <ul
+    data-slot="navbar-list"
+    class={cn("flex flex-wrap items-center gap-1", listClass)}
+  >
+    {links.map((item, index) => (
+      <li data-slot="navbar-item">
+        {item.children.length > 0 ? (
+          <NavbarDropdown item={item} id={`${idPrefix}-dropdown-${index}`} />
+        ) : (
+          <a
+            href={item.href}
+            aria-current={item.current}
+            data-slot="navbar-link"
+            class={navbarLinkVariants()}
+            {...linkTarget(item.external)}
+          >
+            {item.label}
+          </a>
+        )}
+      </li>
+    ))}
+  </ul>
+</nav>

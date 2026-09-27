@@ -1,0 +1,46 @@
+---
+/**
+ * Primary call-to-action in the bar ("Book now", "Get a quote"): a link
+ * styled with `buttonVariants`, so `variant` and `size` match the Button
+ * component. Label from `label` or the default slot (e.g. with an icon).
+ *
+ *   <NavbarCta href="/contact" label="Get a quote" />
+ *   <NavbarCta href={bookingUrl} variant="secondary">
+ *     <Icon name="lucide:calendar" aria-hidden="true" /> Book online
+ *   </NavbarCta>
+ */
+import type { HTMLAttributes } from "astro/types"
+import type { VariantProps } from "class-variance-authority"
+
+import { buttonVariants } from "@/components/ui/button"
+import { isExternal, linkTarget } from "@/lib/nav"
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"a"> &
+  VariantProps<typeof buttonVariants> & {
+    href: string
+    label?: string
+    /** Open in a new tab. Defaults to external-URL detection. */
+    external?: boolean
+  }
+
+const {
+  href,
+  label,
+  external,
+  variant = "default",
+  size = "lg",
+  class: className,
+  ...rest
+} = Astro.props
+---
+
+<a
+  href={href}
+  data-slot="navbar-cta"
+  class={cn(buttonVariants({ variant, size }), "px-4", className)}
+  {...linkTarget(isExternal({ href, external }))}
+  {...rest}
+>
+  <slot>{label}</slot>
+</a>

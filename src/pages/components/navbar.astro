@@ -1,0 +1,397 @@
+---
+import { Image } from "astro:assets"
+
+import Navbar from "@/components/blocks/navbar/Navbar.astro"
+import NavbarBrand from "@/components/blocks/navbar/NavbarBrand.astro"
+import NavbarCta from "@/components/blocks/navbar/NavbarCta.astro"
+import NavbarLinks from "@/components/blocks/navbar/NavbarLinks.astro"
+import NavbarMobileMenu from "@/components/blocks/navbar/NavbarMobileMenu.astro"
+import NavbarPhone from "@/components/blocks/navbar/NavbarPhone.astro"
+import NavbarTopBar from "@/components/blocks/navbar/NavbarTopBar.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+import heroImage from "@/assets/hero-placeholder.jpg"
+import type { BusinessHours, NavItem, SocialLink } from "@/site.config"
+
+// Demo data for a local plumber; the real header reads siteConfig.
+const business = {
+  name: "Harbour Plumbing & Heating",
+  shortName: "Harbour",
+  phone: "01632 960 123",
+  email: "jobs@harbourplumbing.example",
+}
+
+const nav: NavItem[] = [
+  {
+    label: "Services",
+    href: "/services",
+    children: [
+      { label: "Emergency call-outs", href: "/services/emergency" },
+      { label: "Boiler servicing", href: "/services/boilers" },
+      { label: "Bathroom fitting", href: "/services/bathrooms" },
+      { label: "Leak detection", href: "/services/leaks" },
+    ],
+  },
+  {
+    label: "Areas",
+    href: "/areas",
+    children: [
+      { label: "Falmouth", href: "/areas/falmouth" },
+      { label: "Penryn", href: "/areas/penryn" },
+      { label: "Truro", href: "/areas/truro" },
+    ],
+  },
+  { label: "Reviews", href: "/reviews" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+]
+
+const cafeNav: NavItem[] = [
+  { label: "Menu", href: "/menu" },
+  { label: "Cakes to order", href: "/cakes" },
+  { label: "Find us", href: "/find-us" },
+  { label: "Contact", href: "/contact" },
+]
+
+const hours: BusinessHours = [
+  { days: ["Mo", "Tu", "We", "Th", "Fr"], opens: "08:00", closes: "18:00" },
+  { days: ["Sa"], opens: "09:00", closes: "13:00" },
+]
+
+const socials: SocialLink[] = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/example",
+    icon: "lucide:facebook",
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/example",
+    icon: "lucide:instagram",
+  },
+]
+
+// Pretend we're on a service page so current-page states show.
+const pathname = "/services/boilers"
+---
+
+<Showcase
+  title="Navbar"
+  description="Site header parts: bar, brand, links with dropdowns, click-to-call, CTA, mobile menu and a utility top bar. Narrow the window below 768px to see the mobile menus."
+>
+  <Demo
+    title="Default: start layout, blurred, bordered"
+    description="The site default. Brand left; nav, phone and CTA right. 'Services' and 'Areas' have children, so they open dropdowns (Esc or click outside to close)."
+    bleed
+  >
+    <Navbar sticky={false}>
+      <NavbarBrand
+        slot="start"
+        name={business.name}
+        shortName={business.shortName}
+        href="#demo-default-start-layout-blurred-bordered"
+      />
+      <NavbarLinks
+        items={nav}
+        label="Demo: default"
+        idPrefix="demo-default"
+        pathname={pathname}
+      />
+      <Fragment slot="end">
+        <NavbarPhone phone={business.phone} />
+        <NavbarCta
+          href="/contact"
+          label="Get a quote"
+          class="hidden sm:inline-flex"
+        />
+        <NavbarMobileMenu
+          id="demo-default-menu"
+          items={nav}
+          title={business.name}
+          label="Demo: default (mobile)"
+          pathname={pathname}
+        >
+          <NavbarCta href="/contact" label="Get a quote" class="w-full" />
+          <NavbarPhone phone={business.phone} display="full" class="min-h-11" />
+        </NavbarMobileMenu>
+      </Fragment>
+    </Navbar>
+  </Demo>
+
+  <Demo
+    title="Solid, no border, sheet mobile menu"
+    description="variant='solid' bordered={false}; the mobile menu uses menu='sheet' (slides in from the right). Brand with a logo image."
+    bleed
+  >
+    <Navbar variant="solid" bordered={false} sticky={false} class="shadow-sm">
+      <NavbarBrand
+        slot="start"
+        name="The Corner Café"
+        shortName="Corner Café"
+        logo="/icon.svg"
+        href="#demo-solid-no-border-sheet-mobile-menu"
+      />
+      <NavbarLinks
+        items={cafeNav}
+        label="Demo: solid"
+        idPrefix="demo-solid"
+        pathname="/menu"
+      />
+      <Fragment slot="end">
+        <NavbarCta
+          href="/cakes"
+          label="Order a cake"
+          variant="secondary"
+          class="hidden sm:inline-flex"
+        />
+        <NavbarMobileMenu
+          id="demo-solid-menu"
+          items={cafeNav}
+          title="The Corner Café"
+          label="Demo: solid (mobile)"
+          pathname="/menu"
+          menu="sheet"
+        >
+          <NavbarCta href="/cakes" label="Order a cake" class="w-full" />
+        </NavbarMobileMenu>
+      </Fragment>
+    </Navbar>
+  </Demo>
+
+  <Demo
+    title="Centred layout"
+    description="layout='center': on desktop the brand is centred with the nav on a second row; the `lead` slot (left) holds the phone number. Mobile is the same as the start layout."
+    bleed
+  >
+    <Navbar layout="center" variant="solid" sticky={false}>
+      <NavbarPhone slot="lead" phone={business.phone} display="full" />
+      <NavbarBrand
+        slot="start"
+        name="Willow & Rose Hair Studio"
+        shortName="Willow & Rose"
+        class="font-serif text-xl"
+        href="#demo-centred-layout"
+      />
+      <NavbarLinks
+        items={nav}
+        label="Demo: centred"
+        idPrefix="demo-centred"
+        pathname={pathname}
+      />
+      <Fragment slot="end">
+        <NavbarCta href="/book" label="Book online" />
+        <NavbarMobileMenu
+          id="demo-centred-menu"
+          items={nav}
+          title="Willow & Rose"
+          label="Demo: centred (mobile)"
+          pathname={pathname}
+        />
+      </Fragment>
+    </Navbar>
+  </Demo>
+
+  <Demo
+    title="Transparent over a hero image, sticky"
+    description="variant='transparent' sticky: the bar overlaps the hero by its height, keeps a background-token scrim for legibility and turns solid once scrolled. Scroll inside the frame."
+    bleed
+  >
+    <div class="h-[28rem] overflow-y-auto">
+      <Navbar variant="transparent">
+        <NavbarBrand
+          slot="start"
+          name={business.name}
+          shortName={business.shortName}
+          href="#demo-transparent-over-a-hero-image-sticky"
+        />
+        <NavbarLinks
+          items={nav}
+          label="Demo: transparent"
+          idPrefix="demo-transparent"
+          pathname={pathname}
+        />
+        <Fragment slot="end">
+          <NavbarPhone phone={business.phone} />
+          <NavbarMobileMenu
+            id="demo-transparent-menu"
+            items={nav}
+            title={business.name}
+            label="Demo: transparent (mobile)"
+            pathname={pathname}
+          />
+        </Fragment>
+      </Navbar>
+      <Image
+        src={heroImage}
+        alt=""
+        class="h-80 w-full object-cover"
+        widths={[640, 1280, 1920]}
+        sizes="100vw"
+      />
+      <div class="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 sm:px-6">
+        <p class="max-w-prose text-muted-foreground">
+          Gas Safe registered engineers covering Falmouth, Penryn and Truro.
+          Same-day call-outs for leaks and boiler breakdowns, fixed prices
+          agreed before we start, and a 12-month guarantee on all work.
+        </p>
+        <p class="max-w-prose text-muted-foreground">
+          Keep scrolling: the navbar picks up the background colour and border
+          as soon as the content moves underneath it.
+        </p>
+        <div class="h-64" aria-hidden="true"></div>
+      </div>
+    </div>
+  </Demo>
+
+  <Demo
+    title="Transparent, centred"
+    description="layout='center' variant='transparent' sticky={false}: overlays the hero and scrolls away with it."
+    bleed
+  >
+    <div class="relative">
+      <Navbar
+        layout="center"
+        variant="transparent"
+        bordered={false}
+        sticky={false}
+      >
+        <NavbarBrand
+          slot="start"
+          name="Willow & Rose Hair Studio"
+          shortName="Willow & Rose"
+          href="#demo-transparent-centred"
+        />
+        <NavbarLinks
+          items={cafeNav}
+          label="Demo: transparent centred"
+          idPrefix="demo-transparent-centred"
+        />
+        <Fragment slot="end">
+          <NavbarCta href="/book" label="Book" size="default" />
+          <NavbarMobileMenu
+            id="demo-transparent-centred-menu"
+            items={cafeNav}
+            title="Willow & Rose"
+            label="Demo: transparent centred (mobile)"
+            menu="sheet"
+          />
+        </Fragment>
+      </Navbar>
+      <Image
+        src={heroImage}
+        alt=""
+        class="h-96 w-full object-cover"
+        widths={[640, 1280, 1920]}
+        sizes="100vw"
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Top bar"
+    description="NavbarTopBar: phone, email, opening hours (weekly summary at build time, today's hours in the business time zone after load) and social links. Tones: muted (default), primary, secondary, default + bordered."
+    bleed
+  >
+    <div class="flex flex-col gap-4">
+      <NavbarTopBar
+        phone={business.phone}
+        email={business.email}
+        hours={hours}
+        specialHours={[]}
+        socials={socials}
+        label="Demo: contact details (muted)"
+      />
+      <NavbarTopBar
+        tone="primary"
+        phone={business.phone}
+        email={business.email}
+        hours={hours}
+        specialHours={[]}
+        socials={socials}
+        label="Demo: contact details (primary)"
+      />
+      <NavbarTopBar
+        tone="secondary"
+        phone={business.phone}
+        email={false}
+        hours={hours}
+        specialHours={[]}
+        socials={false}
+        label="Demo: contact details (secondary)"
+      >
+        <span slot="end" class="font-medium">
+          Gas Safe reg. 123456
+        </span>
+      </NavbarTopBar>
+      <NavbarTopBar
+        tone="default"
+        bordered
+        phone={business.phone}
+        email={business.email}
+        hours={false}
+        socials={socials}
+        label="Demo: contact details (default)"
+      />
+    </div>
+  </Demo>
+
+  <Demo
+    title="Full header: top bar + navbar"
+    description="How layout/Header.astro composes the parts when siteConfig.header.topBar, showPhone and cta are set."
+    bleed
+  >
+    <NavbarTopBar
+      phone={business.phone}
+      email={business.email}
+      hours={hours}
+      specialHours={[]}
+      socials={socials}
+      label="Demo: full header contact details"
+    />
+    <Navbar sticky={false}>
+      <NavbarBrand
+        slot="start"
+        name={business.name}
+        shortName={business.shortName}
+        href="#demo-full-header-top-bar-navbar"
+      />
+      <NavbarLinks
+        items={nav}
+        label="Demo: full header"
+        idPrefix="demo-full"
+        pathname={pathname}
+      />
+      <Fragment slot="end">
+        <NavbarPhone phone={business.phone} display="icon" />
+        <NavbarCta
+          href="/contact"
+          label="Get a quote"
+          class="hidden sm:inline-flex"
+        />
+        <NavbarMobileMenu
+          id="demo-full-menu"
+          items={nav}
+          title={business.name}
+          label="Demo: full header (mobile)"
+          pathname={pathname}
+        >
+          <NavbarCta href="/contact" label="Get a quote" class="w-full" />
+        </NavbarMobileMenu>
+      </Fragment>
+    </Navbar>
+  </Demo>
+
+  <Demo
+    title="Phone and CTA parts"
+    description="NavbarPhone display='full' | 'responsive' | 'icon' and NavbarCta with button variants."
+  >
+    <div class="flex flex-wrap items-center gap-3">
+      <NavbarPhone phone={business.phone} display="full" />
+      <NavbarPhone phone={business.phone} display="responsive" />
+      <NavbarPhone phone={business.phone} display="icon" />
+      <NavbarCta href="/contact" label="Get a quote" />
+      <NavbarCta href="/contact" label="Book a visit" variant="secondary" />
+      <NavbarCta href="/contact" label="Call-out charges" variant="outline" />
+    </div>
+  </Demo>
+</Showcase>

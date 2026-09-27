@@ -1,0 +1,167 @@
+---
+/**
+ * Desktop dropdown for a nav item with `children`: a disclosure button and a
+ * native popover panel. No JS needed for the essentials: click/Enter/Space
+ * toggles, Esc and click-outside close (popover light dismiss), opening one
+ * closes the others, Tab moves from the button into the panel, and browsers
+ * expose `aria-expanded` on the button.
+ *
+ * The panel is placed under the button with CSS anchor positioning
+ * (`anchor-scope` keeps several dropdowns independent). A small script adds a
+ * measured fallback where that isn't supported and closes the panel when
+ * focus tabs out of it.
+ *
+ * The parent link (`item.href`) is listed first in the panel; label it with
+ * `overviewLabel` (defaults to the item label).
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { linkTarget, type ResolvedNavItem } from "@/lib/nav"
+import { cn } from "@/lib/utils"
+
+import { navbarDropdownLinkVariants, navbarLinkVariants } from "./variants"
+
+type Props = HTMLAttributes<"div"> & {
+  item: ResolvedNavItem
+  /** Popover id; unique per page. */
+  id: string
+  /** Label for the parent link in the panel; `false` to leave it out. */
+  overviewLabel?: string | false
+  triggerClass?: string
+  contentClass?: string
+}
+
+const {
+  item,
+  id,
+  overviewLabel = item.label,
+  class: className,
+  triggerClass,
+  contentClass,
+  ...rest
+} = Astro.props
+
+const links = [
+  ...(overviewLabel === false ? [] : [{ ...item, label: overviewLabel }]),
+  ...item.children,
+]
+---
+
+<div
+  data-slot="navbar-dropdown"
+  class={cn("group/dropdown relative", className)}
+  {...rest}
+>
+  <button
+    type="button"
+    popovertarget={id}
+    aria-controls={id}
+    data-slot="navbar-dropdown-trigger"
+    data-active={item.active ? "" : undefined}
+    class={cn(navbarLinkVariants(), triggerClass)}
+  >
+    {item.label}
+    <Icon
+      name="lucide:chevron-down"
+      class="size-4 transition-transform group-has-open/dropdown:rotate-180"
+      aria-hidden="true"
+    />
+  </button>
+  <div
+    id={id}
+    popover
+    data-slot="navbar-dropdown-content"
+    class={cn(
+      "min-w-56 rounded-lg border bg-popover p-1 text-popover-foreground shadow-md",
+      contentClass
+    )}
+  >
+    <ul class="flex flex-col gap-0.5">
+      {links.map((link) => (
+        <li>
+          <a
+            href={link.href}
+            aria-current={link.current === "page" ? "page" : undefined}
+            data-slot="navbar-dropdown-link"
+            class={navbarDropdownLinkVariants()}
+            {...linkTarget(link.external)}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style is:global>
+  @supports (anchor-scope: all) and (position-area: bottom) {
+    [data-slot="navbar-dropdown"] {
+      anchor-scope: --navbar-dropdown;
+    }
+
+    [data-slot="navbar-dropdown-trigger"] {
+      anchor-name: --navbar-dropdown;
+    }
+
+    [data-slot="navbar-dropdown-content"] {
+      position-anchor: --navbar-dropdown;
+      position-area: bottom span-right;
+      position-try-fallbacks: flip-inline;
+      inset: auto;
+      margin: 0.5rem 0 0;
+    }
+  }
+</style>
+
+<script>
+  const CONTENT = '[data-slot="navbar-dropdown-content"]'
+  const anchored =
+    CSS.supports("anchor-scope: all") && CSS.supports("position-area: bottom")
+
+  // Fallback placement: measure the trigger and pin the panel below it.
+  function place(panel: HTMLElement) {
+    const trigger = panel.parentElement?.querySelector(
+      '[data-slot="navbar-dropdown-trigger"]'
+    )
+    if (!trigger) return
+    const rect = trigger.getBoundingClientRect()
+    const gap = 8
+    panel.style.inset = "auto"
+    panel.style.margin = "0"
+    panel.style.top = `${rect.bottom + gap}px`
+    const maxLeft = window.innerWidth - panel.offsetWidth - gap
+    panel.style.left = `${Math.max(gap, Math.min(rect.left, maxLeft))}px`
+  }
+
+  if (!anchored) {
+    document.addEventListener(
+      "toggle",
+      (event) => {
+        const panel = event.target
+        if (
+          panel instanceof HTMLElement &&
+          panel.matches(CONTENT) &&
+          (event as ToggleEvent).newState === "open"
+        ) {
+          place(panel)
+        }
+      },
+      { capture: true }
+    )
+  }
+
+  // Close when keyboard focus leaves the dropdown (button + panel).
+  document.addEventListener("focusout", (event) => {
+    const target = event.target
+    if (!(target instanceof Element)) return
+    const root = target.closest('[data-slot="navbar-dropdown"]')
+    const panel = root?.querySelector<HTMLElement>(CONTENT)
+    const next = event.relatedTarget
+    if (!root || !panel || !(next instanceof Node) || root.contains(next)) {
+      return
+    }
+    if (panel.matches(":popover-open")) panel.hidePopover()
+  })
+</script>

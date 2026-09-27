@@ -1,0 +1,90 @@
+---
+/**
+ * Brand link (to the home page): an optional logo plus the business name.
+ * Shows `shortName` on small screens and `name` from `sm` up when they differ.
+ * Defaults come from siteConfig.name / shortName.
+ *
+ *   <NavbarBrand slot="start" />
+ *   <NavbarBrand logo={logoImage} showName={false} />     (logo only)
+ *   <NavbarBrand><svg slot="logo" .../></NavbarBrand>      (inline SVG logo)
+ *
+ * The logo is decorative (alt=""): the name is always in the link text,
+ * visually hidden when `showName` is false.
+ */
+import type { ImageMetadata } from "astro"
+import type { HTMLAttributes } from "astro/types"
+import { Image } from "astro:assets"
+
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+type Props = HTMLAttributes<"a"> & {
+  name?: string
+  shortName?: string
+  /** Imported image (optimised) or a public path / URL. */
+  logo?: ImageMetadata | string
+  /** Intrinsic logo height in px (image sizing). Display size: `logoClass` (default h-8). */
+  logoHeight?: number
+  /** Show the name next to the logo. */
+  showName?: boolean
+  logoClass?: string
+}
+
+const {
+  name = siteConfig.name,
+  shortName = siteConfig.shortName,
+  logo,
+  logoHeight = 32,
+  showName = true,
+  href = "/",
+  class: className,
+  logoClass,
+  ...rest
+} = Astro.props
+
+const hasLogoSlot = Astro.slots.has("logo")
+const logoClasses = cn("h-8 w-auto shrink-0", logoClass)
+---
+
+<a
+  href={href}
+  data-slot="navbar-brand"
+  class={cn(
+    "inline-flex min-h-6 items-center gap-2 font-heading text-lg font-semibold tracking-tight",
+    className
+  )}
+  {...rest}
+>
+  {hasLogoSlot && <slot name="logo" />}
+  {logo &&
+    !hasLogoSlot &&
+    (typeof logo === "string" ? (
+      <img
+        src={logo}
+        alt=""
+        height={logoHeight}
+        data-slot="navbar-brand-logo"
+        class={logoClasses}
+      />
+    ) : (
+      <Image
+        src={logo}
+        alt=""
+        height={logoHeight}
+        data-slot="navbar-brand-logo"
+        class={logoClasses}
+      />
+    ))}
+  {showName ? (
+    shortName && shortName !== name ? (
+      <span data-slot="navbar-brand-name">
+        <span class="sm:hidden">{shortName}</span>
+        <span class="hidden sm:inline">{name}</span>
+      </span>
+    ) : (
+      <span data-slot="navbar-brand-name">{name}</span>
+    )
+  ) : (
+    <span class="sr-only">{name}</span>
+  )}
+</a>

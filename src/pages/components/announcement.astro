@@ -1,0 +1,79 @@
+---
+import Announcement from "@/components/blocks/announcement/Announcement.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const tones = [
+  {
+    tone: "primary",
+    icon: "lucide:party-popper",
+    message: "Now taking bookings for Christmas party hair and make-up.",
+    link: { label: "Book a slot", href: "/book" },
+  },
+  {
+    tone: "secondary",
+    icon: "lucide:megaphone",
+    message: "10% off boiler servicing booked before the end of October.",
+    link: { label: "See offer", href: "/offers" },
+  },
+  {
+    tone: "muted",
+    icon: "lucide:clock",
+    message: "Late-night opening every Thursday until 8pm.",
+  },
+  {
+    tone: "destructive",
+    icon: "lucide:triangle-alert",
+    message:
+      "Closed Monday 25 August for the bank holiday. Emergency call-outs as usual.",
+    link: { label: "Opening hours", href: "/contact" },
+  },
+] as const
+---
+
+<Showcase
+  title="Announcement"
+  description="Site-wide banner for offers, closures and holiday hours. Rendered from siteConfig.announcement above the header, or used directly with props."
+>
+  {tones.map(({ tone, icon, message, ...rest }) => (
+    <Demo
+      title={`Tone: ${tone}`}
+      description="Dismissible: the choice is remembered in localStorage per message and applied before first paint. Clear site data to see it again."
+      bleed
+    >
+      <Announcement
+        tone={tone}
+        icon={icon}
+        message={message}
+        link={"link" in rest ? rest.link : undefined}
+        dismissible
+        label={`Demo announcement (${tone})`}
+      />
+    </Demo>
+  ))}
+
+  <Demo
+    title="Not dismissible, rich content"
+    description="dismissible={false}; content from the default slot instead of `message`."
+    bleed
+  >
+    <Announcement tone="muted" label="Demo announcement (slot)">
+      <strong class="font-semibold">New:</strong> book your appointment online,
+      24/7.
+    </Announcement>
+  </Demo>
+
+  <Demo
+    title="Date window"
+    description="`from` / `until` are checked at build time. This one ended in 2020, so nothing renders below."
+  >
+    <Announcement
+      message="Summer opening hours: 8am to 8pm."
+      until="2020-09-01"
+      label="Demo announcement (expired)"
+    />
+    <p class="text-sm text-muted-foreground">
+      (Expired announcement: intentionally empty.)
+    </p>
+  </Demo>
+</Showcase>
