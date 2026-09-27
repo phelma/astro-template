@@ -1,0 +1,192 @@
+---
+/**
+ * Navbar root: the bar itself (a `<header>`), laid out on a grid with four
+ * slot areas. Fill it with the Navbar* parts; `layout/Header.astro` is the
+ * site's default composition.
+ *
+ *   <Navbar layout="center" variant="transparent">
+ *     <NavbarBrand slot="start" />
+ *     <NavbarLinks items={nav} />                 (default slot, desktop only)
+ *     <Fragment slot="end">...</Fragment>          (actions, mobile menu)
+ *     <NavbarPhone slot="lead" />                  (centre layout, desktop only)
+ *   </Navbar>
+ *
+ * Variants (see ./variants.ts): `layout` start | center, `variant` solid |
+ * blurred | transparent, `sticky`, `bordered`. `transparent` overlaps the
+ * next element by the bar height (put a hero image right after it) and turns
+ * solid once scrolled: a CSS scroll-driven animation where supported, else a
+ * tiny script sets `data-scrolled`. Height comes from `--navbar-height`
+ * (defaults to `--header-height`). Render the site navbar as a direct child of
+ * <body> so `sticky` lasts the whole page.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import {
+  containerVariants,
+  type ContainerVariants,
+} from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import {
+  navbarContainerVariants,
+  navbarVariants,
+  type NavbarVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"header"> &
+  NavbarVariants &
+  ContainerVariants & {
+    /** Root element. Use "div" when a page already has a site header. */
+    as?: "header" | "div"
+    containerClass?: string
+  }
+
+const {
+  as: Tag = "header",
+  layout = "start",
+  variant = "blurred",
+  sticky = true,
+  bordered = true,
+  width,
+  class: className,
+  containerClass,
+  ...rest
+} = Astro.props
+
+const hasLead = Astro.slots.has("lead")
+const hasNav = Astro.slots.has("default")
+const center = layout === "center"
+---
+
+<Tag
+  data-slot="navbar"
+  data-layout={layout}
+  data-variant={variant}
+  data-sticky={sticky ? "" : undefined}
+  data-bordered={bordered ? "" : undefined}
+  class={cn(navbarVariants({ layout, variant, sticky, bordered }), className)}
+  {...rest}
+>
+  <div
+    data-slot="navbar-container"
+    class={cn(
+      containerVariants({ width }),
+      navbarContainerVariants({ layout }),
+      containerClass
+    )}
+  >
+    {hasLead && (
+      <div
+        data-slot="navbar-lead"
+        class="hidden items-center gap-2 [grid-area:lead] md:flex"
+      >
+        <slot name="lead" />
+      </div>
+    )}
+    <div
+      data-slot="navbar-start"
+      class={cn(
+        "flex min-w-0 items-center [grid-area:start]",
+        center && "md:justify-self-center"
+      )}
+    >
+      <slot name="start" />
+    </div>
+    {hasNav && (
+      <div
+        data-slot="navbar-nav"
+        class={cn(
+          "hidden min-w-0 [grid-area:nav] md:block",
+          center ? "justify-self-center" : "justify-self-end"
+        )}
+      >
+        <slot />
+      </div>
+    )}
+    <div
+      data-slot="navbar-end"
+      class="flex items-center justify-end gap-2 [grid-area:end]"
+    >
+      <slot name="end" />
+    </div>
+  </div>
+</Tag>
+
+<style is:global>
+  /* Transparent + sticky: turn solid as the page scrolls (no JS needed where
+     scroll-driven animations are supported; see the script fallback). */
+  @supports (animation-timeline: scroll()) {
+    [data-slot="navbar"][data-variant="transparent"][data-sticky] {
+      /* Longhands on purpose: `animation-timeline` is reset-only in the
+         `animation` shorthand, so don't let a minifier merge them. */
+      animation-name: navbar-solid;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(nearest);
+      animation-range: 0 var(--navbar-height);
+      /* A scroll-linked effect, not timed motion: keep it under reduced
+         motion (the global reduced-motion rule would otherwise zero it). */
+      animation-duration: auto !important;
+    }
+  }
+
+  @keyframes navbar-solid {
+    to {
+      background-color: var(--background);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    [data-slot="navbar"][data-variant="transparent"][data-sticky][data-bordered] {
+      animation-name: navbar-solid-bordered;
+    }
+  }
+
+  @keyframes navbar-solid-bordered {
+    to {
+      background-color: var(--background);
+      border-color: var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+  }
+
+  /* The site navbar in the centred layout is taller on desktop: keep
+     in-page anchor offsets (scroll-padding in global.css) in step. */
+  @media (width >= 48rem) {
+    :root:has(
+      > body > [data-slot="navbar"][data-layout="center"][data-sticky]
+    ) {
+      --header-height: 7rem;
+    }
+  }
+</style>
+
+<script>
+  // Fallback for browsers without scroll-driven animations: mark transparent
+  // sticky navbars as scrolled once their scroll container has moved.
+  function scrollParent(el: HTMLElement): HTMLElement | null {
+    for (let node = el.parentElement; node; node = node.parentElement) {
+      if (node === document.body || node === document.documentElement) break
+      if (/(auto|scroll)/.test(getComputedStyle(node).overflowY)) return node
+    }
+    return null
+  }
+
+  if (!CSS.supports("animation-timeline: scroll()")) {
+    const bars = document.querySelectorAll<HTMLElement>(
+      '[data-slot="navbar"][data-variant="transparent"][data-sticky]'
+    )
+    for (const bar of bars) {
+      const scroller = scrollParent(bar)
+      const update = () => {
+        const top = scroller ? scroller.scrollTop : window.scrollY
+        bar.toggleAttribute("data-scrolled", top > 8)
+      }
+      ;(scroller ?? window).addEventListener("scroll", update, {
+        passive: true,
+      })
+      update()
+    }
+  }
+</script>

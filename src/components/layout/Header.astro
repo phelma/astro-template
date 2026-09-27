@@ -1,112 +1,85 @@
 ---
 /**
- * Site header: brand, primary nav (from siteConfig.nav), theme controls and a
- * mobile menu built on the native Popover API (no JS, light-dismiss, Esc to
- * close, focus handled by the browser, aria-expanded exposed on the invoker).
+ * Site header: the default composition of the navbar block, driven by
+ * siteConfig.header (layout, sticky, phone, CTA, top bar), siteConfig.nav
+ * (items with `children` become dropdowns) and siteConfig.announcement.
+ *
+ * Renders, in order: the announcement banner, the optional top bar, then the
+ * navbar (<header> landmark: brand, desktop nav, phone, theme controls, CTA
+ * and the popover mobile menu). They are siblings rather than nested so a
+ * sticky navbar stays stuck for the whole page while the banner and top bar
+ * scroll away. To restyle, change siteConfig.header or edit the parts in
+ * src/components/blocks/navbar/.
  */
-import { Icon } from "astro-icon/components"
-
+import Announcement from "@/components/blocks/announcement/Announcement.astro"
+import Navbar from "@/components/blocks/navbar/Navbar.astro"
+import NavbarBrand from "@/components/blocks/navbar/NavbarBrand.astro"
+import NavbarCta from "@/components/blocks/navbar/NavbarCta.astro"
+import NavbarLinks from "@/components/blocks/navbar/NavbarLinks.astro"
+import NavbarMobileMenu from "@/components/blocks/navbar/NavbarMobileMenu.astro"
+import NavbarPhone from "@/components/blocks/navbar/NavbarPhone.astro"
+import NavbarTopBar from "@/components/blocks/navbar/NavbarTopBar.astro"
+import type {
+  NavbarMobileMenuVariants,
+  NavbarVariants,
+} from "@/components/blocks/navbar/variants"
 import ThemeSwitcher from "@/components/theme/ThemeSwitcher.astro"
 import ThemeToggle from "@/components/theme/ThemeToggle.astro"
-import { ariaCurrent, isExternal } from "@/lib/nav"
 import { siteConfig } from "@/site.config"
 
-const { pathname } = Astro.url
-const links = siteConfig.nav.map((link) => ({
-  ...link,
-  current: ariaCurrent(link.href, pathname),
-  external: isExternal(link),
-}))
+// Options not (yet) in the siteConfig.header schema fall back to today's look.
+const header = siteConfig.header as typeof siteConfig.header & {
+  variant?: NavbarVariants["variant"]
+  bordered?: boolean
+  mobileMenu?: NavbarMobileMenuVariants["menu"]
+}
+const { nav, name, contact } = siteConfig
+const showPhone = header.showPhone && Boolean(contact.phone)
 ---
 
-<header class="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75">
-  <div class="mx-auto flex h-(--header-height) max-w-6xl items-center gap-4 px-4 sm:px-6">
-    <a
-      href="/"
-      class="mr-auto inline-flex min-h-6 items-center font-heading text-lg font-semibold tracking-tight"
+<Announcement />
+
+{header.topBar && <NavbarTopBar />}
+
+<Navbar
+  layout={header.layout}
+  sticky={header.sticky}
+  variant={header.variant ?? "blurred"}
+  bordered={header.bordered ?? true}
+>
+  <NavbarBrand slot="start" />
+
+  <NavbarLinks items={nav} />
+
+  <Fragment slot="end">
+    {showPhone && <NavbarPhone />}
+    <ThemeSwitcher class="hidden md:inline-flex" />
+    <ThemeToggle class="hidden md:inline-flex" />
+    {header.cta && (
+      <NavbarCta
+        href={header.cta.href}
+        label={header.cta.label}
+        external={header.cta.external}
+        class="hidden sm:inline-flex"
+      />
+    )}
+    <NavbarMobileMenu
+      id="mobile-nav"
+      items={nav}
+      title={name}
+      menu={header.mobileMenu ?? "fullscreen"}
     >
-      <span class="sm:hidden">{siteConfig.shortName}</span>
-      <span class="hidden sm:inline">{siteConfig.name}</span>
-    </a>
-
-    <nav aria-label="Main" class="hidden md:block">
-      <ul class="flex items-center gap-1">
-        {links.map((link) => (
-          <li>
-            <a
-              href={link.href}
-              aria-current={link.current}
-              target={link.external ? "_blank" : undefined}
-              rel={link.external ? "noopener noreferrer" : undefined}
-              class="inline-flex h-9 items-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground aria-[current]:text-foreground"
-            >
-              {link.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-
-    <div class="flex items-center gap-2">
-      <ThemeSwitcher class="hidden md:inline-flex" />
-      <ThemeToggle class="hidden md:inline-flex" />
-      <button
-        type="button"
-        popovertarget="mobile-nav"
-        class="inline-flex size-10 items-center justify-center rounded-md border bg-background text-foreground hover:bg-accent hover:text-accent-foreground md:hidden"
-      >
-        <Icon name="lucide:menu" class="size-5" aria-hidden="true" />
-        <span class="sr-only">Menu</span>
-      </button>
-    </div>
-  </div>
-
-  <div
-    id="mobile-nav"
-    popover
-    class="inset-0 m-0 hidden h-dvh max-h-none w-full max-w-none flex-col gap-6 overflow-y-auto bg-background p-4 text-foreground open:flex md:open:hidden"
-  >
-    <div class="flex h-(--header-height) shrink-0 items-center justify-between">
-      <span class="font-heading text-lg font-semibold tracking-tight">
-        {siteConfig.name}
-      </span>
-      <button
-        type="button"
-        popovertarget="mobile-nav"
-        popovertargetaction="hide"
-        class="inline-flex size-10 items-center justify-center rounded-md border bg-background hover:bg-accent hover:text-accent-foreground"
-      >
-        <Icon name="lucide:x" class="size-5" aria-hidden="true" />
-        <span class="sr-only">Close menu</span>
-      </button>
-    </div>
-    <nav aria-label="Main">
-      <ul class="flex flex-col gap-1">
-        {links.map((link) => (
-          <li>
-            <a
-              href={link.href}
-              aria-current={link.current}
-              target={link.external ? "_blank" : undefined}
-              rel={link.external ? "noopener noreferrer" : undefined}
-              class="flex min-h-11 items-center rounded-md px-3 text-base font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground aria-[current]:bg-accent aria-[current]:text-accent-foreground"
-            >
-              {link.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-    <div class="flex flex-wrap items-center gap-3 border-t pt-6">
+      {header.cta && (
+        <NavbarCta
+          href={header.cta.href}
+          label={header.cta.label}
+          external={header.cta.external}
+          class="w-full"
+        />
+      )}
+      {showPhone && <NavbarPhone display="full" class="min-h-11" />}
       <ThemeToggle name="color-mode-mobile" />
       <ThemeSwitcher id="theme-switcher-mobile" />
-    </div>
-  </div>
-</header>
-
-<style>
-  /* Lock page scroll while the full-screen mobile menu is open. */
-  :global(html:has(#mobile-nav:popover-open)) {
-    overflow: hidden;
-  }
-</style>
+    </NavbarMobileMenu>
+  </Fragment>
+</Navbar>

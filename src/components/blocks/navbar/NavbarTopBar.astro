@@ -1,0 +1,211 @@
+---
+/**
+ * Thin utility bar above the navbar: click-to-call phone, email, opening
+ * hours and social links. Every value defaults from siteConfig (contact,
+ * business.hours) and can be overridden or switched off (`false`).
+ *
+ * Hours render as a weekly summary at build time ("Mon–Fri 09:00–17:30 ·
+ * Sat 10:00–14:00"); a small script swaps in today's hours in the business
+ * time zone ("Today 09:00–17:30" / "Closed today"), honouring specialHours.
+ * Replace the hours entirely with the `hours` slot; add items with `end`.
+ *
+ * `tone`: muted (default) | default | primary | secondary; `bordered`.
+ * Email and socials are hidden on small screens to keep the bar to one line.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import {
+  containerVariants,
+  type ContainerVariants,
+} from "@/components/blocks/section/variants"
+import { telHref } from "@/lib/nav"
+import { cn } from "@/lib/utils"
+import {
+  siteConfig,
+  type BusinessHours,
+  type SocialLink,
+  type SpecialHours,
+} from "@/site.config"
+
+import { hoursSchedule, summariseHours } from "./hours"
+import { navbarTopBarVariants, type NavbarTopBarVariants } from "./variants"
+
+type Props = HTMLAttributes<"section"> &
+  NavbarTopBarVariants &
+  ContainerVariants & {
+    phone?: string | false
+    email?: string | false
+    hours?: BusinessHours | false
+    specialHours?: SpecialHours
+    /** IANA zone for "today" (defaults to business.timeZone). */
+    timeZone?: string
+    socials?: readonly SocialLink[] | false
+    /** Landmark name. */
+    label?: string
+    callLabel?: string
+    emailLabel?: string
+    hoursLabel?: string
+    todayLabel?: string
+    closedTodayLabel?: string
+    containerClass?: string
+  }
+
+const {
+  phone = siteConfig.contact.phone,
+  email = siteConfig.contact.email,
+  hours = siteConfig.business.hours,
+  specialHours = siteConfig.business.specialHours,
+  timeZone = siteConfig.business.timeZone,
+  socials = siteConfig.contact.socials,
+  label = "Contact details",
+  callLabel = "Call",
+  emailLabel = "Email",
+  hoursLabel = "Opening hours",
+  todayLabel = "Today",
+  closedTodayLabel = "Closed today",
+  tone,
+  bordered,
+  width,
+  class: className,
+  containerClass,
+  ...rest
+} = Astro.props
+
+const summary = hours ? summariseHours(hours, siteConfig.locale) : ""
+const schedule = hours ? hoursSchedule(hours, specialHours) : undefined
+const hasHoursSlot = Astro.slots.has("hours")
+const itemClass =
+  "inline-flex min-h-6 items-center gap-1.5 underline-offset-4 hover:underline"
+---
+
+<section
+  aria-label={label}
+  data-slot="navbar-topbar"
+  class={cn(navbarTopBarVariants({ tone, bordered }), className)}
+  {...rest}
+>
+  <div
+    data-slot="navbar-topbar-container"
+    class={cn(
+      containerVariants({ width }),
+      "flex min-h-9 flex-wrap items-center justify-between gap-x-6 gap-y-1 py-1",
+      containerClass
+    )}
+  >
+    <ul class="flex flex-wrap items-center gap-x-5 gap-y-1">
+      {phone && (
+        <li>
+          <a
+            href={telHref(phone)}
+            data-slot="navbar-topbar-phone"
+            class={cn(itemClass, "font-medium")}
+          >
+            <Icon name="lucide:phone" class="size-3.5" aria-hidden="true" />
+            <span class="sr-only">{`${callLabel} `}</span>
+            {phone}
+          </a>
+        </li>
+      )}
+      {email && (
+        <li class="hidden sm:block">
+          <a
+            href={`mailto:${email}`}
+            data-slot="navbar-topbar-email"
+            class={itemClass}
+          >
+            <Icon name="lucide:mail" class="size-3.5" aria-hidden="true" />
+            <span class="sr-only">{`${emailLabel} `}</span>
+            {email}
+          </a>
+        </li>
+      )}
+      {(hasHoursSlot || summary) && (
+        <li
+          data-slot="navbar-topbar-hours"
+          class="inline-flex min-h-6 items-center gap-1.5"
+        >
+          <Icon name="lucide:clock" class="size-3.5" aria-hidden="true" />
+          <span class="sr-only">{`${hoursLabel}: `}</span>
+          <slot name="hours">
+            <span
+              data-hours-today
+              data-schedule={JSON.stringify(schedule)}
+              data-time-zone={timeZone}
+              data-today-label={todayLabel}
+              data-closed-label={closedTodayLabel}
+              title={summary}
+            >
+              {summary}
+            </span>
+          </slot>
+        </li>
+      )}
+    </ul>
+
+    <div class="flex items-center gap-3">
+      <slot name="end" />
+      {socials && socials.length > 0 && (
+        <ul
+          aria-label="Social profiles"
+          data-slot="navbar-topbar-socials"
+          class="hidden items-center gap-1 md:flex"
+        >
+          {socials.map((social) => (
+            <li>
+              <a
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer me"
+                class="inline-flex size-7 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <Icon name={social.icon} class="size-4" aria-hidden="true" />
+                <span class="sr-only">{social.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </div>
+</section>
+
+<script>
+  import type { HoursSchedule } from "./hours"
+
+  // Replace the weekly summary with today's hours in the business time zone.
+  function isoDate(date: Date, timeZone: string): string {
+    // en-CA formats dates as YYYY-MM-DD.
+    return new Intl.DateTimeFormat("en-CA", { timeZone }).format(date)
+  }
+
+  function weekday(date: Date, timeZone: string): number {
+    const name = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      weekday: "short",
+    }).format(date)
+    return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(name)
+  }
+
+  for (const el of document.querySelectorAll<HTMLElement>(
+    "[data-hours-today]"
+  )) {
+    try {
+      const schedule = JSON.parse(el.dataset.schedule ?? "") as HoursSchedule
+      const timeZone = el.dataset.timeZone ?? "UTC"
+      const now = new Date()
+      const today = isoDate(now, timeZone)
+      const special = schedule.special.find(
+        (s) => s.from <= today && today <= s.until
+      )
+      const range = special
+        ? special.range
+        : schedule.week[weekday(now, timeZone)]
+      el.textContent = range
+        ? `${el.dataset.todayLabel} ${range}`
+        : (el.dataset.closedLabel ?? "")
+    } catch {
+      // Keep the build-time weekly summary.
+    }
+  }
+</script>

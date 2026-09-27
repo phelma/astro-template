@@ -1,0 +1,55 @@
+---
+/**
+ * Click-to-call link (`tel:`) with a phone icon. The number defaults to
+ * siteConfig.contact.phone (display format); renders nothing without one.
+ *
+ * `display`: `responsive` (default) is a 44px icon button on small screens
+ * and shows the number from `lg`; `full` always shows it; `icon` never does.
+ * The accessible name is always "<label> <number>", e.g. "Call +44 20 ...".
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { telHref } from "@/lib/nav"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
+
+import { navbarPhoneVariants, type NavbarPhoneVariants } from "./variants"
+
+type Props = HTMLAttributes<"a"> &
+  NavbarPhoneVariants & {
+    phone?: string
+    /** Verb announced before the number (visually hidden). */
+    label?: string
+  }
+
+const {
+  phone = siteConfig.contact.phone,
+  label = "Call",
+  display = "responsive",
+  class: className,
+  ...rest
+} = Astro.props
+
+const numberClass =
+  display === "full"
+    ? undefined
+    : display === "responsive"
+      ? "sr-only lg:not-sr-only"
+      : "sr-only"
+---
+
+{phone && (
+  <a
+    href={telHref(phone)}
+    data-slot="navbar-phone"
+    class={cn(navbarPhoneVariants({ display }), className)}
+    {...rest}
+  >
+    <Icon name="lucide:phone" class="size-4 shrink-0" aria-hidden="true" />
+    <span class="sr-only">{`${label} `}</span>
+    <span data-slot="navbar-phone-number" class={numberClass}>
+      {phone}
+    </span>
+  </a>
+)}
