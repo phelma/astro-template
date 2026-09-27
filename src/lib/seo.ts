@@ -2,6 +2,14 @@
  * SEO helpers: titles, absolute URLs and schema.org JSON-LD builders.
  * Pure functions; pass `Astro.site` (or `context.site` in endpoints).
  */
+import type {
+  BreadcrumbList,
+  Graph,
+  Organization,
+  Thing,
+  WebSite,
+} from "schema-dts"
+
 import { siteConfig } from "@/site.config"
 
 export interface BreadcrumbItem {
@@ -10,8 +18,6 @@ export interface BreadcrumbItem {
   /** Root-relative or absolute URL. Omit for the current page (last item). */
   href?: string
 }
-
-type JsonLdNode = Record<string, unknown>
 
 /**
  * Clean page path for canonical URLs and nav matching. With
@@ -63,7 +69,7 @@ export function websiteId(site: URL | undefined): string {
   return `${absoluteUrl("/", site)}#website`
 }
 
-export function organizationSchema(site: URL | undefined): JsonLdNode {
+export function organizationSchema(site: URL | undefined): Organization {
   const { organisation, contact } = siteConfig
   const sameAs =
     organisation.sameAs ?? contact.socials.map((social) => social.href)
@@ -84,7 +90,7 @@ export function organizationSchema(site: URL | undefined): JsonLdNode {
   }
 }
 
-export function websiteSchema(site: URL | undefined): JsonLdNode {
+export function websiteSchema(site: URL | undefined): WebSite {
   return {
     "@type": "WebSite",
     "@id": websiteId(site),
@@ -104,7 +110,7 @@ export function breadcrumbSchema(
   items: BreadcrumbItem[],
   site: URL | undefined,
   currentUrl: URL
-): JsonLdNode {
+): BreadcrumbList {
   return {
     "@type": "BreadcrumbList",
     itemListElement: items.map((item, index) => ({
@@ -119,7 +125,7 @@ export function breadcrumbSchema(
 }
 
 /** Wrap nodes in a single `@graph` document. */
-export function jsonLdGraph(...nodes: JsonLdNode[]): JsonLdNode {
+export function jsonLdGraph(...nodes: Thing[]): Graph {
   return { "@context": "https://schema.org", "@graph": nodes }
 }
 

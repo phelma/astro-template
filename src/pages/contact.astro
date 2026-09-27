@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components"
+import type { ContactPage, WithContext } from "schema-dts"
 
 import PageHeader from "@/components/sections/PageHeader.astro"
 import JsonLd from "@/components/seo/JsonLd.astro"
@@ -19,7 +20,7 @@ const countryName = address
     )
   : undefined
 
-const contactPageSchema = {
+const contactPageSchema: WithContext<ContactPage> = {
   "@context": "https://schema.org",
   "@type": "ContactPage",
   url: absoluteUrl(pagePath(Astro.url.pathname), Astro.site),

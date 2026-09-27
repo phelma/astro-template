@@ -6,6 +6,7 @@
  * the current page (give it no `href`); it gets `aria-current="page"`.
  */
 import { Icon } from "astro-icon/components"
+import type { BreadcrumbList, WithContext } from "schema-dts"
 
 import JsonLd from "@/components/seo/JsonLd.astro"
 import { cn } from "@/lib/utils"
@@ -17,7 +18,7 @@ interface Props {
 }
 
 const { items, class: className } = Astro.props
-const schema = {
+const schema: WithContext<BreadcrumbList> = {
   "@context": "https://schema.org",
   ...breadcrumbSchema(items, Astro.site, Astro.url),
 }

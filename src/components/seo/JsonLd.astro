@@ -5,10 +5,12 @@
  *
  * JSON-LD is a data block (not executed), so CSP `script-src` doesn't apply.
  */
+import type { Graph, Thing, WithContext } from "schema-dts"
+
 import { serializeJsonLd } from "@/lib/seo"
 
 interface Props {
-  data: Record<string, unknown>
+  data: Graph | WithContext<Thing>
 }
 
 const { data } = Astro.props

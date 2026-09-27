@@ -55,6 +55,7 @@
     "rehype-remark": "^10.0.1",
     "remark-gfm": "^4.0.1",
     "remark-stringify": "^11.0.0",
+    "schema-dts": "^2.0.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.1",
     "unified": "^11.0.5"
