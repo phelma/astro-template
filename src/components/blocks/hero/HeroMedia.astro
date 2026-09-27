@@ -1,0 +1,82 @@
+---
+/**
+ * Hero image (or custom media via the default slot). Styles itself from the
+ * root's `layout`: framed beside or below the text, cropped wide when
+ * stacked, or a full-bleed background behind a scrim when overlaid.
+ *
+ * The hero image is usually the page's LCP element, so `priority` defaults
+ * to true (eager, sync decode, fetchpriority="high"). Set it to false for
+ * heroes below the fold; use `priority` on at most one image per page.
+ */
+import type { ImageMetadata } from "astro"
+import type { HTMLAttributes } from "astro/types"
+import { Picture } from "astro:assets"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"div"> & {
+  image?: ImageMetadata
+  /** Describe the image; "" only if purely decorative. Required with `image`. */
+  alt?: string
+  priority?: boolean
+  /** Largest rendered width in CSS px. Default: the image width, max 1600. */
+  width?: number
+  /** `sizes` attribute; defaults to Astro's for the `width`. */
+  sizes?: string
+  /** Classes for the <img>. */
+  imageClass?: string
+}
+
+const {
+  image,
+  alt = "",
+  priority = true,
+  width: widthProp,
+  sizes,
+  imageClass,
+  class: className,
+  ...rest
+} = Astro.props
+
+const width = image ? (widthProp ?? Math.min(image.width, 1600)) : 0
+const height = image ? Math.round((width * image.height) / image.width) : 0
+---
+
+<div
+  data-slot="hero-media"
+  class={cn(
+    "relative w-full",
+    "group-data-[layout=centered]/hero:mx-auto group-data-[layout=centered]/hero:max-w-4xl",
+    "group-data-[layout=overlay]/hero:absolute group-data-[layout=overlay]/hero:inset-0 group-data-[layout=overlay]/hero:-z-10",
+    className
+  )}
+  {...rest}
+>
+  {Astro.slots.has("default") ? (
+    <slot />
+  ) : (
+    image && (
+      <Picture
+        src={image}
+        alt={alt}
+        formats={["avif", "webp"]}
+        width={width}
+        height={height}
+        sizes={sizes}
+        priority={priority}
+        class={cn(
+          "h-auto w-full rounded-xl border shadow-md",
+          "group-data-[layout=centered]/hero:aspect-video group-data-[layout=centered]/hero:object-cover",
+          "group-data-[layout=stacked]/hero:aspect-video group-data-[layout=stacked]/hero:object-cover md:group-data-[layout=stacked]/hero:aspect-[21/9]",
+          "group-data-[layout=overlay]/hero:size-full group-data-[layout=overlay]/hero:rounded-none group-data-[layout=overlay]/hero:border-0 group-data-[layout=overlay]/hero:object-cover group-data-[layout=overlay]/hero:shadow-none",
+          imageClass
+        )}
+      />
+    )
+  )}
+  <div
+    data-slot="hero-scrim"
+    aria-hidden="true"
+    class="absolute inset-0 hidden group-data-[layout=overlay]/hero:block group-data-[scrim=background]/hero:bg-background/80 group-data-[scrim=dim]/hero:bg-foreground/70 group-data-[scrim=foreground]/hero:bg-foreground/70 dark:group-data-[scrim=dim]/hero:bg-background/80"
+  ></div>
+</div>

@@ -1,0 +1,38 @@
+---
+/**
+ * Feature title. A heading one level below the section heading (`as`,
+ * default "h3"); use `as="p"` for checklists, where each item is a short
+ * phrase rather than a subsection. With `href` it becomes a link, stretched
+ * over the whole card in the cards variant.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"h3"> & {
+  as?: "h2" | "h3" | "h4" | "h5" | "h6" | "p"
+  href?: string
+}
+
+const { as: Tag = "h3", href, class: className, ...rest } = Astro.props
+---
+
+<Tag
+  data-slot="features-title"
+  class={cn(
+    "text-lg group-data-[variant=checklist]/features:font-heading group-data-[variant=checklist]/features:text-base group-data-[variant=checklist]/features:font-medium",
+    className
+  )}
+  {...rest}
+>
+  {href ? (
+    <a
+      href={href}
+      class="underline-offset-4 hover:underline focus-visible:underline group-data-[variant=cards]/features:after:absolute group-data-[variant=cards]/features:after:inset-0 group-data-[variant=cards]/features:after:rounded-xl"
+    >
+      <slot />
+    </a>
+  ) : (
+    <slot />
+  )}
+</Tag>

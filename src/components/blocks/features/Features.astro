@@ -1,0 +1,110 @@
+---
+/**
+ * Benefits / USP section, the default composition of the Features* parts:
+ * an optional section header and a list of features with icons.
+ *
+ *   <Features
+ *     title="Why choose us"
+ *     variant="checklist"
+ *     columns={2}
+ *     items={[{ title: "Fully insured" }, { title: "No call-out charge" }]}
+ *   />
+ *
+ * Variants: grid (default), list, cards, checklist. Columns: 1-4. Item
+ * titles are headings one level below `headingLevel` (plain text in
+ * checklists). Without `title` the section renders as a <div>; pass
+ * `aria-label` if it needs a name. Content after the list (e.g. a
+ * "See all services" link) goes in the default slot.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import Section from "@/components/blocks/section/Section.astro"
+import SectionHeader from "@/components/blocks/section/SectionHeader.astro"
+import type {
+  ContainerVariants,
+  HeadingLevel,
+  SectionHeaderVariants,
+  SectionVariants,
+} from "@/components/blocks/section/variants"
+
+import FeaturesBody from "./FeaturesBody.astro"
+import FeaturesDescription from "./FeaturesDescription.astro"
+import FeaturesIcon from "./FeaturesIcon.astro"
+import FeaturesItem from "./FeaturesItem.astro"
+import FeaturesList from "./FeaturesList.astro"
+import FeaturesTitle from "./FeaturesTitle.astro"
+import type { FeatureItem, FeaturesVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"section">, "title"> &
+  FeaturesVariants &
+  SectionVariants &
+  ContainerVariants &
+  SectionHeaderVariants & {
+    items: FeatureItem[]
+    title?: string
+    eyebrow?: string
+    lede?: string
+    headingLevel?: HeadingLevel
+    containerClass?: string
+    /** Classes for the <ul>. */
+    listClass?: string
+  }
+
+const {
+  id = "features",
+  items,
+  title,
+  eyebrow,
+  lede,
+  headingLevel = 2,
+  align,
+  variant = "grid",
+  columns = 3,
+  listClass,
+  ...rest
+} = Astro.props
+
+const titleId = `${id}-title`
+const itemHeading = `h${Math.min(headingLevel + 1, 6)}` as
+  "h3" | "h4" | "h5" | "h6"
+const titleTag = variant === "checklist" || !title ? "p" : itemHeading
+const defaultIcon = variant === "checklist" ? "lucide:check" : undefined
+---
+
+<Section
+  data-slot="features-section"
+  id={id}
+  as={title ? "section" : "div"}
+  aria-labelledby={title ? titleId : undefined}
+  {...rest}
+>
+  {title && (
+    <SectionHeader
+      headingId={titleId}
+      headingLevel={headingLevel}
+      title={title}
+      eyebrow={eyebrow}
+      lede={lede}
+      align={align}
+    />
+  )}
+  <FeaturesList variant={variant} columns={columns} class={listClass}>
+    {items.map(({ title: itemTitle, description, icon, href }) => {
+      const iconName = icon ?? defaultIcon
+      return (
+        <FeaturesItem>
+          {iconName && <FeaturesIcon name={iconName} />}
+          <FeaturesBody>
+            <FeaturesTitle as={titleTag} href={href}>
+              {itemTitle}
+            </FeaturesTitle>
+            {description && (
+              <FeaturesDescription>{description}</FeaturesDescription>
+            )}
+          </FeaturesBody>
+        </FeaturesItem>
+      )
+    })}
+  </FeaturesList>
+  <slot />
+</Section>

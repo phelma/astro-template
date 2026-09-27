@@ -1,0 +1,24 @@
+---
+/**
+ * Short line above the hero title: a trade, place or offer
+ * ("Plumbing & heating in Leeds"). Takes the scrim's text colour on overlays.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"p">
+
+const { class: className, ...rest } = Astro.props
+---
+
+<p
+  data-slot="hero-eyebrow"
+  class={cn(
+    "text-sm font-medium tracking-wide text-primary uppercase group-data-[layout=overlay]/hero:text-current",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</p>

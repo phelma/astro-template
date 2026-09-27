@@ -1,0 +1,67 @@
+---
+/**
+ * Hero root: the full-width band and its inner column. Compose it from the
+ * Hero* parts; they read `layout`, `size`, `align` and `scrim` from data
+ * attributes on this element, so no props need repeating.
+ *
+ *   <HeroRoot layout="overlay" aria-labelledby="hero-title">
+ *     <HeroContent>
+ *       <HeroTitle id="hero-title">...</HeroTitle>
+ *       <HeroActions actions={[...]} />
+ *     </HeroContent>
+ *     <HeroMedia image={photo} alt="..." />
+ *   </HeroRoot>
+ *
+ * `class` styles the band, `containerClass` the inner column.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import {
+  heroContainerVariants,
+  heroVariants,
+  type HeroAlign,
+  type HeroVariants,
+} from "./variants"
+
+type Props = HTMLAttributes<"section"> &
+  HeroVariants & {
+    /** Text alignment for overlay, stacked and minimal layouts. */
+    align?: HeroAlign
+    /** Element to render; "div" when the hero has no heading of its own. */
+    as?: "section" | "div" | "header"
+    containerClass?: string
+  }
+
+const {
+  as: Tag = "section",
+  layout = "split",
+  size = "md",
+  scrim = "dim",
+  align: alignProp = "start",
+  class: className,
+  containerClass,
+  ...rest
+} = Astro.props
+
+const align: HeroAlign =
+  layout === "centered" ? "center" : layout === "split" ? "start" : alignProp
+---
+
+<Tag
+  data-slot="hero"
+  data-layout={layout}
+  data-size={size}
+  data-align={align}
+  data-scrim={layout === "overlay" ? scrim : undefined}
+  class={cn(heroVariants({ layout, size, scrim }), className)}
+  {...rest}
+>
+  <div
+    data-slot="hero-container"
+    class={cn(heroContainerVariants({ layout }), containerClass)}
+  >
+    <slot />
+  </div>
+</Tag>

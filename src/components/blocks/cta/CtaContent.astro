@@ -1,0 +1,24 @@
+---
+/**
+ * Text column of a call to action: title and supporting text (and, in the
+ * split variant, the actions).
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"div">
+
+const { class: className, ...rest } = Astro.props
+---
+
+<div
+  data-slot="cta-content"
+  class={cn(
+    "flex max-w-2xl flex-col items-start gap-3 group-data-[variant=centered]/cta:items-center",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</div>

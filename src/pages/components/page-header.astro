@@ -1,0 +1,90 @@
+---
+import PageHeader from "@/components/blocks/page-header/PageHeader.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+import { buttonVariants } from "@/components/ui/button"
+import warmImage from "@/assets/placeholders/hero/warm.jpg"
+import wideImage from "@/assets/placeholders/hero/wide.jpg"
+
+const tones = ["default", "muted", "primary"] as const
+---
+
+<Showcase
+  title="Page header"
+  description="Header for content pages: the h1, optional eyebrow, lede and image, start or centre aligned, on any Section tone."
+>
+  <Demo
+    title="Align: start"
+    description="Default, as on the About and Privacy pages. Extra content goes in the default slot."
+    bleed
+  >
+    <PageHeader
+      headingLevel={3}
+      eyebrow="About us"
+      title="Three generations of Leeds plumbers"
+      lede="Started by Grandad Ron in 1971, still family-run, still answering the phone ourselves."
+    >
+      <a href="/contact" class={buttonVariants({ variant: "outline" })}>
+        Get in touch
+      </a>
+    </PageHeader>
+  </Demo>
+
+  <Demo title="Align: center" bleed>
+    <PageHeader
+      headingLevel={3}
+      align="center"
+      eyebrow="Prices"
+      title="Treatments and prices"
+      lede="All prices include a consultation. Patch tests are free and required 48 hours before colour."
+    />
+  </Demo>
+
+  {tones.map((tone) => (
+    <Demo
+      title={`Tone: ${tone}`}
+      description="Non-default tones render as a band with space below."
+      bleed
+    >
+      <PageHeader
+        headingLevel={3}
+        tone={tone}
+        eyebrow="Services"
+        title="Boiler servicing"
+        lede="Annual services from £85, including a Gas Safe certificate."
+      />
+    </Demo>
+  ))}
+
+  <Demo
+    title="With image (start)"
+    description="Image beside the text from md, 4:3 crop. Above the fold, so it loads with priority (the only one on this page)."
+    bleed
+  >
+    <PageHeader
+      headingLevel={3}
+      tone="muted"
+      eyebrow="Our café"
+      title="Breakfast, lunch and cake in York"
+      lede="Local suppliers, seasonal menus and a sunny courtyard out back."
+      image={warmImage}
+      imageAlt="Warmly lit café counter with a round mirror on the wall."
+    />
+  </Demo>
+
+  <Demo
+    title="With image (center)"
+    description="Image below the text, 21:9 crop from md."
+    bleed
+  >
+    <PageHeader
+      headingLevel={3}
+      align="center"
+      title="Recent projects"
+      lede="Extensions, loft conversions and renovations across North Yorkshire."
+      image={wideImage}
+      imageAlt="Bright kitchen extension with a large window."
+      priority={false}
+    />
+  </Demo>
+</Showcase>

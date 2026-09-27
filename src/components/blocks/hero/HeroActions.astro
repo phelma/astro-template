@@ -1,0 +1,58 @@
+---
+/**
+ * Row of hero calls to action. Pass `actions` for button links, or put your
+ * own links in the default slot (rendered after `actions`):
+ *
+ *   <HeroActions actions={[{ label: "Get a free quote", href: "/contact" }]}>
+ *     <a href="tel:+441130000000" class={buttonVariants({ size: "lg", variant: "outline" })}>Call us</a>
+ *   </HeroActions>
+ *
+ * On overlays, outline buttons from `actions` switch to a transparent,
+ * scrim-coloured outline; add `heroOverlayOutline` (./variants) to outline
+ * links you slot in yourself.
+ */
+import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
+
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+import type { ActionLink } from "./actions"
+import { heroOverlayOutline } from "./variants"
+
+type Props = HTMLAttributes<"div"> & {
+  actions?: ActionLink[]
+  /** Button size for `actions`. */
+  size?: "default" | "lg"
+}
+
+const { actions = [], size = "lg", class: className, ...rest } = Astro.props
+---
+
+<div
+  data-slot="hero-actions"
+  class={cn(
+    "flex flex-wrap gap-3 group-data-[align=center]/hero:justify-center",
+    className
+  )}
+  {...rest}
+>
+  {actions.map(({ label, href, variant, icon, iconPosition = "end" }) => (
+    <a
+      href={href}
+      class={cn(
+        buttonVariants({ size, variant }),
+        variant === "outline" && heroOverlayOutline
+      )}
+    >
+      {icon && iconPosition === "start" && (
+        <Icon name={icon} aria-hidden="true" />
+      )}
+      {label}
+      {icon && iconPosition === "end" && (
+        <Icon name={icon} aria-hidden="true" />
+      )}
+    </a>
+  ))}
+  <slot />
+</div>

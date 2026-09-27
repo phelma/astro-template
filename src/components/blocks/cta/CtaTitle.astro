@@ -1,0 +1,29 @@
+---
+/**
+ * Call-to-action heading. Pass `id` and reference it from the root's
+ * `aria-labelledby`.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import type { HeadingLevel } from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"h2"> & {
+  headingLevel?: HeadingLevel
+}
+
+const { headingLevel = 2, class: className, ...rest } = Astro.props
+
+const Heading = `h${headingLevel}` as const
+---
+
+<Heading
+  data-slot="cta-title"
+  class={cn(
+    "text-3xl sm:group-data-[variant=card]/cta:text-4xl sm:group-data-[variant=centered]/cta:text-4xl",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</Heading>

@@ -1,0 +1,149 @@
+---
+/**
+ * Header for content pages: the page's single <h1>, optional eyebrow and
+ * lede, and an optional image. Extra content (actions, "Last updated",
+ * a phone line) goes in the default slot under the lede.
+ *
+ *   <PageHeader
+ *     eyebrow="Services"
+ *     title="Boiler servicing"
+ *     lede="Annual services from £85, with a Gas Safe certificate."
+ *     tone="muted"
+ *     image={photo}
+ *     imageAlt="Engineer checking a boiler's flue gas readings"
+ *   />
+ *
+ * `align`: start (image beside on wide screens) or center (image below).
+ * `tone`: a Section tone; non-default tones render as a band. The image is
+ * above the fold, so it loads with `priority` unless you pass false.
+ */
+import type { ImageMetadata } from "astro"
+import type { HTMLAttributes } from "astro/types"
+import { Picture } from "astro:assets"
+
+import {
+  containerVariants,
+  sectionVariants,
+  type ContainerVariants,
+  type HeadingLevel,
+  type SectionVariants,
+} from "@/components/blocks/section/variants"
+import { cn } from "@/lib/utils"
+
+import {
+  pageHeaderContainerVariants,
+  pageHeaderVariants,
+  type PageHeaderAlign,
+} from "./variants"
+
+type Props = Omit<HTMLAttributes<"header">, "title"> &
+  ContainerVariants &
+  Pick<SectionVariants, "tone"> & {
+    title: string
+    lede?: string
+    eyebrow?: string
+    align?: PageHeaderAlign
+    image?: ImageMetadata
+    /** Required when `image` is set. Describe the image; "" only if purely decorative. */
+    imageAlt?: string
+    priority?: boolean
+    /** 1 on pages; lower levels only for showcases. */
+    headingLevel?: 1 | HeadingLevel
+    containerClass?: string
+  }
+
+const {
+  title,
+  lede,
+  eyebrow,
+  align = "start",
+  tone = "default",
+  width,
+  image,
+  imageAlt = "",
+  priority = true,
+  headingLevel = 1,
+  class: className,
+  containerClass,
+  ...rest
+} = Astro.props
+
+const Heading = `h${headingLevel}` as const
+const hasImage = image !== undefined
+const isCenter = align === "center"
+const imageWidth = image ? Math.min(image.width, isCenter ? 1104 : 640) : 0
+const imageHeight = Math.round(
+  (imageWidth * (isCenter ? 9 : 3)) / (isCenter ? 21 : 4)
+)
+---
+
+<header
+  data-slot="page-header"
+  data-align={align}
+  data-tone={tone}
+  class={cn(
+    sectionVariants({ tone, spacing: "none" }),
+    pageHeaderVariants({ banded: tone !== "default" }),
+    className
+  )}
+  {...rest}
+>
+  <div
+    data-slot="page-header-container"
+    class={cn(
+      containerVariants({ width }),
+      pageHeaderContainerVariants({ align, hasImage }),
+      containerClass
+    )}
+  >
+    <div
+      data-slot="page-header-content"
+      class={cn(
+        "flex flex-col items-start gap-4",
+        isCenter && "mx-auto max-w-3xl items-center text-center"
+      )}
+    >
+      {eyebrow && (
+        <p
+          data-slot="page-header-eyebrow"
+          class="text-sm font-medium tracking-wide text-primary uppercase group-data-[tone=primary]/page-header:text-current"
+        >
+          {eyebrow}
+        </p>
+      )}
+      <Heading data-slot="page-header-title" class="text-4xl sm:text-5xl">
+        {title}
+      </Heading>
+      {lede && (
+        <p
+          data-slot="page-header-lede"
+          class="max-w-prose text-lg text-muted-foreground"
+        >
+          {lede}
+        </p>
+      )}
+      <slot />
+    </div>
+    {image && (
+      <div data-slot="page-header-media" class="w-full">
+        <Picture
+          src={image}
+          alt={imageAlt}
+          formats={["avif", "webp"]}
+          width={imageWidth}
+          height={imageHeight}
+          sizes={
+            isCenter
+              ? "(min-width: 1152px) 1104px, 100vw"
+              : "(min-width: 768px) 50vw, 100vw"
+          }
+          priority={priority}
+          class={cn(
+            "h-auto w-full rounded-xl border object-cover shadow-md",
+            isCenter ? "aspect-video md:aspect-[21/9]" : "aspect-4/3"
+          )}
+        />
+      </div>
+    )}
+  </div>
+</header>

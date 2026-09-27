@@ -1,16 +1,14 @@
 ---
-import { Icon } from "astro-icon/components"
-
-import CtaBand from "@/components/sections/CtaBand.astro"
-import Features, { type Feature } from "@/components/sections/Features.astro"
-import Hero from "@/components/sections/Hero.astro"
-import { buttonVariants } from "@/components/ui/button"
+import Cta from "@/components/blocks/cta/Cta.astro"
+import Features from "@/components/blocks/features/Features.astro"
+import type { FeatureItem } from "@/components/blocks/features/variants"
+import Hero from "@/components/blocks/hero/Hero.astro"
 import BaseLayout from "@/layouts/BaseLayout.astro"
 import { siteConfig } from "@/site.config"
 import heroImage from "@/assets/hero-placeholder.jpg"
 
 // Placeholder copy: replace with your own.
-const features: Feature[] = [
+const features: FeatureItem[] = [
   {
     icon: "lucide:zap",
     title: "Fast by default",
@@ -38,28 +36,26 @@ const features: Feature[] = [
     lede="A minimal starting point built with Astro, Tailwind CSS and shadcn/ui. Replace this copy, pick a theme and ship."
     image={heroImage}
     imageAlt="Wireframe of a web page layout with a headline, two buttons and content cards."
-  >
-    <a href="/contact" class={buttonVariants({ size: "lg" })}>
-      Get in touch
-      <Icon name="lucide:arrow-right" aria-hidden="true" />
-    </a>
-    <a href="/about" class={buttonVariants({ size: "lg", variant: "outline" })}>
-      About {siteConfig.shortName}
-    </a>
-  </Hero>
-
-  <Features
-    title="What you get"
-    intro="Sensible defaults so you can focus on content."
-    features={features}
+    actions={[
+      { label: "Get in touch", href: "/contact", icon: "lucide:arrow-right" },
+      {
+        label: `About ${siteConfig.shortName}`,
+        href: "/about",
+        variant: "outline",
+      },
+    ]}
   />
 
-  <CtaBand
+  <Features
+    variant="cards"
+    title="What you get"
+    lede="Sensible defaults so you can focus on content."
+    items={features}
+  />
+
+  <Cta
     title="Ready to start a project?"
     text="Tell us what you are building and we will get back to you."
-  >
-    <a href="/contact" class={buttonVariants({ size: "lg" })}>
-      Contact {siteConfig.shortName}
-    </a>
-  </CtaBand>
+    actions={[{ label: `Contact ${siteConfig.shortName}`, href: "/contact" }]}
+  />
 </BaseLayout>

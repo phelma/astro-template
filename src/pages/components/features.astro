@@ -1,0 +1,217 @@
+---
+import FeaturesBody from "@/components/blocks/features/FeaturesBody.astro"
+import FeaturesDescription from "@/components/blocks/features/FeaturesDescription.astro"
+import FeaturesIcon from "@/components/blocks/features/FeaturesIcon.astro"
+import FeaturesItem from "@/components/blocks/features/FeaturesItem.astro"
+import FeaturesList from "@/components/blocks/features/FeaturesList.astro"
+import FeaturesTitle from "@/components/blocks/features/FeaturesTitle.astro"
+import Features from "@/components/blocks/features/Features.astro"
+import type { FeatureItem } from "@/components/blocks/features/variants"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+
+const benefits: FeatureItem[] = [
+  {
+    icon: "lucide:shield-check",
+    title: "Gas Safe registered",
+    description:
+      "Every engineer carries their Gas Safe ID. Check it on the register before we start.",
+  },
+  {
+    icon: "lucide:pound-sterling",
+    title: "Fixed, upfront prices",
+    description:
+      "You agree the price before any work begins. No hourly surprises on the invoice.",
+  },
+  {
+    icon: "lucide:clock",
+    title: "Same-day call-outs",
+    description:
+      "Most emergency jobs in Leeds are attended within four hours, seven days a week.",
+  },
+  {
+    icon: "lucide:badge-check",
+    title: "12-month guarantee",
+    description:
+      "All parts and labour are guaranteed for a year, and boilers for up to ten.",
+  },
+  {
+    icon: "lucide:sparkles",
+    title: "We tidy up",
+    description:
+      "Dust sheets down, shoe covers on and everything cleared away when we leave.",
+  },
+  {
+    icon: "lucide:star",
+    title: "4.9 on Google",
+    description: "Over 200 reviews from customers across West Yorkshire.",
+  },
+]
+
+const services: FeatureItem[] = [
+  {
+    icon: "lucide:flame",
+    title: "Boiler repairs",
+    description: "Fault finding and repairs on all major makes.",
+    href: "/contact",
+  },
+  {
+    icon: "lucide:wrench",
+    title: "Boiler servicing",
+    description: "Annual services from £85 with a safety certificate.",
+    href: "/contact",
+  },
+  {
+    icon: "lucide:droplets",
+    title: "Leaks and bursts",
+    description: "Emergency repairs and trace-and-access.",
+    href: "/contact",
+  },
+  {
+    icon: "lucide:thermometer",
+    title: "Central heating",
+    description: "Radiators, power flushes and smart thermostats.",
+    href: "/contact",
+  },
+]
+
+const checklist: FeatureItem[] = [
+  { title: "Fully insured" },
+  { title: "Free quotes" },
+  { title: "No call-out charge" },
+  { title: "Card and contactless accepted" },
+  { title: "Evening and weekend slots" },
+  { title: "Waste removed and recycled" },
+]
+---
+
+<Showcase
+  title="Features"
+  description="Benefits and USPs with icons: grid, list, cards or a compact checklist, in 1 to 4 columns."
+>
+  <Demo
+    title="Variant: grid"
+    description="Default: icon above title and text; 3 columns."
+    bleed
+  >
+    <Features
+      id="features-grid"
+      headingLevel={3}
+      eyebrow="Why choose us"
+      title="Local plumbers you can trust"
+      lede="Family-run since 1999, covering Leeds and surrounding villages."
+      items={benefits}
+    />
+  </Demo>
+
+  <Demo
+    title="Variant: list, 2 columns"
+    description="Icon beside the text; muted tone."
+    bleed
+  >
+    <Features
+      id="features-list"
+      variant="list"
+      columns={2}
+      tone="muted"
+      headingLevel={3}
+      title="What to expect"
+      items={benefits.slice(0, 4)}
+    />
+  </Demo>
+
+  <Demo
+    title="Variant: cards, 4 columns, linked"
+    description="Items with href: the title link covers the whole card."
+    bleed
+  >
+    <Features
+      id="features-cards"
+      variant="cards"
+      columns={4}
+      headingLevel={3}
+      title="Our services"
+      align="center"
+      items={services}
+    />
+  </Demo>
+
+  <Demo
+    title="Variant: checklist"
+    description="Compact ticks; titles are plain text, not headings. Default icon is a tick."
+    bleed
+  >
+    <Features
+      id="features-checklist"
+      variant="checklist"
+      columns={3}
+      headingLevel={3}
+      title="Every job includes"
+      items={checklist}
+    />
+  </Demo>
+
+  <Demo
+    title="Checklist on primary, no heading"
+    description="Without title the section is a div; pass aria-label. 2 columns."
+    bleed
+  >
+    <Features
+      id="features-checklist-primary"
+      variant="checklist"
+      columns={2}
+      tone="primary"
+      spacing="sm"
+      aria-label="Our promises"
+      items={checklist.slice(0, 4)}
+    />
+  </Demo>
+
+  <Demo title="Grid, 2 columns, secondary tone" bleed>
+    <Features
+      id="features-grid-2"
+      columns={2}
+      tone="secondary"
+      headingLevel={3}
+      title="Salon promises"
+      items={[
+        {
+          icon: "lucide:leaf",
+          title: "Organic colour",
+          description: "Ammonia-free colour that is kinder to hair and scalp.",
+        },
+        {
+          icon: "lucide:calendar",
+          title: "Easy booking",
+          description: "Book, move or cancel online up to 24 hours before.",
+        },
+      ]}
+    />
+  </Demo>
+
+  <Demo
+    title="Composed from parts"
+    description="FeaturesList and parts, one column."
+  >
+    <FeaturesList variant="list" columns={1} class="max-w-xl">
+      <FeaturesItem>
+        <FeaturesIcon name="lucide:phone" />
+        <FeaturesBody>
+          <FeaturesTitle as="h3">Call us</FeaturesTitle>
+          <FeaturesDescription>
+            Mon to Sat, 8am to 6pm. We aim to answer within three rings.
+          </FeaturesDescription>
+        </FeaturesBody>
+      </FeaturesItem>
+      <FeaturesItem>
+        <FeaturesIcon name="lucide:message-circle" />
+        <FeaturesBody>
+          <FeaturesTitle as="h3">Message us</FeaturesTitle>
+          <FeaturesDescription>
+            Send photos of the problem on WhatsApp for a quicker quote.
+          </FeaturesDescription>
+        </FeaturesBody>
+      </FeaturesItem>
+    </FeaturesList>
+  </Demo>
+</Showcase>

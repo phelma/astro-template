@@ -1,0 +1,28 @@
+---
+/**
+ * One feature (`<li>`): usually a FeaturesIcon and a FeaturesBody. Stacks,
+ * sits side by side or becomes a card depending on the list's variant.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+type Props = HTMLAttributes<"li">
+
+const { class: className, ...rest } = Astro.props
+---
+
+<li
+  data-slot="features-item"
+  class={cn(
+    "relative flex flex-col items-start gap-4",
+    "group-data-[variant=list]/features:flex-row",
+    "group-data-[variant=checklist]/features:flex-row group-data-[variant=checklist]/features:gap-3",
+    "group-data-[variant=cards]/features:rounded-xl group-data-[variant=cards]/features:bg-card group-data-[variant=cards]/features:p-6 group-data-[variant=cards]/features:text-card-foreground group-data-[variant=cards]/features:shadow-xs group-data-[variant=cards]/features:ring-1 group-data-[variant=cards]/features:ring-foreground/10",
+    "group-data-[variant=cards]/features:has-[a:focus-visible]:ring-2 group-data-[variant=cards]/features:has-[a:focus-visible]:ring-ring",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</li>

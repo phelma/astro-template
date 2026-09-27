@@ -1,0 +1,153 @@
+---
+import CtaActions from "@/components/blocks/cta/CtaActions.astro"
+import CtaAside from "@/components/blocks/cta/CtaAside.astro"
+import CtaContent from "@/components/blocks/cta/CtaContent.astro"
+import CtaPhone from "@/components/blocks/cta/CtaPhone.astro"
+import CtaRoot from "@/components/blocks/cta/CtaRoot.astro"
+import CtaText from "@/components/blocks/cta/CtaText.astro"
+import CtaTitle from "@/components/blocks/cta/CtaTitle.astro"
+import Cta from "@/components/blocks/cta/Cta.astro"
+import Demo from "@/components/showcase/Demo.astro"
+import Showcase from "@/components/showcase/Showcase.astro"
+import warmImage from "@/assets/placeholders/hero/warm.jpg"
+
+const quote = { label: "Get a free quote", href: "/contact" }
+const tones = ["default", "muted", "card", "primary", "secondary"] as const
+---
+
+<Showcase
+  title="Call to action"
+  description="Closing call to action as a band, an inset card, a split with an image or centred, in any Section tone, with an optional click-to-call line."
+>
+  <Demo
+    title="Variant: band"
+    description="Default: muted, bordered band with text left and actions right."
+    bleed
+  >
+    <Cta
+      id="cta-band"
+      headingLevel={3}
+      title="Need a plumber this week?"
+      text="Free, no-obligation quotes. Most jobs booked within 48 hours."
+      actions={[quote]}
+      phone
+    />
+  </Demo>
+
+  <Demo
+    title="Variant: card"
+    description="Inset, rounded box; tone colours the box (default primary). Unset action variants become secondary on primary; outline turns transparent."
+    bleed
+  >
+    <Cta
+      id="cta-card"
+      variant="card"
+      headingLevel={3}
+      title="Book your boiler service before winter"
+      text="Annual services from £85, including a Gas Safe certificate and a full safety check."
+      actions={[
+        { label: "Book a service", href: "/contact" },
+        { label: "What's included", href: "/about", variant: "outline" },
+      ]}
+      phone
+    />
+  </Demo>
+
+  <Demo
+    title="Variant: card (muted box)"
+    description="tone='muted' on the card."
+    bleed
+  >
+    <Cta
+      id="cta-card-muted"
+      variant="card"
+      tone="muted"
+      headingLevel={3}
+      title="Gift vouchers now available"
+      text="Treat someone to a cut and blow-dry, or any amount from £20."
+      actions={[{ label: "Buy a voucher", href: "/contact" }]}
+    />
+  </Demo>
+
+  <Demo
+    title="Variant: split"
+    description="Text, actions and phone beside an image (lazy-loaded; 4:3 crop)."
+    bleed
+  >
+    <Cta
+      id="cta-split"
+      variant="split"
+      headingLevel={3}
+      title="Planning a kitchen extension?"
+      text="Book a free site visit. We'll measure up, talk through options and send a fixed, itemised quote within a week."
+      image={warmImage}
+      imageAlt="Warmly lit room with a wooden counter and a round mirror."
+      actions={[
+        quote,
+        { label: "Our projects", href: "/about", variant: "outline" },
+      ]}
+      phone
+      phoneLabel="Rather talk it through? Call"
+    />
+  </Demo>
+
+  <Demo
+    title="Variant: centered"
+    description="Centred text with actions below; default tone primary."
+    bleed
+  >
+    <Cta
+      id="cta-centered"
+      variant="centered"
+      headingLevel={3}
+      title="Registering new NHS patients"
+      text="Children and adults welcome. Registration takes five minutes online."
+      actions={[
+        { label: "Register now", href: "/contact" },
+        { label: "Opening hours", href: "/about", variant: "outline" },
+      ]}
+      phone
+    />
+  </Demo>
+
+  {tones.map((tone) => (
+    <Demo title={`Band, tone: ${tone}`} bleed>
+      <Cta
+        id={`cta-tone-${tone}`}
+        tone={tone}
+        headingLevel={3}
+        title="Table for tonight?"
+        text="Walk-ins welcome, or book ahead for groups of six or more."
+        actions={[
+          { label: "Book a table", href: "/contact" },
+          { label: "See the menu", href: "/about", variant: "outline" },
+        ]}
+        phone="01904 496000"
+      />
+    </Demo>
+  ))}
+
+  <Demo
+    title="Composed from parts"
+    description="CtaRoot with parts; custom link in the CtaActions slot and a custom phone line."
+    bleed
+  >
+    <CtaRoot variant="band" tone="secondary" aria-labelledby="cta-parts-title">
+      <CtaContent>
+        <CtaTitle id="cta-parts-title" headingLevel={3}>
+          Emergency? We answer 24/7
+        </CtaTitle>
+        <CtaText>
+          Burst pipe, no heating or a leak through the ceiling: call and we'll
+          talk you through isolating it while we're on the way.
+        </CtaText>
+      </CtaContent>
+      <CtaAside>
+        <CtaActions
+          actions={[{ label: "Emergency call-out", href: "tel:+441134960000" }]}
+        />
+        <CtaPhone phone="0113 496 0999" label="Out of hours:" />
+      </CtaAside>
+    </CtaRoot>
+  </Demo>
+</Showcase>
