@@ -1,32 +1,34 @@
-import type { NavLink, SiteConfig } from "@/site.config"
+import type { ActionLink } from "@/lib/actions"
+import { telHref, type Address } from "@/lib/contact-links"
+import { siteConfig, type LinkGroup, type NavLink } from "@/site.config"
 
-export type FooterAddress = NonNullable<SiteConfig["contact"]["address"]>
+export type FooterAddress = Address
 
 /** A titled list of links (FooterColumn). */
-export interface FooterLinkGroup {
-  title: string
-  links: NavLink[]
-}
+export type FooterLinkGroup = LinkGroup
 
-/** Button in the CTA band. */
-export interface FooterCtaAction {
-  label: string
-  href: string
-  /** astro-icon name shown before the label, e.g. "lucide:phone". */
-  icon?: string
-}
+/** Button in the CTA band (icon shown before the label). */
+export type FooterCtaAction = Pick<ActionLink, "label" | "href" | "icon">
 
-/** `tel:` URI from a display number: "+44 20 7946 0000" -> "tel:+442079460000". */
-export function telHref(phone: string): string {
-  return `tel:${phone.replace(/[^\d+]/g, "")}`
-}
-
-/** Address lines for display (country omitted: local sites). */
-export function addressLines(address: FooterAddress): string[] {
+/**
+ * CTA band buttons: `primary` (default siteConfig.header.cta) then a
+ * click-to-call button for siteConfig.contact.phone.
+ */
+export function defaultFooterCtaActions(
+  primary: NavLink | undefined = siteConfig.header.cta,
+  callLabel: string = siteConfig.footerOptions.cta.callLabel
+): FooterCtaAction[] {
+  const { phone } = siteConfig.contact
   return [
-    address.streetAddress,
-    address.addressLocality,
-    address.addressRegion,
-    address.postalCode,
-  ].filter((line): line is string => Boolean(line))
+    ...(primary ? [{ label: primary.label, href: primary.href }] : []),
+    ...(phone
+      ? [
+          {
+            label: callLabel.replace("{phone}", phone),
+            href: telHref(phone),
+            icon: "lucide:phone",
+          },
+        ]
+      : []),
+  ]
 }

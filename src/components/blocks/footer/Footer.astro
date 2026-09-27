@@ -1,7 +1,8 @@
 ---
 /**
- * Site footer, composed from the Footer* parts. Every piece of data
- * defaults to siteConfig and can be overridden by props.
+ * Site footer, composed from the Footer* parts. Every piece of data and
+ * copy defaults to siteConfig (contact, nav, `footer` links and
+ * `footerOptions`) and can be overridden by props.
  *
  * Layouts: `simple` (one row: copyright, links, socials), `columns` (brand,
  * link columns, contact, opening hours, then a legal bar), `centered`, and
@@ -12,7 +13,7 @@
  *     <OpeningHoursSummary slot="hours" />
  *   </Footer>
  *
- * Slots: `hours` (replaces the fallback hours list), `brand` (under the
+ * Slots: `hours` (replaces the compact OpeningHoursList), `brand` (under the
  * blurb), `legal` (after the copyright), `cta` (replaces the CTA buttons),
  * default (extra columns in `columns` / `cta`, extra rows in `centered`).
  * For anything else, compose FooterRoot and the parts directly.
@@ -33,7 +34,12 @@ import {
   type SocialLink,
 } from "@/site.config"
 
-import type { FooterAddress, FooterCtaAction, FooterLinkGroup } from "./footer"
+import {
+  defaultFooterCtaActions,
+  type FooterAddress,
+  type FooterCtaAction,
+  type FooterLinkGroup,
+} from "./footer"
 import FooterBrand from "./FooterBrand.astro"
 import FooterColumn from "./FooterColumn.astro"
 import FooterContact from "./FooterContact.astro"
@@ -50,6 +56,13 @@ import {
   type FooterVariants,
 } from "./variants"
 
+interface FooterCtaProps {
+  title: string
+  text?: string
+  actions?: FooterCtaAction[]
+  tone?: FooterCtaVariants["tone"]
+}
+
 type Props = HTMLAttributes<"footer"> &
   FooterVariants &
   FooterLayoutVariants &
@@ -62,7 +75,7 @@ type Props = HTMLAttributes<"footer"> &
     blurb?: string
     /** Inline link row for `simple` / `centered` (default siteConfig.footer). */
     links?: NavLink[]
-    /** Link columns for `columns` / `cta` (default: "Explore" = siteConfig.nav). */
+    /** Link columns for `columns` / `cta` (default footerOptions.columns, else siteConfig.nav under footerOptions.navTitle). */
     columns?: FooterLinkGroup[]
     /** Contact column (default siteConfig.contact); `false` hides it. */
     contact?:
@@ -79,19 +92,23 @@ type Props = HTMLAttributes<"footer"> &
     hoursTitle?: string
     /** Copyright holder (default organisation legal name). */
     owner?: string
-    /** Links in the legal bar (default siteConfig.footer outside `simple`). */
+    /** Links in the legal bar (default footerOptions.legalLinks, else siteConfig.footer outside `simple`). */
     legalLinks?: NavLink[]
-    /** Call-to-action band for `layout="cta"`. */
-    cta?: {
-      title: string
-      text?: string
-      actions?: FooterCtaAction[]
-      tone?: FooterCtaVariants["tone"]
-    }
+    /** Call-to-action band for `layout="cta"` (default footerOptions.cta). */
+    cta?: FooterCtaProps
     /** Level for column headings (and the CTA title). */
     headingLevel?: HeadingLevel
     containerClass?: string
   }
+
+const { footerOptions: options } = siteConfig
+const defaultCta: FooterCtaProps = {
+  title: options.cta.title,
+  text: options.cta.text,
+  actions: options.cta.link
+    ? defaultFooterCtaActions(options.cta.link)
+    : undefined,
+}
 
 const {
   layout = "simple",
@@ -100,17 +117,20 @@ const {
   name,
   logo,
   hideName,
-  blurb = siteConfig.description,
+  blurb = options.blurb ?? siteConfig.description,
   links = siteConfig.footer,
-  columns = [{ title: "Explore", links: siteConfig.nav }],
+  columns = options.columns ?? [
+    { title: options.navTitle, links: siteConfig.nav },
+  ],
   contact = {},
-  contactTitle = "Contact",
+  contactTitle = options.contactTitle,
   socials,
   hours = siteConfig.business.hours,
-  hoursTitle,
+  hoursTitle = options.hoursTitle,
   owner,
-  legalLinks = layout === "simple" ? [] : siteConfig.footer,
-  cta = { title: "Need a hand? Get in touch today." },
+  legalLinks = options.legalLinks ??
+    (layout === "simple" ? [] : siteConfig.footer),
+  cta = defaultCta,
   headingLevel = 2,
   containerClass,
   class: className,

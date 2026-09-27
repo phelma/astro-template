@@ -1,8 +1,9 @@
 ---
 /**
  * Call-to-action band for the top of the footer: big heading, a line of
- * text and buttons. `actions` default to siteConfig.header.cta (if set) and
- * a click-to-call button for siteConfig.contact.phone. Custom buttons can
+ * text and buttons. `actions` default to siteConfig.footerOptions.cta.link
+ * (or siteConfig.header.cta) and a click-to-call button for
+ * siteConfig.contact.phone. Custom buttons can
  * go in the default slot instead (style them with footerCtaActionVariants).
  */
 import type { HTMLAttributes } from "astro/types"
@@ -14,7 +15,7 @@ import { isExternal } from "@/lib/nav"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
-import { telHref, type FooterCtaAction } from "./footer"
+import { defaultFooterCtaActions, type FooterCtaAction } from "./footer"
 import {
   footerCtaActionVariants,
   footerCtaVariants,
@@ -29,25 +30,13 @@ type Props = Omit<HTMLAttributes<"div">, "title"> &
     actions?: FooterCtaAction[]
   }
 
-const { header, contact } = siteConfig
-const defaultActions: FooterCtaAction[] = [
-  ...(header.cta ? [{ label: header.cta.label, href: header.cta.href }] : []),
-  ...(contact.phone
-    ? [
-        {
-          label: `Call ${contact.phone}`,
-          href: telHref(contact.phone),
-          icon: "lucide:phone",
-        },
-      ]
-    : []),
-]
-
 const {
   title,
   text,
   headingLevel = 2,
-  actions = defaultActions,
+  actions = defaultFooterCtaActions(
+    siteConfig.footerOptions.cta.link ?? siteConfig.header.cta
+  ),
   tone,
   class: className,
   ...rest
@@ -59,6 +48,7 @@ const hasSlot = Astro.slots.has("default")
 
 <div
   data-slot="footer-cta"
+  data-tone={tone ?? "primary"}
   class={cn(footerCtaVariants({ tone }), className)}
   {...rest}
 >

@@ -22,6 +22,12 @@ const link = z.object({
   external: z.boolean().optional(),
 })
 
+/** A titled list of links (footer columns). */
+const linkGroup = z.object({
+  title: z.string().min(1),
+  links: z.array(link).min(1),
+})
+
 /** Header nav item: a link, optionally with one level of child links (dropdown). */
 const navItem = link.extend({
   children: z.array(link).optional(),
@@ -172,6 +178,48 @@ const siteConfigSchema = z
     nav: z.array(navItem),
     /** Footer link list (legal, secondary pages). */
     footer: z.array(link),
+
+    /** Site footer options (src/components/layout/Footer.astro). */
+    footerOptions: z.object({
+      /**
+       * `simple`: one row (copyright, `footer` links, socials). `columns`:
+       * brand, link columns, contact, hours, legal bar. `centered`: stacked.
+       * `cta`: `columns` under a call-to-action band.
+       */
+      layout: z
+        .enum(["simple", "columns", "centered", "cta"])
+        .default("simple"),
+      /** Band colour. */
+      tone: z
+        .enum(["default", "muted", "card", "primary", "inverted"])
+        .default("default"),
+      /** Line under the brand (not `simple`). Defaults to `description`. */
+      blurb: z.string().min(1).optional(),
+      /** Link columns (`columns`, `cta`). Defaults to one column of `nav`. */
+      columns: z.array(linkGroup).optional(),
+      /** Heading of the default `nav` column. */
+      navTitle: z.string().min(1).default("Explore"),
+      /** Heading of the contact column. */
+      contactTitle: z.string().min(1).default("Contact"),
+      /** Heading of the opening-hours column. */
+      hoursTitle: z.string().min(1).default("Opening hours"),
+      /**
+       * Links in the legal bar (privacy, terms). Defaults to `footer` outside
+       * `simple` (where `footer` is already the link row).
+       */
+      legalLinks: z.array(link).optional(),
+      /** Call-to-action band for `layout: "cta"`. */
+      cta: z
+        .object({
+          title: z.string().min(1).default("Need a hand? Get in touch today."),
+          text: z.string().min(1).optional(),
+          /** Main button. Defaults to `header.cta`. */
+          link: link.optional(),
+          /** Click-to-call button label; "{phone}" is replaced. */
+          callLabel: z.string().min(1).default("Call {phone}"),
+        })
+        .prefault({}),
+    }),
 
     /** Site header options (src/components/layout/Header.astro). */
     header: z.object({
@@ -375,6 +423,7 @@ export type SiteConfig = z.output<typeof siteConfigSchema>
 export type SiteConfigInput = z.input<typeof siteConfigSchema>
 export type NavLink = z.output<typeof link>
 export type NavItem = z.output<typeof navItem>
+export type LinkGroup = z.output<typeof linkGroup>
 export type Day = z.output<typeof day>
 export type BusinessHours = SiteConfig["business"]["hours"]
 export type SpecialHours = SiteConfig["business"]["specialHours"]
@@ -429,6 +478,10 @@ const config = {
     { label: "Contact", href: "/contact" },
     { label: "Privacy", href: "/privacy" },
   ],
+  footerOptions: {
+    layout: "simple",
+    tone: "default",
+  },
 
   header: {
     layout: "start",

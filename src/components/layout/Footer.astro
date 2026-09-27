@@ -1,12 +1,15 @@
 ---
 /**
- * Site footer used by BaseLayout: the Footer block (blocks/footer) with
- * site data from siteConfig. `simple` keeps the one-row look (copyright,
- * siteConfig.footer links, socials). To change it, pick a layout and tone
- * here, e.g. <Footer layout="cta" tone="inverted" />, or compose the
- * Footer* parts directly.
+ * Site footer used by BaseLayout: the Footer block (blocks/footer) driven by
+ * siteConfig.footerOptions (layout, tone, blurb, link columns, legal links,
+ * CTA band) plus contact, hours, socials and siteConfig.footer links. The
+ * default `simple` layout is one row: copyright, footer links, socials.
+ * Change it in src/site.config.ts, or compose the Footer* parts here.
  */
 import Footer from "@/components/blocks/footer/Footer.astro"
+import { siteConfig } from "@/site.config"
+
+const { layout, tone } = siteConfig.footerOptions
 ---
 
-<Footer layout="simple" />
+<Footer layout={layout} tone={tone} />
