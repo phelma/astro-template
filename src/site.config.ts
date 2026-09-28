@@ -398,13 +398,6 @@ const siteConfigSchema = z
 
     /** Enable native cross-document view transitions (@view-transition). */
     viewTransitions: z.boolean(),
-
-    /**
-     * Speculation Rules: Chromium prerenders internal links on hover
-     * ("moderate" eagerness) for near-instant navigations. Rules live in
-     * src/lib/speculation-rules.ts.
-     */
-    speculationRules: z.boolean(),
   })
   .refine((c) => c.theme.available.includes(c.theme.default), {
     message: "theme.available must include theme.default",
@@ -544,7 +537,6 @@ const config = {
   },
 
   viewTransitions: false,
-  speculationRules: true,
 } satisfies SiteConfigInput
 
 export const siteConfig: SiteConfig = siteConfigSchema.parse(config)

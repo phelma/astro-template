@@ -31,24 +31,9 @@
   Permissions-Policy: accelerometer=(), autoplay=(), bluetooth=(), browsing-topics=(), camera=(), display-capture=(), encrypted-media=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), magnetometer=(), microphone=(), midi=(), payment=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), xr-spatial-tracking=()
   # Isolate the browsing context from cross-origin popups/openers.
   Cross-Origin-Opener-Policy: same-origin
-  # Only this site (incl. subdomains) may embed our files: keeps them out of
-  # other origins' processes (Spectre). Server-side fetchers (social cards,
-  # crawlers) are unaffected. COEP is deliberately not set: it breaks
-  # third-party embeds and is only needed for SharedArrayBuffer.
-  Cross-Origin-Resource-Policy: same-site
   # Tracking parameters don't change the page, so browser caches and
-  # speculative prerenders of /about also serve /about?utm_source=x.
+  # prefetches of /about also serve /about?utm_source=x.
   No-Vary-Search: params=("utm_source" "utm_medium" "utm_campaign" "utm_term" "utm_content" "gclid" "fbclid" "msclkid" "mc_cid" "mc_eid" "ref"), key-order
-  # Machine-readable discovery for agents that never parse HTML.
-  Link: </llms.txt>; rel="describedby"; type="text/markdown"; title="Site summary for LLMs", </sitemap-index.xml>; rel="sitemap"; type="application/xml"
-
-  # Reporting API: have browsers POST deprecation, intervention, crash and
-  # policy-violation reports to an endpoint you run (or a service such as
-  # report-uri.com). Uncomment, set the URL, and append the report-to
-  # parameters below.
-  # Reporting-Endpoints: default="https://reports.example.com/ingest"
-  # Content-Security-Policy: frame-ancestors 'none'; base-uri 'self'; object-src 'none'; report-to default
-  # Cross-Origin-Opener-Policy: same-origin; report-to="default"
 
 # Caching. HTML and other un-hashed files (icons, robots.txt, ...) keep
 # Cloudflare's default "Cache-Control: public, max-age=0, must-revalidate"
@@ -58,17 +43,6 @@
 # /_astro/fonts/) has content hashes in its filenames: cache for a year.
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
-
-# Plain-text files (robots.txt, llms.txt, llms-full.txt, security.txt):
-# declare UTF-8 so non-ASCII text isn't garbled.
-/*.txt
-  Content-Type: text/plain; charset=utf-8
-
-# Markdown copies of pages for agents (src/lib/markdown-export.ts). Kept out
-# of search results so they don't compete with the HTML pages.
-/*.md
-  Content-Type: text/markdown; charset=utf-8
-  X-Robots-Tag: noindex
 
 # Keep the platform hostnames (not your custom domain) out of search results.
 # Uncomment and set your project / worker / account names:

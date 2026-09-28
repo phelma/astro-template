@@ -14,7 +14,6 @@ Checklist items that land with the local-business blocks (`feat/local-business-b
 
 - [ ] **DOM building**: client scripts build DOM with `createElement` + `textContent` (or clone a `<template>`), not `innerHTML` strings, `document.write` or `eval`.
 - [ ] **Permissions-Policy** in `public/_headers` denies `autoplay`, `encrypted-media`, `geolocation` and others for the page _and every iframe_. Video and booking embeds need some of these: allow per origin (e.g. `encrypted-media=(self "https://www.youtube-nocookie.com")`) and match the iframe's `allow` attribute.
-- [ ] **Markdown export**: open each block's output in `dist/*.md` (from a real page, not the `noindex` showcase). Mark controls that aren't content (lightbox buttons, map placeholders, carousel arrows) with `data-markdown-ignore`.
 - [ ] **Targets and motion**: interactive parts are at least 24px (44px for primary mobile actions such as call and directions), and animations respect `prefers-reduced-motion`.
 
 ### Form block → Form labels, Accessible form errors, Status messages, Mobile-friendly form inputs, Redundant entry, Accessible authentication
@@ -32,14 +31,12 @@ The field parts already handle labels, `aria-invalid`, `aria-describedby`, `auto
 
 - [ ] Exclusive accordion with `<details name="...">` / `<summary>`: no JS, keyboard-accessible, and find-in-page opens the matching answer.
 - [ ] `FAQPage` JSON-LD via a builder in `src/lib/seo.ts`, from the same data as the visible questions.
-- [ ] Markdown export: `<summary>` currently comes out as a plain paragraph. Render questions as bold or a heading in `src/lib/markdown-export.ts`.
 
 ### Opening hours → Accessible data tables, Locale-aware content
 
 - [ ] A real `<table>` with a `<caption>`, `<th scope="row">` for days and `<th scope="col">` headers. Today's row is marked with text or `aria-current`, not only colour.
 - [ ] Day names and times formatted with `Intl` in `siteConfig.locale`. An "open now" state is computed in the business's time zone, and is updated client-side on a cached static page.
 - [ ] `openingHoursSpecification` (with special or holiday hours) in the `LocalBusiness` JSON-LD, from the same data as the table.
-- [ ] Markdown export: `<caption>` is dropped and the first row becomes the header. Emit the caption as a line before the table.
 
 ### Map, embed and booking → Lazy loading, Captions and transcripts, Third-party scripts and privacy
 
@@ -234,7 +231,7 @@ Headers, transport, and policies that keep visitors safe.
       Tell browsers who is allowed to embed your pages in an iframe. Use CSP frame-ancestors. X-Frame-Options is the legacy fallback.
 - [ ] [Fetch Metadata request headers](https://specification.website/spec/security/fetch-metadata/) — Recommended
       Read Sec-Fetch-Site, Sec-Fetch-Mode and Sec-Fetch-Dest to reject unwanted cross-site browser requests before a handler runs. Keep ordinary inbound links working and retain other CSRF defences.
-- [x] [Cross-origin isolation (COOP / COEP / CORP)](https://specification.website/spec/security/cross-origin-isolation/) — Recommended
+- [ ] [Cross-origin isolation (COOP / COEP / CORP)](https://specification.website/spec/security/cross-origin-isolation/) — Recommended
       Three response headers — Cross-Origin-Opener-Policy, Cross-Origin-Embedder-Policy, and Cross-Origin-Resource-Policy — that sever risky cross-window and cross-origin links and defend against side-channel leaks.
 - [x] [Referrer-Policy](https://specification.website/spec/security/referrer-policy/) — Recommended
       Referrer-Policy controls how much URL information your site leaks when users follow a link or load a subresource. strict-origin-when-cross-origin is the sensible default.
@@ -297,9 +294,9 @@ Things that make a site legible to AI agents and crawlers.
       Agent readiness is the set of choices that make a site legible to AI agents and LLMs: stable URLs, structured data, clean semantics, robots controls, and machine-readable endpoints.
 - [x] [/llms.txt](https://specification.website/spec/agent-readiness/llms-txt/) — Recommended
       A markdown file at the site root that gives LLMs a curated index of your most important content. Now at v2, which makes it discoverable by link relation instead of by guessing the path. Still a convention, not a ratified standard.
-- [x] [/llms-full.txt](https://specification.website/spec/agent-readiness/llms-full-txt/) — Optional
+- [ ] [/llms-full.txt](https://specification.website/spec/agent-readiness/llms-full-txt/) — Optional
       An extended companion to /llms.txt that concatenates the full markdown content of your key pages into a single file. Useful for small sites, costly for large ones.
-- [x] [Per-page Markdown source endpoints](https://specification.website/spec/agent-readiness/markdown-source-endpoints/) — Recommended
+- [ ] [Per-page Markdown source endpoints](https://specification.website/spec/agent-readiness/markdown-source-endpoints/) — Recommended
       Expose every documentation page's raw Markdown source at a predictable URL — via a .md suffix on the canonical URL, content negotiation, or both. Agents pull source instead of parsing HTML.
 - [x] [robots.txt for AI crawlers](https://specification.website/spec/agent-readiness/robots-for-ai-crawlers/) — Recommended
       Major AI vendors publish named user-agents for their crawlers. Setting an explicit allow or disallow per agent is the clearest way to control how your content is used.
@@ -315,7 +312,7 @@ Things that make a site legible to AI agents and crawlers.
       JSON-LD with schema.org types gives agents typed facts about your page. It is the same markup search engines use, and agents lean on it just as heavily.
 - [x] [Machine-readable formats](https://specification.website/spec/agent-readiness/machine-readable-formats/) — Recommended
       Offer JSON, RSS, or plain markdown endpoints alongside HTML where it makes sense. Agents and feed readers prefer typed data over scraped HTML.
-- [x] [HTTP Link headers for discovery](https://specification.website/spec/agent-readiness/link-headers/) — Recommended
+- [ ] [HTTP Link headers for discovery](https://specification.website/spec/agent-readiness/link-headers/) — Recommended
       Use the HTTP Link header to advertise machine-readable resources — llms.txt, sitemap, api-catalog, RSS — directly in the response. Agents that never parse your HTML can still find what they need.
 - [ ] [MCP and tool discovery](https://specification.website/spec/agent-readiness/mcp-and-tool-discovery/) — Optional
       The Model Context Protocol is an emerging way for sites to expose queryable tools to agents over JSON-RPC. Relevant whenever your content has structure worth filtering — even for a static reference site like this one.
@@ -370,7 +367,7 @@ Core Web Vitals, caching, images, fonts, network behaviour.
       Serve over HTTP/2 at minimum and HTTP/3 where you can. Multiplexing eliminates head-of-line blocking; QUIC removes TCP handshake delays.
 - [x] [HTTP/1.1 workarounds: sharding, sprites, and bundling](https://specification.website/spec/performance/http1-workarounds/) — Avoid
       Domain sharding and image sprites were workarounds for HTTP/1.1's connection limit; under HTTP/2 and HTTP/3 they hurt — drop them. Bundling is the nuanced one: stop concatenating to cut requests, start doing it to cut bytes.
-- [x] [Speculation Rules](https://specification.website/spec/performance/speculation-rules/) — Recommended
+- [ ] [Speculation Rules](https://specification.website/spec/performance/speculation-rules/) — Recommended
       Tell the browser which links to prefetch or prerender before the user clicks. Done well, navigations feel instant; done carelessly, you burn bandwidth on pages nobody visits.
 - [x] [Resource hints overview](https://specification.website/spec/performance/resource-hints/) — Recommended
       Five resource hints — dns-prefetch, preconnect, preload, modulepreload, prefetch — cover every stage of the request lifecycle. Pick the right one for the job.

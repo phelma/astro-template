@@ -21,7 +21,6 @@ Possible future improvements, deliberately left out of the base template.
 ## SEO and agents
 
 - **IndexNow**: ping search engines with changed URLs on deploy for faster re-crawling.
-- **Markdown content negotiation**: serve the `.md` copy for `Accept: text/markdown` requests to the HTML URL (needs a Worker; add `Vary: Accept`).
 - **Auto-derive `noindexPaths`**: collect `noindex` pages at build time so the sitemap can't drift from page props.
 
 ## Security

@@ -4,7 +4,6 @@ import tailwindcss from "@tailwindcss/vite"
 import icon from "astro-icon"
 import { defineConfig, envField, fontProviders } from "astro/config"
 
-import { markdownExport } from "./src/lib/markdown-export"
 import { sitemapFilter } from "./src/lib/sitemap"
 
 // https://docs.astro.build/en/reference/configuration-reference/
@@ -30,8 +29,6 @@ export default defineConfig({
     // marked noindex are excluded via src/lib/sitemap.ts.
     sitemap({ filter: sitemapFilter }),
     icon(),
-    // After the build: /about.md etc. and /llms-full.txt for agents.
-    markdownExport(),
   ],
 
   // Typed environment variables (astro:env). Set them in `.env` locally and
@@ -51,8 +48,7 @@ export default defineConfig({
 
   // Prefetch internal links on hover/focus. Opt a link out with
   // data-astro-prefetch="false", or pick a strategy per link
-  // (data-astro-prefetch="viewport"). Chromium also prerenders on hover via
-  // Speculation Rules (siteConfig.speculationRules).
+  // (data-astro-prefetch="viewport").
   prefetch: {
     prefetchAll: true,
     defaultStrategy: "hover",
