@@ -1,7 +1,6 @@
 /**
  * Speculation Rules, enabled by `siteConfig.speculationRules`. BaseLayout
- * renders this as an inline <script type="speculationrules"> and
- * `src/lib/csp.ts` hashes it for CSP.
+ * renders this as an inline <script type="speculationrules">.
  *
  * Chromium prerenders same-origin page links on hover or pointerdown
  * ("moderate"). Links to files (a "." in the path, e.g. /llms.txt), links
@@ -11,8 +10,6 @@
  *
  * Before adding analytics, fire page views on `prerenderingchange` when
  * `document.prerendering` is true, or every prerender counts as a visit.
- *
- * Relative imports only: this module is imported by `astro.config.ts`.
  */
 export const speculationRules = JSON.stringify({
   prerender: [

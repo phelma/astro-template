@@ -34,7 +34,7 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 - Default ids come from `uniqueId(Astro, "<block>")` (`src/lib/ids.ts`) so two instances on a page don't clash; an explicit `id` prop wins.
 - Contact URLs (`tel:`, `mailto:`, WhatsApp, Google Maps directions) come from `src/lib/contact-links.ts`; opening-hours logic from `src/lib/hours.ts`. Don't reimplement them in a block.
 - Coloured bands set `data-tone` (`Section` does it for you). Adjust children for a band with `in-data-[tone=primary]:`, not by matching `.bg-primary`.
-- Inline `style` attributes are blocked by the CSP: set custom properties with classes (`[--gallery-gap:1rem]`).
+- Set fixed custom properties with classes (`[--gallery-gap:1rem]`): they work with breakpoints and `cn()` merging. `style` is fine for values computed from data.
 - A block's own JSON-LD builder may live in its folder (`blocks/faq/schema.ts`); site-wide nodes stay in `src/lib/seo.ts`.
 - Every block has a showcase page `src/pages/components/<block>.astro` using `Showcase` + `Demo` (`src/components/showcase`) showing each variant; nest block headings under the demo `<h2>` with `headingLevel={3}`. Check in both themes, light and dark.
 
@@ -56,13 +56,12 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 
 - Brand, contact, nav, header, footer, announcement, business (hours, geo, booking), mobile actions, SEO, robots, security.txt, theme and colour-mode settings: `src/site.config.ts` (zod-validated). Read values from it; keep copy out of components.
 - Canonical origin: `site` in `astro.config.ts` (`Astro.site` / `context.site`).
-- `src/site.config.ts`, `src/styles/themes/index.ts` and `src/lib/{csp,markdown-export,sitemap,speculation-rules,theme-script,view-transitions}.ts` are imported by `astro.config.ts`: use relative imports there (no `@/`, no `astro:*`).
+- `src/site.config.ts`, `src/styles/themes/index.ts` and `src/lib/{markdown-export,sitemap}.ts` are imported by `astro.config.ts`: use relative imports there (no `@/`, no `astro:*`).
 
 ## Security
 
-- New third-party origin (script, style, font, image, frame, form target, fetch): add it to the matching directive in `security.csp.directives` in `astro.config.ts`.
-- Inline scripts/styles must be hashed: bundled `<script>` is hashed by Astro; `is:inline` content must be added to `src/lib/csp.ts`. Prefer bundled scripts.
-- The header CSP in `public/_headers` holds only `frame-ancestors`; other directives go in `astro.config.ts`.
+- Security headers live in `public/_headers`. Its CSP is deliberately minimal (`frame-ancestors`, `base-uri`, `object-src`): don't add script, style, img or form restrictions. Third-party origins need no CSP change.
+- Build DOM with `createElement` / `textContent`, not `innerHTML` strings. Prefer bundled `<script>` over `is:inline` (bundled, deduplicated, cached).
 
 ## Accessibility
 

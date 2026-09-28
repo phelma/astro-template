@@ -43,7 +43,7 @@ const contactPageSchema: WithContext<ContactPage> = {
   <Section spacing="none" containerClass="pb-16" as="div">
     <div class="grid gap-12 lg:grid-cols-5">
       {/* Posts to this page until a form provider is set: pass its endpoint
-          as `action` and add its origin to `form-action` in astro.config.ts. */}
+          as `action`. */}
       <ContactForm title="Send us a message" class="lg:col-span-3" />
       <aside aria-labelledby="contact-details-title" class="lg:col-span-2">
         <h2 id="contact-details-title" class="mb-6 text-2xl">

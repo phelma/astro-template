@@ -24,7 +24,7 @@ It's a base, not a design. Replace the placeholder copy, pick or build a theme, 
 - **Themes that go beyond colour.** Each theme sets shadcn tokens plus fonts, radius, shadows, tracking and heading weight. Switch `data-theme` and the whole site changes, with no rebuild.
 - **Light, dark and system modes.** Light is the default, and one config value changes it. The theme is applied before first paint, so there's no flash of the wrong theme.
 - **SEO handled.** Meta tags, Open Graph and Twitter cards, canonical URLs, JSON-LD (LocalBusiness with opening hours, WebSite, BreadcrumbList), a sitemap, and `robots.txt` with an AI-crawler toggle and Content Signals.
-- **Secure by default.** A hash-based CSP with Trusted Types, plus HSTS, frame, referrer, permissions, COOP and CORP headers for Cloudflare, and a generated `security.txt`.
+- **Secure by default.** HSTS, clickjacking, referrer, permissions, COOP and CORP headers for Cloudflare, a minimal CSP that never gets in the way, and a generated `security.txt`.
 - **Ready for AI agents.** Generated `/llms.txt` and `/llms-full.txt`, a Markdown copy of every page (`/about.md`), `Link` discovery headers, TDMRep, and an `AGENTS.md` that tells coding agents the project's conventions.
 - **Accessible.** Skip link, landmarks, visible focus, targets of at least 24px, reduced-motion and forced-colours support, and AA-contrast tokens.
 - **One config file.** Brand, contact, nav, footer, SEO, robots and theme settings live in `src/site.config.ts`. The file is zod-validated, so a typo fails the build.
@@ -114,9 +114,8 @@ The defaults allow everything. Make these choices on purpose ([SEO](#seo)):
 
 Only if you add them ([security](#security)):
 
-- [ ] Add every new origin (analytics, embeds, fonts, images, form targets) to `security.csp.directives` in `astro.config.ts`.
 - [ ] Analytics: add a consent banner if you need one, and count prerendered page views on `prerenderingchange` ([performance](#performance)).
-- [ ] Forms: pick a form service, pass its endpoint as `action` to `ContactForm` / `QuoteForm` and add it to `form-action`, or add an adapter ([adding an adapter](#adding-an-adapter-later)).
+- [ ] Forms: pick a form service, pass its endpoint as `action` to `ContactForm` / `QuoteForm`, or add an adapter ([adding an adapter](#adding-an-adapter-later)).
 - [ ] Maps: set `PUBLIC_GOOGLE_MAPS_EMBED_KEY` (see `.env.example`); without it maps use Google's unofficial keyless embed.
 - [ ] Embeds (maps, booking): list them and the `embed-consent:*` localStorage keys in your privacy policy.
 
@@ -134,7 +133,7 @@ Only if you add them ([security](#security)):
 ### After launch
 
 - [ ] Visit a URL that doesn't exist and check you get the 404 page with a `404` status (browser devtools, Network tab).
-- [ ] Scan the site with securityheaders.com, and check the browser console shows no CSP violations.
+- [ ] Scan the site with securityheaders.com.
 - [ ] Paste your URLs into the Open Graph and Twitter card debuggers and check the social previews look right.
 - [ ] Test your pages with Google's Rich Results Test and fix any structured data errors.
 - [ ] Open `/robots.txt`, `/sitemap-index.xml`, `/llms.txt` and `/.well-known/security.txt` and check they show your domain and details, not the template's.
@@ -182,7 +181,6 @@ src/
     contact-links.ts            tel:, mailto:, WhatsApp and Google Maps directions URLs
     ids.ts                      Deterministic, page-unique element ids for blocks
     theme-script.ts             Blocking head script (colour mode + theme)
-    csp.ts                      CSP hashes for the inline head script/style
     sitemap.ts                  noindexPaths (sitemap exclusions)
     markdown-export.ts          Build step: page .md copies + llms-full.txt
     speculation-rules.ts        Prerender rules (Chromium)
@@ -195,7 +193,7 @@ src/
     global.css                  Tailwind, shadcn base, token mapping, base styles
     themes/<name>.css           One file per theme
     themes/index.ts             Theme registry (labels, theme-color, fonts)
-astro.config.ts                 site, CSP, env schema, fonts, sitemap, prefetch, images
+astro.config.ts                 site, env schema, fonts, sitemap, prefetch, images
 .env.example                    Optional build-time variables (Google Maps keys)
 AGENTS.md                       Rules for AI coding agents (CLAUDE.md is a symlink)
 CHECKLIST.md                    Website specification checklist, audited against the template
@@ -209,7 +207,7 @@ IDEAS.md                        Possible future improvements
 - `site`: the canonical production origin (placeholder `https://example.com`). Used for canonical URLs, Open Graph, JSON-LD, sitemap, robots.txt, llms.txt and security.txt. **Change it before deploying.**
 - `trailingSlash: "never"` + `build.format: "file"`: `/about` is built as `about.html`.
 - `compressHTML: true`: lossless whitespace compression. (Astro 7's default `"jsx"` mode strips the line break between text and an inline element, which breaks prose that Prettier has wrapped.)
-- Also: CSP (`security.csp`), Fonts API (`fonts`), `prefetch`, `image` defaults, integrations.
+- Also: Fonts API (`fonts`), `prefetch`, `image` defaults, integrations.
 
 ### `src/site.config.ts`
 
@@ -268,7 +266,7 @@ For structural tweaks tokens can't express, use the per-theme variants in markup
 
 - Default is **light**. Set `colorMode.default` to `"system"` (follow the OS) or `"dark"` in `src/site.config.ts`.
 - The header has a three-state toggle (light / dark / system) built from a native radio group; the choice is stored in `localStorage`.
-- A blocking inline script in `<head>` (`src/lib/theme-script.ts`) sets `.dark`, `data-theme`, `data-color-mode`, `color-scheme` and `theme-color` before first paint (no flash), and follows OS changes in system mode. It is hashed for CSP in `src/lib/csp.ts`.
+- A blocking inline script in `<head>` (`src/lib/theme-script.ts`) sets `.dark`, `data-theme`, `data-color-mode`, `color-scheme` and `theme-color` before first paint (no flash), and follows OS changes in system mode.
 - Use the `dark:` variant for mode-specific tweaks; prefer tokens that already differ per mode.
 
 ## shadcn/ui
@@ -291,7 +289,7 @@ import { Button } from "@/components/ui/button"
 
 For links styled as buttons, use `buttonVariants`: `<a href="/contact" class={buttonVariants({ size: "lg" })}>`.
 
-Only hydrate (`client:visible`, `client:idle`, ...) when a component needs genuinely complex client-side behaviour (e.g. a combobox or data table). For simple interactivity prefer native HTML: `popover`, `<details>`, `<dialog>`, form validation. Anything hydrated needs its JS bundle to be allowed by the CSP (Astro handles bundled scripts automatically).
+Only hydrate (`client:visible`, `client:idle`, ...) when a component needs genuinely complex client-side behaviour (e.g. a combobox or data table). For simple interactivity prefer native HTML: `popover`, `<details>`, `<dialog>`, form validation.
 
 Review diffs to `src/styles/global.css` after `shadcn add`: tokens belong in theme files, not `:root`.
 
@@ -312,7 +310,7 @@ They work like shadcn components: the code lives in the repo and is yours to edi
 
 1. **Change the theme** (tokens, fonts, radius, shadows) and every block follows.
 2. **Pick variants** with props (`layout`, `variant`, `tone`, `size`, ...). Section blocks also take `tone`, `spacing`, `width` and `headingLevel`.
-3. **Override at the call site** with `class`, which is merged last, or target a part via its `data-slot`: `<Faq class="**:data-[slot=faq-question]:text-lg" />`. Set custom properties with classes (`[--embed-aspect:5/2]`): the CSP blocks inline `style` attributes.
+3. **Override at the call site** with `class`, which is merged last, or target a part via its `data-slot`: `<Faq class="**:data-[slot=faq-question]:text-lg" />`. Set fixed custom properties with classes (`[--embed-aspect:5/2]`): they work with breakpoints and `cn()` merging. `style` is fine for values computed from data.
 4. **Edit the block**, or its `variants.ts`, when the structure itself should change.
 
 Business data (contact, hours, address, booking link) comes from `src/site.config.ts` by default and can be overridden per instance with props. The header, footer, announcement banner, mobile action bar and `LocalBusiness` JSON-LD are driven entirely by config.
@@ -351,13 +349,11 @@ What you get:
 
 ## Security
 
-- **CSP** via Astro's `security.csp` (`astro.config.ts`): hash-based, emitted as a `<meta http-equiv>` tag per page. Astro hashes the scripts and styles it bundles; the inline head script, speculation rules and optional view-transition style are hashed in `src/lib/csp.ts`. Includes `upgrade-insecure-requests`.
-- **Trusted Types** (`require-trusted-types-for 'script'; trusted-types 'none'`): `innerHTML`, `eval` and other DOM XSS sinks throw on plain strings. If a library needs a policy, allow it by name (`trusted-types dompurify`) rather than removing the directives.
-- **Adding a third-party origin** (analytics, embeds, fonts, images, forms): add it to the matching directive in `security.csp.directives`, e.g. `"img-src 'self' data: https://images.example.com"`, `"frame-src https://www.youtube-nocookie.com"`, or `"form-action 'self' https://forms.example.com"`.
-- **`public/_headers`** (Cloudflare): HSTS, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, a locked-down `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy: same-site`, and a header CSP holding only `frame-ancestors 'none'` (not allowed in a meta CSP). Don't put other directives in the header CSP: both policies are enforced, so it would override what the meta CSP allows.
-- **Reporting API**: a commented-out `Reporting-Endpoints` block in `_headers`. The meta CSP can't send reports; the header CSP and COOP can.
+- **Headers in `public/_headers`** (Cloudflare): HSTS, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, a locked-down `Permissions-Policy`, `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy: same-site`.
+- **Minimal CSP**, header only: `frame-ancestors 'none'; base-uri 'self'; object-src 'none'`. `frame-ancestors` stops clickjacking; `base-uri` and `object-src` never block anything these sites use. There is deliberately no strict script/style/img/form-action policy: static brochure sites with no user content, logins or third-party scripts have little to inject into, and a strict CSP silently breaks inline scripts, `style` attributes, embeds and third-party form services. Adding an analytics script, embed or form service needs no CSP change.
+- **DOM building**: the template's scripts build DOM with `createElement` / `textContent` rather than `innerHTML` strings. Keep doing that for anything that includes data.
+- **Reporting API**: a commented-out `Reporting-Endpoints` block in `_headers`, with `report-to` for the header CSP and COOP.
 - **HSTS preload**: `preload` is deliberately not set. Only add it (and submit to hstspreload.org) once every subdomain serves HTTPS; removal takes months.
-- Markdown code blocks use Prism (class-based) because Shiki's inline styles are blocked by the CSP.
 
 ## Performance
 

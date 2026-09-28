@@ -2,7 +2,7 @@
 
 Every spec item, grouped by category. Copy into an issue or a note and tick as you go.
 
-> Audited against this template on 2026-09-27. Ticked = implemented by the template (or, for "Avoid" items, avoided). Platform items (HTTPS, compression, HTTP/2/3, ETags) are ticked where Cloudflare provides them. Unticked includes items that don't apply until a feature is added (forms, cookies, video, i18n).
+> Audited against this template on 2026-09-27. Ticked = implemented by the template (or, for "Avoid" items, avoided). Platform items (HTTPS, compression, HTTP/2/3, ETags) are ticked where Cloudflare provides them. Unticked includes items that don't apply until a feature is added (forms, cookies, video, i18n) and items deliberately not done (strict CSP, Trusted Types), with the reason noted.
 
 Source: https://specification.website/checklist/ · Licensed CC BY 4.0
 
@@ -12,8 +12,7 @@ Checklist items that land with the local-business blocks (`feat/local-business-b
 
 ### Every block
 
-- [ ] **Trusted Types is enforced** (`require-trusted-types-for 'script'; trusted-types 'none'`). Client scripts must not assign strings to `innerHTML` / `outerHTML` / `insertAdjacentHTML`, call `document.write` or `eval`, or set `script.src` from a string. Build DOM with `createElement` + `textContent`, or clone a `<template>`. Test each block's JS in `pnpm preview` (the CSP isn't applied in dev) and watch the console.
-- [ ] **CSP**: every new origin (embed, map, booking widget, form target, image host) is in the matching `security.csp.directives` entry in `astro.config.ts`.
+- [ ] **DOM building**: client scripts build DOM with `createElement` + `textContent` (or clone a `<template>`), not `innerHTML` strings, `document.write` or `eval`.
 - [ ] **Permissions-Policy** in `public/_headers` denies `autoplay`, `encrypted-media`, `geolocation` and others for the page _and every iframe_. Video and booking embeds need some of these: allow per origin (e.g. `encrypted-media=(self "https://www.youtube-nocookie.com")`) and match the iframe's `allow` attribute.
 - [ ] **Markdown export**: open each block's output in `dist/*.md` (from a real page, not the `noindex` showcase). Mark controls that aren't content (lightbox buttons, map placeholders, carousel arrows) with `data-markdown-ignore`.
 - [ ] **Targets and motion**: interactive parts are at least 24px (44px for primary mobile actions such as call and directions), and animations respect `prefers-reduced-motion`.
@@ -22,11 +21,11 @@ Checklist items that land with the local-business blocks (`feat/local-business-b
 
 The field parts already handle labels, `aria-invalid`, `aria-describedby`, `autocomplete` and `inputmode`. Still needed:
 
-- [ ] A `Form` wrapper with the target as a prop (form service or Worker) and a honeypot field. The target's origin goes in CSP `form-action`.
+- [ ] A `Form` wrapper with the target as a prop (form service or Worker) and a honeypot field.
 - [ ] Errors: on a failed submit, move focus to the first invalid field or to an error summary that links to each field. Error text is specific ("Enter an email address like name@example.com"), not colour-only, and `aria-invalid` is only set after the user has interacted or submitted.
 - [ ] Status: announce the submission result with `role="status"` (success) or `role="alert"` (failure), and keep the user's input on failure. Without JS, post to a thank-you page (`noindex` + `noindexPaths`).
 - [ ] Inputs: correct `type` (`email`, `tel`, `url`), `autocomplete` tokens (`name`, `email`, `tel`, `postal-code`, ...), `enterkeyhint` where useful. Don't ask for anything twice (no "confirm email").
-- [ ] Bot protection: honeypot or an invisible check (e.g. Turnstile, with its CSP origins). No puzzle CAPTCHAs.
+- [ ] Bot protection: honeypot or an invisible check (e.g. Turnstile). No puzzle CAPTCHAs.
 - [ ] Privacy: link the privacy policy next to submit, ask only for what's needed, and name the form processor on `/privacy`.
 
 ### FAQ block (not started) → Hidden until found, Structured data
@@ -221,8 +220,10 @@ Headers, transport, and policies that keep visitors safe.
       HSTS tells browsers to only ever use HTTPS for your domain. Send max-age with includeSubDomains — but skip the preload list, which its own operator now discourages.
 - [x] [Mixed content and upgrade-insecure-requests](https://specification.website/spec/security/mixed-content/) — Recommended
       An HTTPS page that loads any subresource over HTTP is mixed content. Serve every subresource over HTTPS, and send the upgrade-insecure-requests CSP directive as a safety net.
-- [x] [Content Security Policy (CSP)](https://specification.website/spec/security/content-security-policy/) — Recommended
+      _Template: every subresource is served over HTTPS, and HSTS keeps the site on HTTPS. upgrade-insecure-requests is deliberately not sent: it breaks viewing a build over plain HTTP from another device._
+- [ ] [Content Security Policy (CSP)](https://specification.website/spec/security/content-security-policy/) — Recommended
       A CSP tells browsers which sources of script, style, image, and frame content to trust. A good policy stops most XSS and data-exfiltration attacks dead.
+      _Template: deliberately not done. Static brochure sites with no user content, logins or third-party scripts have little to inject into, and a strict CSP silently breaks inline scripts, styles and embeds. The header CSP keeps only `frame-ancestors`, `base-uri` and `object-src`._
 - [ ] [Reporting API (Reporting-Endpoints)](https://specification.website/spec/security/reporting-endpoints/) — Recommended
       A response header that names HTTP endpoints to which the browser POSTs structured violation reports — CSP and COOP breaches, permissions-policy violations, deprecations, interventions, and crashes — so you learn what is breaking in the field.
 - [x] [/.well-known/security.txt](https://specification.website/spec/security/security-txt/) — Recommended
@@ -243,8 +244,9 @@ Headers, transport, and policies that keep visitors safe.
       SRI adds a cryptographic hash to every third-party script and stylesheet so the browser refuses to run modified files. Essential for any external JS or CSS you depend on.
 - [ ] [Digest Fields (Content-Digest, Repr-Digest and Unencoded-Digest)](https://specification.website/spec/security/digest-fields/) — Optional
       Digest Fields let clients check received bytes. Unencoded-Digest works after decompression, with limited browser support.
-- [x] [Trusted Types](https://specification.website/spec/security/trusted-types/) — Recommended
+- [ ] [Trusted Types](https://specification.website/spec/security/trusted-types/) — Recommended
       Trusted Types make the browser reject plain strings at DOM injection sinks like innerHTML, demanding a vetted typed value instead. Switched on with two CSP directives, it neutralises a whole class of DOM-based XSS.
+      _Template: deliberately not done. No user content reaches the DOM, and enforcement silently breaks any script that assigns `innerHTML`. Template scripts still build DOM with `createElement` / `textContent`._
 - [x] [X-XSS-Protection](https://specification.website/spec/security/x-xss-protection/) — Avoid
       A dead header that roughly a third of major sites still send. No shipping browser reads it, it was never standardised, and the values people copy-paste were the dangerous ones. Stop sending it and rely on CSP.
 - [ ] [Cookie attributes — Secure, HttpOnly, SameSite](https://specification.website/spec/security/cookie-attributes/) — Required

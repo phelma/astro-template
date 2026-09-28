@@ -4,7 +4,6 @@ import tailwindcss from "@tailwindcss/vite"
 import icon from "astro-icon"
 import { defineConfig, envField, fontProviders } from "astro/config"
 
-import { cspHashes } from "./src/lib/csp"
 import { markdownExport } from "./src/lib/markdown-export"
 import { sitemapFilter } from "./src/lib/sitemap"
 
@@ -35,46 +34,6 @@ export default defineConfig({
     markdownExport(),
   ],
 
-  // Content Security Policy, emitted as a <meta http-equiv> tag per page
-  // (static output). Astro hashes the scripts/styles it bundles; our
-  // `is:inline` theme script (and optional view-transition style) are hashed
-  // in src/lib/csp.ts. Directives that don't work in a <meta> CSP
-  // (frame-ancestors, report-uri, sandbox) live in public/_headers instead.
-  // Adding a third-party script/style/font/image/iframe? Allow its origin here.
-  security: {
-    csp: {
-      directives: [
-        "default-src 'self'",
-        "base-uri 'self'",
-        "object-src 'none'",
-        "form-action 'self'",
-        // Google Maps Static API poster images (blocks/map), only requested
-        // when PUBLIC_GOOGLE_MAPS_STATIC_KEY is set. Drop it if unused.
-        "img-src 'self' data: https://maps.googleapis.com",
-        // Click-to-load iframes (blocks/embed facades): nothing loads until
-        // the visitor clicks. Google Maps (keyed Embed API and keyless
-        // fallback) and Calendly (blocks/booking). Adding another provider
-        // (Fresha, OpenTable, SimplyBook.me, YouTube...)? Add its iframe
-        // origin here and to src/components/blocks/embed/providers.ts.
-        // Remove origins you don't use.
-        "frame-src 'self' https://www.google.com https://calendly.com",
-        "font-src 'self'",
-        "connect-src 'self'",
-        "manifest-src 'self'",
-        // Rewrite any stray http:// subresource to https://.
-        "upgrade-insecure-requests",
-        // Trusted Types: DOM XSS sinks (innerHTML, script.src, eval, ...)
-        // reject plain strings, and no policies may be created. A library
-        // that needs one will throw: allow it by name, e.g.
-        // "trusted-types dompurify", rather than dropping these lines.
-        "require-trusted-types-for 'script'",
-        "trusted-types 'none'",
-      ],
-      scriptDirective: { hashes: cspHashes.scripts },
-      styleDirective: { hashes: cspHashes.styles },
-    },
-  },
-
   // Typed environment variables (astro:env). Set them in `.env` locally and
   // in the host's build settings; see .env.example.
   env: {
@@ -96,13 +55,6 @@ export default defineConfig({
         optional: true,
       }),
     },
-  },
-
-  // Shiki highlights with inline `style` attributes, which the CSP above
-  // blocks. Prism emits classes instead (bring a Prism theme stylesheet if
-  // you render code blocks from Markdown).
-  markdown: {
-    syntaxHighlight: "prism",
   },
 
   // Prefetch internal links on hover/focus. Opt a link out with

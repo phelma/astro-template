@@ -18,9 +18,8 @@
  * Calendly's own inline widget sends. `fallbackHref` (default: `src`) is the
  * no-JS / "open in new tab" link. `title` names the iframe.
  *
- * CSP: the provider's iframe origin must be in `frame-src` in
- * astro.config.ts (Calendly is; add others there). Providers that forbid
- * framing (many only offer a link or a script widget) need BookingCta.
+ * Providers that forbid framing (many only offer a link or a script widget)
+ * need BookingCta.
  *
  * Customise: `variant`, `aspect` (default "tall"; set the height with
  * `class="[--embed-height:50rem]"`), `label`, `description` (panel text),

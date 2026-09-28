@@ -1,8 +1,8 @@
 /**
  * Progressive enhancement for the opening-hours blocks. The build can't know
  * "now", so components render neutral HTML plus their data as JSON in a
- * `data-hours` attribute; this script (bundled, CSP-hashed, loaded once per
- * page however many instances there are) fills in the live parts and
+ * `data-hours` attribute; this script (bundled, loaded once per page however
+ * many instances there are) fills in the live parts and
  * refreshes every minute:
  *
  * - `[data-slot=opening-hours-status]`: state, label and detail text.
@@ -10,7 +10,7 @@
  *   `aria-current="date"`) and shows special hours falling in the next 7 days.
  * - `[data-slot=opening-hours-special-item]`: hides entries that have ended.
  *
- * Text is set with textContent only (Trusted Types).
+ * Text is set with textContent only (no markup injected).
  */
 import {
   describeStatus,
