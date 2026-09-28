@@ -5,7 +5,7 @@
  * dismissible banner (see Announcement.astro). The element is defined before
  * the banner is parsed, so the parser upgrades it on creation and
  * connectedCallback hides an already-dismissed banner before first paint: no
- * flash, and no inline script to hash for the CSP ('self' covers it).
+ * flash, and as an external file it is cached rather than inlined per page.
  * Plain browser JS with no imports: it is emitted as-is via `?url`.
  */
 ;(function () {

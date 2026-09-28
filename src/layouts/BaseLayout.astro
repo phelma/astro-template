@@ -158,7 +158,7 @@ const structuredData = jsonLdGraph(
     ) : (
       <meta name="theme-color" content={themeColor[defaultMode]} />
     )}
-    <!-- Blocking: sets .dark / data-theme / meta before first paint. Hash: src/lib/csp.ts -->
+    <!-- Blocking: sets .dark / data-theme / meta before first paint. -->
     <script is:inline set:html={themeScript} />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />

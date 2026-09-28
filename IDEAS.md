@@ -11,11 +11,11 @@ Possible future improvements, deliberately left out of the base template.
 
 ## Features
 
-- **Contact form**: post to an external form service or a Cloudflare Worker, with a honeypot field and the target added to CSP `form-action`.
+- **Contact form**: post to an external form service or a Cloudflare Worker, with a honeypot field.
 - **Blog content collection**: Markdown/MDX posts with RSS (`@astrojs/rss`) and `Article` / `BlogPosting` JSON-LD.
 - **i18n**: Astro's i18n routing with `hreflang` alternates and per-locale config.
 - **Generated OG images**: per-page social cards with satori at build time, reading theme fonts via `experimental_getFontFileURL`.
-- **Cookieless analytics**: Cloudflare Web Analytics (CSP entries included); add a consent banner only if something sets cookies; honour `Sec-GPC` and publish `/.well-known/gpc.json` if anything is sold or shared.
+- **Cookieless analytics**: Cloudflare Web Analytics; add a consent banner only if something sets cookies; honour `Sec-GPC` and publish `/.well-known/gpc.json` if anything is sold or shared.
 - **Service worker / offline page**: offline fallback and asset precaching for repeat visits.
 
 ## SEO and agents

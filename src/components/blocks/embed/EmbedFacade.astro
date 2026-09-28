@@ -3,9 +3,8 @@
  * Click-to-load facade for third-party iframes (maps, booking widgets,
  * videos). Nothing from the provider loads until the visitor clicks "Load":
  * no cookies or tracking before consent (UK GDPR / PECR) and no heavy iframe
- * on first paint. The click swaps the facade for the iframe (built with
- * createElement, so it works under the site's Trusted Types CSP) and moves
- * focus into it.
+ * on first paint. The click swaps the facade for the iframe and moves focus
+ * into it.
  *
  *   <EmbedFacade
  *     src="https://calendly.com/acme/visit"
@@ -245,8 +244,7 @@ const hasPosterSlot = Astro.slots.has("poster")
   }
 
   // Swap the facade for the iframe. Built with createElement and property
-  // assignment: iframe.src is not a Trusted Types sink, so this runs under
-  // `require-trusted-types-for 'script'` with no policy.
+  // assignment rather than an HTML string, so no markup is injected.
   function load(root: HTMLElement, focus: boolean) {
     if (root.dataset.embedState === "loaded") return
     const data = root.dataset

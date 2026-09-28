@@ -16,9 +16,8 @@
  * `date`, `photos` (file upload; switches the form to multipart), `consent`,
  * `privacyHref`, `submitLabel`, `success`; `layout` (stacked | two-column),
  * `surface` (card | muted | bare), `title`, `description`, `headingLevel`;
- * `action` / `method` / `hiddenFields` / `honeypot` for the provider (add
- * its origin to CSP `form-action` in astro.config.ts; check it accepts file
- * uploads). Slots: default = extra fields (before consent), `footer`.
+ * `action` / `method` / `hiddenFields` / `honeypot` for the provider (check
+ * it accepts file uploads). Slots: default = extra fields (before consent), `footer`.
  * `class` and other attributes go on the wrapper.
  */
 import type { HTMLAttributes } from "astro/types"

@@ -6,16 +6,11 @@
  * `<meta name="color-scheme">` and `<meta name="theme-color">` are correct
  * before first paint (no FOUC).
  *
- * It is a plain string (not `fn.toString()`) so its bytes are identical
- * wherever it's imported; `src/lib/csp.ts` hashes it for Astro's CSP.
- *
  * It also exposes `window.siteTheme` which the ThemeToggle / ThemeSwitcher
  * components use.
- *
- * Relative imports only: this module is imported by `astro.config.ts`.
  */
-import { siteConfig } from "../site.config"
-import { themes } from "../styles/themes"
+import { siteConfig } from "@/site.config"
+import { themes } from "@/styles/themes"
 
 export const COLOR_MODE_STORAGE_KEY = "color-mode"
 export const THEME_STORAGE_KEY = "theme"

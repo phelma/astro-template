@@ -5,10 +5,11 @@ import { cva, type VariantProps } from "class-variance-authority"
  *
  * `variant` sets the frame (card: border, radius, shadow; bare: edge to edge).
  * `aspect` sets the size: ratio presets write `--embed-aspect`, so a call site
- * can pass any ratio as a class, `class="[--embed-aspect:5/2]"` (inline
- * `style` attributes are blocked by the CSP). `tall` is a fixed
- * minimum height (`--embed-height`, default 44rem) for booking widgets that
- * need room rather than a ratio; `fill` stretches to its grid/flex parent.
+ * can pass any ratio as a class, `class="[--embed-aspect:5/2]"` (works with
+ * breakpoint variants and merges with cn(); inline `style` suits values
+ * computed from data). `tall` is a fixed minimum height (`--embed-height`,
+ * default 44rem) for booking widgets that need room rather than a ratio;
+ * `fill` stretches to its grid/flex parent.
  *
  * The box grows to fit the facade content on narrow screens (no overflow
  * clipping on the root), then snaps to the ratio once the iframe loads.
