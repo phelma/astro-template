@@ -45,14 +45,6 @@ export function pagePath(pathname: string): string {
   return clean === "" ? "/" : clean
 }
 
-/**
- * Markdown copy of a page (generated after the build by
- * src/lib/markdown-export.ts): "/about" -> "/about.md", "/" -> "/index.md".
- */
-export function markdownPath(path: string): string {
-  return path === "/" ? "/index.md" : `${path}.md`
-}
-
 /** Resolve a root-relative path or absolute URL against the site origin. */
 export function absoluteUrl(pathOrUrl: string, site: URL | undefined): string {
   if (!site) {

@@ -56,7 +56,7 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 
 - Brand, contact, nav, header, footer, announcement, business (hours, geo, booking), mobile actions, SEO, robots, security.txt, theme and colour-mode settings: `src/site.config.ts` (zod-validated). Read values from it; keep copy out of components.
 - Canonical origin: `site` in `astro.config.ts` (`Astro.site` / `context.site`).
-- `src/site.config.ts`, `src/styles/themes/index.ts` and `src/lib/{markdown-export,sitemap}.ts` are imported by `astro.config.ts`: use relative imports there (no `@/`, no `astro:*`).
+- `src/site.config.ts`, `src/styles/themes/index.ts` and `src/lib/sitemap.ts` are imported by `astro.config.ts`: use relative imports there (no `@/`, no `astro:*`).
 
 ## Security
 

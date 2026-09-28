@@ -22,14 +22,12 @@ import {
   absoluteUrl,
   formatTitle,
   jsonLdGraph,
-  markdownPath,
   ogLocale,
   pagePath,
   localBusinessSchema,
   websiteSchema,
   type BreadcrumbItem,
 } from "@/lib/seo"
-import { speculationRules } from "@/lib/speculation-rules"
 import { themeScript } from "@/lib/theme-script"
 import { viewTransitionStyle } from "@/lib/view-transitions"
 import { siteConfig } from "@/site.config"
@@ -100,11 +98,6 @@ const robots = siteConfig.robots.disallowAll
     ? "noindex, follow"
     : "index, follow, max-image-preview:large"
 
-// Indexable pages get a Markdown copy after the build (src/lib/markdown-export.ts).
-const markdownUrl = robots.startsWith("index")
-  ? absoluteUrl(markdownPath(path), site)
-  : undefined
-
 // Dev only: warn in the browser console when a page doesn't have exactly one <h1>.
 const h1Check = `addEventListener("DOMContentLoaded",function(){var n=document.querySelectorAll("h1").length;if(n!==1)console.warn("[template] Expected exactly one <h1> on "+location.pathname+", found "+n+".")})`
 
@@ -168,14 +161,6 @@ const structuredData = jsonLdGraph(
     {siteConfig.tdm.policy && (
       <meta name="tdm-policy" content={siteConfig.tdm.policy} />
     )}
-    {markdownUrl && (
-      <link
-        rel="alternate"
-        type="text/markdown"
-        href={markdownUrl}
-        title={`${fullTitle} (Markdown)`}
-      />
-    )}
 
     {fontVariables.map((cssVariable) => (
       <Font cssVariable={cssVariable} preload={preload.has(cssVariable)} />
@@ -212,10 +197,6 @@ const structuredData = jsonLdGraph(
     <meta name="twitter:image:alt" content={ogImageAlt} />
 
     <JsonLd data={structuredData} />
-
-    {siteConfig.speculationRules && (
-      <script is:inline type="speculationrules" set:html={speculationRules} />
-    )}
 
     {siteConfig.viewTransitions && (
       <style is:inline set:html={viewTransitionStyle} />
