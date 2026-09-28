@@ -1,0 +1,83 @@
+---
+/**
+ * Lazy-loaded third-party iframe (maps, booking widgets, videos). Rendered
+ * at build time with `loading="lazy"`: the browser fetches it as it nears
+ * the viewport, with no script and no click.
+ *
+ *   <Embed
+ *     src="https://calendly.com/acme/visit"
+ *     title="Book a visit with Acme"
+ *     aspect="tall"
+ *   />
+ *
+ * Props: `src` and `title` (the iframe's accessible name) are required.
+ * `allow`, `referrerPolicy`, `allowFullscreen` and `loading` go on the
+ * iframe. The default slot is a decorative backdrop shown while the iframe
+ * loads (Map puts its drawn placeholder there).
+ *
+ * Customise: `variant` / `aspect` (./variants.ts, or `--embed-aspect` /
+ * `--embed-height` via a class: `[--embed-height:36rem]`). Parts:
+ * `data-slot="embed"`, `embed-backdrop`, `embed-frame`.
+ *
+ * Privacy: the provider receives the visitor's IP address and may set
+ * cookies once the iframe loads; name it on /privacy.
+ */
+import type { HTMLAttributes } from "astro/types"
+
+import { cn } from "@/lib/utils"
+
+import { embedVariants, type EmbedVariants } from "./variants"
+
+type Props = Omit<HTMLAttributes<"div">, "title"> &
+  EmbedVariants & {
+    /** iframe URL. */
+    src: string
+    /** iframe title: its accessible name, e.g. "Map of Acme Plumbing, Leeds". */
+    title: string
+    allow?: string
+    referrerPolicy?: HTMLAttributes<"iframe">["referrerpolicy"]
+    allowFullscreen?: boolean
+    loading?: "lazy" | "eager"
+  }
+
+const {
+  src,
+  title,
+  allow,
+  referrerPolicy = "strict-origin-when-cross-origin",
+  allowFullscreen = false,
+  loading = "lazy",
+  variant,
+  aspect,
+  class: className,
+  ...rest
+} = Astro.props
+
+const hasBackdrop = Astro.slots.has("default")
+---
+
+<div
+  data-slot="embed"
+  class={cn(embedVariants({ variant, aspect }), className)}
+  {...rest}
+>
+  {hasBackdrop && (
+    <div
+      data-slot="embed-backdrop"
+      aria-hidden="true"
+      class="absolute inset-0 -z-10 overflow-hidden rounded-[inherit]"
+    >
+      <slot />
+    </div>
+  )}
+  <iframe
+    data-slot="embed-frame"
+    src={src}
+    title={title}
+    loading={loading}
+    allow={allow}
+    referrerpolicy={referrerPolicy}
+    allowfullscreen={allowFullscreen}
+    class="absolute inset-0 size-full rounded-[inherit] border-0"
+  ></iframe>
+</div>

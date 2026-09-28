@@ -46,14 +46,6 @@ export default defineConfig({
         access: "public",
         optional: true,
       }),
-      // Optional Maps Static API key for a real map image behind the
-      // click-to-load facade. Billed per view, and the image request goes to
-      // Google before consent; leave unset for the token-drawn placeholder.
-      PUBLIC_GOOGLE_MAPS_STATIC_KEY: envField.string({
-        context: "client",
-        access: "public",
-        optional: true,
-      }),
     },
   },
 

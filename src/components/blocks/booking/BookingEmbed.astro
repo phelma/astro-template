@@ -1,35 +1,29 @@
 ---
 /**
- * Online booking widget (Calendly or any provider that offers an iframe)
- * behind a click-to-load facade. Without JS, or before the visitor opts in,
- * a plain "Open booking page" link goes to the provider in a new tab.
+ * Online booking widget (Calendly or any provider that offers an iframe),
+ * lazy-loaded, with an "Open the booking page" link below it for visitors
+ * who prefer the provider's own page.
  *
  *   <BookingEmbed provider="calendly" src="https://calendly.com/acme/visit" />
- *   <BookingEmbed
- *     src="https://widget.example-provider.com/acme"
- *     providerName="Example Provider"
- *     privacyUrl="https://example-provider.com/privacy"
- *   />
+ *   <BookingEmbed src="https://widget.example-provider.com/acme" />
  *
- * Props: `src` defaults to `business.bookingUrl` (siteConfig). `provider`
- * ("calendly") sets the notice name and privacy link from
- * blocks/embed/providers.ts; for others pass `providerName` + `privacyUrl`.
- * Calendly URLs get `embed_type=Inline&embed_domain=<site host>`, as
- * Calendly's own inline widget sends. `fallbackHref` (default: `src`) is the
- * no-JS / "open in new tab" link. `title` names the iframe.
+ * Props: `src` defaults to `business.bookingUrl` (siteConfig).
+ * `provider="calendly"` adds `embed_type=Inline&embed_domain=<site host>`,
+ * as Calendly's own inline widget sends. `fallbackHref` (default: `src`) is
+ * the link target, `fallbackLabel` its text (`false` hides it). `title`
+ * names the iframe.
  *
  * Providers that forbid framing (many only offer a link or a script widget)
  * need BookingCta.
  *
  * Customise: `variant`, `aspect` (default "tall"; set the height with
- * `class="[--embed-height:50rem]"`), `label`, `description` (panel text),
- * `icon`. Parts: `data-slot="booking-embed"`, `booking-embed-description`
- * and the `embed-*` slots.
+ * `class="[--embed-height:50rem]"`), `frameClass`. Parts:
+ * `data-slot="booking-embed"`, `booking-embed-link` and the `embed-*` slots.
  */
 import type { HTMLAttributes } from "astro/types"
+import { Icon } from "astro-icon/components"
 
-import EmbedFacade from "@/components/blocks/embed/EmbedFacade.astro"
-import type { EmbedProviderId } from "@/components/blocks/embed/providers"
+import Embed from "@/components/blocks/embed/Embed.astro"
 import type { EmbedVariants } from "@/components/blocks/embed/variants"
 import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
@@ -37,33 +31,23 @@ import { siteConfig } from "@/site.config"
 type Props = Omit<HTMLAttributes<"div">, "title"> &
   EmbedVariants & {
     src?: string
-    provider?: EmbedProviderId
-    providerName?: string
-    privacyUrl?: string
+    provider?: "calendly"
     title?: string
-    label?: string
-    description?: string
     fallbackHref?: string
-    loadLabel?: string
-    icon?: string
-    remember?: boolean
+    fallbackLabel?: string | false
+    frameClass?: string
   }
 
 const {
   src: srcProp = siteConfig.business.bookingUrl,
   provider,
-  providerName,
-  privacyUrl,
   title = `Online booking for ${siteConfig.name}`,
-  label = "Book online",
-  description = "Pick a time that suits you and get instant confirmation.",
   fallbackHref,
-  loadLabel = "Show booking calendar",
-  icon = "calendar-days",
-  remember = true,
+  fallbackLabel = "Open the booking page",
   variant,
   aspect = "tall",
   class: className,
+  frameClass,
   ...rest
 } = Astro.props
 
@@ -82,32 +66,30 @@ if (provider === "calendly") {
 }
 ---
 
-<EmbedFacade
+<div
   data-slot="booking-embed"
-  src={src}
-  title={title}
-  label={label}
-  provider={provider}
-  providerName={providerName}
-  privacyUrl={privacyUrl}
-  fallbackHref={fallbackHref ?? srcProp}
-  fallbackLabel="Open booking page"
-  loadLabel={loadLabel}
-  icon={icon}
-  allow="payment"
-  remember={remember}
-  variant={variant}
-  aspect={aspect}
-  class={cn(className)}
+  class={cn("flex flex-col gap-3", className)}
   {...rest}
 >
-  {Astro.slots.has("poster") && <slot name="poster" slot="poster" />}
-  {description && (
-    <p
-      data-slot="booking-embed-description"
-      class="text-sm text-muted-foreground"
+  <Embed
+    src={src}
+    title={title}
+    allow="payment"
+    variant={variant}
+    aspect={aspect}
+    class={frameClass}
+  />
+  {fallbackLabel && (
+    <a
+      href={fallbackHref ?? srcProp}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-slot="booking-embed-link"
+      class="inline-flex min-h-6 items-center gap-1.5 self-start text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
     >
-      {description}
-    </p>
+      <Icon name="lucide:external-link" aria-hidden="true" />
+      {fallbackLabel}
+      <span class="sr-only"> (opens in a new tab)</span>
+    </a>
   )}
-</EmbedFacade>
+</div>

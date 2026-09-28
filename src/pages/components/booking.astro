@@ -10,29 +10,25 @@ const calendly = "https://calendly.com/acme-studio/consultation"
 
 <Showcase
   title="Booking"
-  description="Online booking: an embedded widget behind a click-to-load facade, or a simple link card for providers that don't allow embedding."
+  description="Online booking: a lazy-loaded embedded widget, or a simple link card for providers that don't allow embedding."
 >
   <Demo
     title="Embed: Calendly"
-    description="provider='calendly'. Nothing loads from Calendly until the visitor clicks; without JS only the 'Open booking page' link shows."
+    description="provider='calendly'. The iframe loads as it nears the viewport, with a link to the booking page below."
   >
     <BookingEmbed provider="calendly" src={calendly} />
   </Demo>
 
   <Demo
-    title="Embed: outline, custom height, no remember"
-    description="variant='outline', a [--embed-height:32rem] class, remember={false}, custom copy."
+    title="Embed: outline, custom height, no link"
+    description="variant='outline', a [--embed-height:32rem] class on the frame, fallbackLabel={false}."
   >
     <BookingEmbed
       provider="calendly"
       src={calendly}
       variant="outline"
-      class="[--embed-height:32rem]"
-      remember={false}
-      label="Book a free boiler survey"
-      description="30 minutes at your home, anywhere in Leeds and Bradford."
-      loadLabel="Choose a date"
-      icon="wrench"
+      frameClass="[--embed-height:32rem]"
+      fallbackLabel={false}
     />
   </Demo>
 
