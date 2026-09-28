@@ -1,8 +1,5 @@
 ---
-import {
-  PUBLIC_GOOGLE_MAPS_EMBED_KEY,
-  PUBLIC_GOOGLE_MAPS_STATIC_KEY,
-} from "astro:env/client"
+import { PUBLIC_GOOGLE_MAPS_EMBED_KEY } from "astro:env/client"
 
 import Map from "@/components/blocks/map/Map.astro"
 import MapSection from "@/components/blocks/map/MapSection.astro"
@@ -10,7 +7,6 @@ import Demo from "@/components/showcase/Demo.astro"
 import Showcase from "@/components/showcase/Showcase.astro"
 
 const keyed = Boolean(PUBLIC_GOOGLE_MAPS_EMBED_KEY)
-const staticKeyed = Boolean(PUBLIC_GOOGLE_MAPS_STATIC_KEY)
 
 const hours = [
   ["Monday to Friday", "8am to 6pm"],
@@ -21,31 +17,22 @@ const hours = [
 
 <Showcase
   title="Map"
-  description="Google Maps behind a click-to-load facade: nothing loads from Google until the visitor asks, and directions always work."
+  description="Lazy-loaded Google Maps with directions and 'Open in Google Maps' links. A drawn placeholder shows while the map loads."
 >
   <Demo
     title="Keyless vs keyed"
     description="How this build is configured. Set the variables in .env (see .env.example)."
   >
-    <ul class="flex flex-col gap-2 text-sm wrap-break-word">
-      <li>
-        <strong>Embed:</strong>
-        {keyed
-          ? "PUBLIC_GOOGLE_MAPS_EMBED_KEY is set, so maps use the official Maps Embed API (place mode, place IDs supported)."
-          : "No PUBLIC_GOOGLE_MAPS_EMBED_KEY, so maps use Google's keyless embed URL. It works, but is unofficial and ignores placeId: set a key before launch."}
-      </li>
-      <li>
-        <strong>Poster:</strong>
-        {staticKeyed
-          ? "PUBLIC_GOOGLE_MAPS_STATIC_KEY is set, so the facade shows a Maps Static API image (a request to Google before consent)."
-          : "No PUBLIC_GOOGLE_MAPS_STATIC_KEY, so the facade shows the token-drawn placeholder (no request to Google)."}
-      </li>
-    </ul>
+    <p class="text-sm wrap-break-word">
+      {keyed
+        ? "PUBLIC_GOOGLE_MAPS_EMBED_KEY is set, so maps use the official Maps Embed API (place mode, place IDs supported)."
+        : "No PUBLIC_GOOGLE_MAPS_EMBED_KEY, so maps use Google's keyless embed URL. It works, but is unofficial and ignores placeId: set a key before launch."}
+    </p>
   </Demo>
 
   <Demo
     title="Card (default)"
-    description="Name, address and coordinates from site.config.ts. Tick 'Always load' to remember the choice for every Google embed (localStorage)."
+    description="Name, address and coordinates from site.config.ts."
   >
     <Map />
   </Demo>

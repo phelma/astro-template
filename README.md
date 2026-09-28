@@ -117,7 +117,7 @@ Only if you add them ([security](#security)):
 - [ ] Analytics: add a consent banner if you need one, and count prerendered page views on `prerenderingchange` ([performance](#performance)).
 - [ ] Forms: pick a form service, pass its endpoint as `action` to `ContactForm` / `QuoteForm`, or add an adapter ([adding an adapter](#adding-an-adapter-later)).
 - [ ] Maps: set `PUBLIC_GOOGLE_MAPS_EMBED_KEY` (see `.env.example`); without it maps use Google's unofficial keyless embed.
-- [ ] Embeds (maps, booking): list them and the `embed-consent:*` localStorage keys in your privacy policy.
+- [ ] Embeds (maps, booking): list the providers in your privacy policy.
 
 ### Deploy
 
@@ -315,7 +315,7 @@ They work like shadcn components: the code lives in the repo and is yours to edi
 
 Business data (contact, hours, address, booking link) comes from `src/site.config.ts` by default and can be overridden per instance with props. The header, footer, announcement banner, mobile action bar and `LocalBusiness` JSON-LD are driven entirely by config.
 
-Blocks ship no framework JavaScript. Where they need behaviour (dropdowns, lightbox, form validation, "Open now") it's native HTML plus a small bundled script that the page works without. Third-party embeds (Google Maps, Calendly) are click-to-load, so nothing loads from Google before the visitor asks for it.
+Blocks ship no framework JavaScript. Where they need behaviour (dropdowns, lightbox, form validation, "Open now") it's native HTML plus a small bundled script that the page works without. Third-party embeds (Google Maps, Calendly) are plain iframes with `loading="lazy"`, so they only load as the visitor scrolls to them.
 
 ## SEO
 

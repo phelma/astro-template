@@ -43,7 +43,7 @@ The field parts already handle labels, `aria-invalid`, `aria-describedby`, `auto
 
 ### Map, embed and booking → Lazy loading, Captions and transcripts, Third-party scripts and privacy
 
-- [ ] Iframes have a descriptive `title` and `loading="lazy"`; nothing third-party loads before the click on a facade.
+- [ ] Iframes have a descriptive `title` and `loading="lazy"`.
 - [ ] Privacy-friendly hosts (`youtube-nocookie.com`). Say on `/privacy` that loading an embed shares data with, and may set cookies for, the provider.
 - [ ] Video embeds take a transcript link or slot; captions are the provider's, so note it in the launch checklist.
 - [ ] A text alternative next to the map: address, a directions link and opening hours.

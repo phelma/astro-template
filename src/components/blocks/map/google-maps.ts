@@ -6,8 +6,6 @@
  *   https://developers.google.com/maps/documentation/embed/embedding-map
  * - Keyless embed fallback (`/maps?q=...&output=embed`): widely used but not
  *   an official API; Google may change it. Configure a key for production.
- * - Maps Static API (poster image, needs a key, billed per load):
- *   https://developers.google.com/maps/documentation/maps-static/start
  */
 import {
   mapCoords as coords,
@@ -57,33 +55,5 @@ export function embedUrl(
     ...common,
     q,
     center: coords(location),
-  })
-}
-
-/** Maps Static API image with a marker on the location. */
-export function staticMapUrl(
-  location: MapLocation,
-  {
-    key,
-    zoom = 15,
-    width = 640,
-    height = 480,
-    language,
-    region,
-    maptype,
-  }: EmbedOptions & { key: string; width?: number; height?: number }
-) {
-  const target = coords(location) ?? searchText(location)
-  return build("https://maps.googleapis.com/maps/api/staticmap", {
-    key,
-    center: target,
-    zoom: zoom.toString(),
-    // Max 640x640; scale 2 doubles the pixels for high-density screens.
-    size: `${Math.min(width, 640)}x${Math.min(height, 640)}`,
-    scale: "2",
-    markers: target,
-    language,
-    region,
-    maptype,
   })
 }
