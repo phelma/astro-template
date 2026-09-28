@@ -2,6 +2,8 @@
 
 Static Astro 7 marketing site: Tailwind 4, shadcn/ui (Base UI) rendered at build time, token-based themes. Human docs: `README.md`. Astro API questions: use the `astro` skill (`.agents/skills/astro`) and docs.astro.build; Astro 7 differs from older training data.
 
+Making a site for a business from this template (config, theme, pages, images, icons): follow `docs/new-site.md`.
+
 ## Verify
 
 Run before reporting work done; all four must pass:
@@ -43,7 +45,7 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 - Colours, radius, shadows, fonts and tracking come from tokens via Tailwind utilities (`bg-primary`, `text-muted-foreground`, `border-border`, `rounded-lg`, `shadow-md`, `font-heading`). Use tokens for every colour; hex/rgb/oklch literals and Tailwind palette colours (`bg-blue-500`) belong only in `src/styles/themes/*.css`.
 - Theme = tokens (`src/styles/themes/<name>.css`, scoped to `[data-theme="<name>"]` and `[data-theme="<name>"].dark`). shadcn style (`components.json`) = component structure. Change the look via tokens; change structure only by editing components.
 - Structural per-theme tweaks: `theme-<name>:` variants (`theme-bold:uppercase`). Mode tweaks: `dark:`.
-- New theme: follow "Add a theme" in `README.md` (theme CSS file, import + `@custom-variant` in `global.css`, registry entry in `src/styles/themes/index.ts`, fonts in `astro.config.ts`). Keep every token defined, AA contrast in light and dark; check `/styleguide`.
+- New theme: follow "Theme" in `docs/new-site.md` (theme CSS file, import + `@custom-variant` in `global.css`, registry entry in `src/styles/themes/index.ts`, fonts in `astro.config.ts`). Keep every token defined, AA contrast in light and dark; check `/styleguide`.
 
 ## Pages and SEO
 

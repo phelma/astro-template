@@ -61,6 +61,8 @@ Requires Node `>=22.12` (`.nvmrc` pins 24) and **pnpm**.
 
 Then work through the [launch checklist](#launch-checklist).
 
+Working with a coding agent? `AGENTS.md` has the project's conventions, and [`docs/new-site.md`](docs/new-site.md) walks it through making a site from the template.
+
 ## Launch checklist
 
 Copy this into an issue and tick as you go. Links point to the section that explains each step.
