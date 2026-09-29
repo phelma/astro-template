@@ -141,7 +141,7 @@ const siteConfigSchema = z
     shortName: z.string().min(1).max(12),
     /** Default meta description (pages can override). ~150-160 chars. */
     description: z.string().min(1),
-    /** Title template; `%s` is replaced by the page title. */
+    /** Title template; `%s` is replaced by the page title. The home page (no `title`) gets just `name`. */
     titleTemplate: z.string().includes("%s"),
     /** BCP 47 locale for og:locale etc. (use underscore form via helper). */
     locale: z.string().default("en-GB"),

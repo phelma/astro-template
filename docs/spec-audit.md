@@ -1,68 +1,10 @@
-# The Website Specification — Checklist
+# Specification audit
 
-Every spec item, grouped by category. Copy into an issue or a note and tick as you go.
+How this template measures up against [The Website Specification checklist](https://specification.website/checklist/), item by item, in the checklist's categories.
 
-> Audited against this template on 2026-09-27. Ticked = implemented by the template (or, for "Avoid" items, avoided). Platform items (HTTPS, compression, HTTP/2/3, ETags) are ticked where Cloudflare provides them. Unticked includes items that don't apply until a feature is added (forms, cookies, video, i18n) and items deliberately not done (strict CSP, Trusted Types), with the reason noted.
+> Audited against this template on 2026-09-27. Ticked = implemented by the template (or, for "Avoid" items, avoided). Platform items (HTTPS, compression, HTTP/2/3, ETags) are ticked where Cloudflare provides them. Unticked includes items that don't apply until a feature is added (cookies, video, i18n) and items deliberately not done (strict CSP, Trusted Types), with the reason noted. Rechecked after the local-business blocks on 2026-09-29.
 
 Source: https://specification.website/checklist/ · Licensed CC BY 4.0
-
-## Follow-ups after the blocks work
-
-Checklist items that land with the local-business blocks (`feat/local-business-blocks`). Check each block against these once it's merged, then tick the items below. Several blocks were in progress when this was written (form, hours, map/embed/booking, gallery, testimonials, navbar, hero); FAQ was not started.
-
-### Every block
-
-- [ ] **DOM building**: client scripts build DOM with `createElement` + `textContent` (or clone a `<template>`), not `innerHTML` strings, `document.write` or `eval`.
-- [ ] **Permissions-Policy** in `public/_headers` denies `autoplay`, `encrypted-media`, `geolocation` and others for the page _and every iframe_. Video and booking embeds need some of these: allow per origin (e.g. `encrypted-media=(self "https://www.youtube-nocookie.com")`) and match the iframe's `allow` attribute.
-- [ ] **Targets and motion**: interactive parts are at least 24px (44px for primary mobile actions such as call and directions), and animations respect `prefers-reduced-motion`.
-
-### Form block → Form labels, Accessible form errors, Status messages, Mobile-friendly form inputs, Redundant entry, Accessible authentication
-
-The field parts already handle labels, `aria-invalid`, `aria-describedby`, `autocomplete` and `inputmode`. Still needed:
-
-- [ ] A `Form` wrapper with the target as a prop (form service or Worker) and a honeypot field.
-- [ ] Errors: on a failed submit, move focus to the first invalid field or to an error summary that links to each field. Error text is specific ("Enter an email address like name@example.com"), not colour-only, and `aria-invalid` is only set after the user has interacted or submitted.
-- [ ] Status: announce the submission result with `role="status"` (success) or `role="alert"` (failure), and keep the user's input on failure. Without JS, post to a thank-you page (`noindex` + `noindexPaths`).
-- [ ] Inputs: correct `type` (`email`, `tel`, `url`), `autocomplete` tokens (`name`, `email`, `tel`, `postal-code`, ...), `enterkeyhint` where useful. Don't ask for anything twice (no "confirm email").
-- [ ] Bot protection: honeypot or an invisible check (e.g. Turnstile). No puzzle CAPTCHAs.
-- [ ] Privacy: link the privacy policy next to submit, ask only for what's needed, and name the form processor on `/privacy`.
-
-### FAQ block (not started) → Hidden until found, Structured data
-
-- [ ] Exclusive accordion with `<details name="...">` / `<summary>`: no JS, keyboard-accessible, and find-in-page opens the matching answer.
-- [ ] `FAQPage` JSON-LD via a builder in `src/lib/seo.ts`, from the same data as the visible questions.
-
-### Opening hours → Accessible data tables, Locale-aware content
-
-- [ ] A real `<table>` with a `<caption>`, `<th scope="row">` for days and `<th scope="col">` headers. Today's row is marked with text or `aria-current`, not only colour.
-- [ ] Day names and times formatted with `Intl` in `siteConfig.locale`. An "open now" state is computed in the business's time zone, and is updated client-side on a cached static page.
-- [ ] `openingHoursSpecification` (with special or holiday hours) in the `LocalBusiness` JSON-LD, from the same data as the table.
-
-### Map, embed and booking → Lazy loading, Captions and transcripts, Third-party scripts and privacy
-
-- [ ] Iframes have a descriptive `title` and `loading="lazy"`.
-- [ ] Privacy-friendly hosts (`youtube-nocookie.com`). Say on `/privacy` that loading an embed shares data with, and may set cookies for, the provider.
-- [ ] Video embeds take a transcript link or slot; captions are the provider's, so note it in the launch checklist.
-- [ ] A text alternative next to the map: address, a directions link and opening hours.
-
-### Gallery lightbox → Dragging movements, The inert attribute, Image alt text
-
-- [ ] Built on `<dialog>` with `showModal()` (makes the page behind it inert, closes on Esc, returns focus to the thumbnail).
-- [ ] Swipe gestures have next and previous buttons as an alternative.
-- [ ] Every image has meaningful `alt` (or `alt=""` with a caption); thumbnails lazy-load.
-
-### Testimonials → Structured data
-
-- [ ] `<figure>` / `<blockquote>` / `<figcaption>` markup.
-- [ ] No `Review` or `AggregateRating` JSON-LD about your own business: Google treats it as self-serving and it can trigger a manual action.
-
-### Navbar → Consistent help, Focus not obscured
-
-- [ ] Contact and phone links are in the same place on every page; the sticky header never covers focused elements (`scroll-padding-top` stays in sync with the header height, including the announcement bar).
-
-### Docs
-
-- [ ] README launch checklist: add uptime monitoring (Cloudflare health checks or an uptime service) under "After launch".
 
 ## Foundations
 
@@ -98,8 +40,9 @@ The HTML, head, and document basics every page needs.
       Replace ARIA-puzzled JavaScript modals, menus, and tooltips with a native top-layer primitive that the browser opens, closes, and accessibility-wires for you.
 - [ ] [WebSub — push notification for feeds](https://specification.website/spec/foundations/websub/) — Optional
       If you publish a feed, advertise a WebSub hub with rel="hub" and rel="self" so subscribers are pushed each update instead of polling for it. Cuts latency to seconds and removes most of the crawl traffic your feed attracts.
-- [ ] [CSS anchor positioning](https://specification.website/spec/foundations/anchor-positioning/) — Recommended
+- [x] [CSS anchor positioning](https://specification.website/spec/foundations/anchor-positioning/) — Recommended
       Tether tooltips, menus, and popovers to the element that triggers them with pure CSS — no JavaScript positioning library, and it works across overflow and stacking boundaries.
+      _Template: navbar dropdowns are popovers placed with `anchor-name` / `position-area`, with a measured fallback where unsupported (`NavbarDropdown.astro`)._
 - [x] [Balanced text wrapping](https://specification.website/spec/foundations/text-wrap/) — Recommended
       Let the browser break headings and body copy intelligently with text-wrap: balance and pretty — no orphaned words, no manual line breaks, no layout shift.
 - [x] [CSS container queries](https://specification.website/spec/foundations/container-queries/) — Recommended
@@ -154,8 +97,9 @@ WCAG-aligned rules so people of all abilities can use the site.
       Respect forced colours mode (Windows High Contrast and similar). The `forced-colors` media feature lets you repair UI the user's palette would otherwise flatten — without overriding their choice.
 - [x] [Image alt text](https://specification.website/spec/accessibility/image-alt-text/) — Required
       Every \<img\> element must have an alt attribute. The value describes the image's purpose to screen readers, search engines, and anyone whose image fails to load.
-- [ ] [Form labels](https://specification.website/spec/accessibility/form-labels/) — Required
+- [x] [Form labels](https://specification.website/spec/accessibility/form-labels/) — Required
       Every form control needs a programmatically associated label. A placeholder is not a label, and an unlabelled input is unusable for screen-reader and voice-control users.
+      _Template: every form part renders a `<label for>` or a `<legend>` (`FormField`, `ChoiceGroup`, `ChoiceItem`, `CheckboxField`)._
 - [x] [Keyboard navigation](https://specification.website/spec/accessibility/keyboard-navigation/) — Required
       Every interactive element on the page must be reachable and operable with a keyboard alone, in a logical order, with no traps that hold focus.
 - [x] [Visible focus indicators](https://specification.website/spec/accessibility/focus-indicators/) — Required
@@ -174,14 +118,16 @@ WCAG-aligned rules so people of all abilities can use the site.
       Every link's text must describe where it goes. 'Click here' and 'read more' fail screen-reader users who scan a page by jumping from link to link.
 - [x] [Empty links and buttons](https://specification.website/spec/accessibility/empty-links-buttons/) — Avoid
       A link or button with no accessible name is invisible to screen readers and unreachable for voice control. Icon-only controls without a label are the usual culprit.
-- [ ] [Accessible form errors](https://specification.website/spec/accessibility/form-errors/) — Required
+- [x] [Accessible form errors](https://specification.website/spec/accessibility/form-errors/) — Required
       When a form submission fails, errors must be identified in text, associated with the input that caused them, and announced to assistive technology.
+      _Template: the form script shows a specific text error per field, linked with `aria-describedby` and `aria-invalid` once the visitor has left the field or submitted, and on submit focuses an error summary or the first invalid field (`form/validate.ts`)._
 - [ ] [Status messages](https://specification.website/spec/accessibility/status-messages/) — Recommended
       When something succeeds, fails or changes without moving focus — a result count, a saved confirmation, a progress update — assistive technology has to be told. Expose it through a live region, or announce it with ariaNotify().
 - [ ] [Accessible authentication](https://specification.website/spec/accessibility/accessible-authentication/) — Recommended
       Let people log in without solving a puzzle, transcribing a code, or memorising anything. Don't block password managers, allow paste, and offer a method that needs no cognitive function test.
-- [ ] [Redundant entry](https://specification.website/spec/accessibility/redundant-entry/) — Recommended
+- [x] [Redundant entry](https://specification.website/spec/accessibility/redundant-entry/) — Recommended
       Don't make people re-type information they already gave you in the same process. Auto-populate it, or let them pick it from what they entered a step ago.
+      _Template: the contact and quote forms are single-step and never ask for anything twice (no "confirm email")._
 - [x] [Consistent help](https://specification.website/spec/accessibility/consistent-help/) — Recommended
       If you offer help — a contact link, a phone number, a chat widget, an FAQ — put it in the same relative place on every page that has it. Moving it around is the failure.
 - [x] [Document and parts language](https://specification.website/spec/accessibility/document-language/) — Required
@@ -196,10 +142,12 @@ WCAG-aligned rules so people of all abilities can use the site.
       Tabular data must use real \<table\> markup with a caption, header cells, and scope attributes so screen readers can announce row and column relationships.
 - [x] [Touch target size](https://specification.website/spec/accessibility/touch-target-size/) — Required
       Interactive controls must be large enough to tap or click reliably. WCAG 2.2 sets a 24×24 CSS px minimum, with 44×44 CSS px as the enhanced target.
-- [ ] [Dragging movements](https://specification.website/spec/accessibility/dragging-movements/) — Recommended
+- [x] [Dragging movements](https://specification.website/spec/accessibility/dragging-movements/) — Recommended
       Anything you can drag must also work with a single pointer that never drags. Sliders, sortable lists, and drag-to-pan maps each need a click or tap alternative.
-- [ ] [Hidden until found](https://specification.website/spec/accessibility/hidden-until-found/) — Recommended
+      _Template: the before/after slider is a native range input and jumps on a click or tap; the gallery lightbox has previous and next buttons alongside swipe._
+- [x] [Hidden until found](https://specification.website/spec/accessibility/hidden-until-found/) — Recommended
       Use hidden="until-found" for collapsible content so that browser find-in-page, assistive tech, and search engines can still reach the text and auto-expand it.
+      _Template: FAQ answers and mobile menu groups are native `<details>`, which browsers open on find-in-page._
 - [ ] [Mobile-friendly form inputs](https://specification.website/spec/accessibility/mobile-form-inputs/) — Recommended
       On a phone, the right input type, inputmode, and enterkeyhint summon the correct on-screen keyboard and a useful Enter key. Keep input text at 16px or larger so iOS Safari doesn't zoom on focus.
 - [x] [Native interactive elements](https://specification.website/spec/accessibility/native-interactive-elements/) — Recommended
@@ -379,8 +327,9 @@ Core Web Vitals, caching, images, fonts, network behaviour.
       Use `content-visibility` with `contain-intrinsic-size` to skip layout and paint for off-screen content, and Intersection Observer to drive lazy behaviour, instead of scroll and resize listeners.
 - [ ] [CSS containment](https://specification.website/spec/performance/css-containment/) — Optional
       Use `contain: layout paint style` (or the `contain: content` shorthand) to tell the browser that an element's internals cannot affect the rest of the page, so reflow and repaint stay isolated to that subtree.
-- [ ] [Scroll-driven animations](https://specification.website/spec/performance/scroll-driven-animations/) — Optional
+- [x] [Scroll-driven animations](https://specification.website/spec/performance/scroll-driven-animations/) — Optional
       Drive CSS animations from scroll position or element visibility with `scroll-timeline` and `view-timeline`, replacing JS scroll-listener libraries with compositor-thread animation.
+      _Template: the transparent sticky navbar turns solid with `animation-timeline: scroll()`, with a small script fallback where unsupported (`Navbar.astro`)._
 - [x] [Scrollbar gutter](https://specification.website/spec/performance/scrollbar-gutter/) — Recommended
       Use scrollbar-gutter: stable to reserve scrollbar space and stop horizontal layout shift between pages or states that overflow vs. don't.
 - [x] [Dynamic viewport units (dvh, svh, lvh)](https://specification.website/spec/performance/dynamic-viewport-units/) — Recommended
