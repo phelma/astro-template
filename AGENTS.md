@@ -1,6 +1,11 @@
 # AGENTS.md
 
-Static Astro 7 marketing site: Tailwind 4, shadcn/ui (Base UI) rendered at build time, token-based themes. Human docs: `README.md`. Astro API questions: use the `astro` skill (`.agents/skills/astro`) and docs.astro.build; Astro 7 differs from older training data.
+Static Astro 7 marketing site: Tailwind 4, shadcn/ui (Base UI) rendered at build time, token-based themes. Human docs: `README.md` and `docs/`. Astro API questions: use the `astro` skill (`.agents/skills/astro`) and docs.astro.build; Astro 7 differs from older training data.
+
+- Making a site for a business from this template (config, theme, pages, images, icons): follow `docs/new-site.md`.
+- Adding a theme: `docs/themes.md`.
+- Choosing a block: the catalogue is `docs/blocks.md`, every variant rendered at `/components`.
+- Why a default is the way it is (CSP, headers, SEO output): `docs/reference.md`.
 
 ## Verify
 
@@ -23,7 +28,7 @@ Use pnpm only. Fix formatting with `pnpm format` (Prettier: no semicolons, doubl
 
 ## Blocks (`src/components/blocks/`)
 
-Reusable, themeable Astro components (the Astro counterpart to `src/components/ui/`). One folder per block: `blocks/<kebab-name>/<PascalName>.astro`, parts as `<PascalName><Part>.astro`, cva variants in `variants.ts`, pure helpers in `*.ts`. Import `.astro` files directly (no barrel files: they lose prop types). Same customisation contract as shadcn:
+Rules for writing or changing a block. Blocks are reusable, themeable Astro components (the Astro counterpart to `src/components/ui/`). One folder per block: `blocks/<kebab-name>/<PascalName>.astro`, parts as `<PascalName><Part>.astro`, cva variants in `variants.ts`, pure helpers in `*.ts`. Import `.astro` files directly (no barrel files: they lose prop types). Same customisation contract as shadcn:
 
 - The code is owned by the site: restyle by editing the file, or override at the call site.
 - Every component takes `class`, merged last with `cn()` so call-site utilities win, and spreads remaining HTML attributes (`...rest`) onto its root. Type props as `HTMLAttributes<"tag"> & Variants & {...}`.
@@ -43,7 +48,7 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 - Colours, radius, shadows, fonts and tracking come from tokens via Tailwind utilities (`bg-primary`, `text-muted-foreground`, `border-border`, `rounded-lg`, `shadow-md`, `font-heading`). Use tokens for every colour; hex/rgb/oklch literals and Tailwind palette colours (`bg-blue-500`) belong only in `src/styles/themes/*.css`.
 - Theme = tokens (`src/styles/themes/<name>.css`, scoped to `[data-theme="<name>"]` and `[data-theme="<name>"].dark`). shadcn style (`components.json`) = component structure. Change the look via tokens; change structure only by editing components.
 - Structural per-theme tweaks: `theme-<name>:` variants (`theme-bold:uppercase`). Mode tweaks: `dark:`.
-- New theme: follow "Add a theme" in `README.md` (theme CSS file, import + `@custom-variant` in `global.css`, registry entry in `src/styles/themes/index.ts`, fonts in `astro.config.ts`). Keep every token defined, AA contrast in light and dark; check `/styleguide`.
+- New theme: follow "Add a theme" in `docs/themes.md`. Every token the `default` theme defines is defined, text meets AA contrast in light and dark, and it's checked at `/styleguide`.
 
 ## Pages and SEO
 
@@ -54,13 +59,13 @@ Reusable, themeable Astro components (the Astro counterpart to `src/components/u
 
 ## Config
 
-- Brand, contact, nav, header, footer, announcement, business (hours, geo, booking), mobile actions, SEO, robots, security.txt, theme and colour-mode settings: `src/site.config.ts` (zod-validated). Read values from it; keep copy out of components.
+- Site facts, chrome and settings live in `src/site.config.ts` (zod-validated; its comments document each field). Read values from it; keep copy out of components.
 - Canonical origin: `site` in `astro.config.ts` (`Astro.site` / `context.site`).
 - `src/site.config.ts`, `src/styles/themes/index.ts` and `src/lib/sitemap.ts` are imported by `astro.config.ts`: use relative imports there (no `@/`, no `astro:*`).
 
 ## Security
 
-- Security headers live in `public/_headers`. Its CSP is deliberately minimal (`frame-ancestors`, `base-uri`, `object-src`): don't add script, style, img or form restrictions. Third-party origins need no CSP change.
+- Security headers live in `public/_headers`. Its CSP stays minimal (`frame-ancestors`, `base-uri`, `object-src`): no script, style, img or form restrictions, and third-party origins need no CSP change (why: `docs/reference.md`).
 - Build DOM with `createElement` / `textContent`, not `innerHTML` strings. Prefer bundled `<script>` over `is:inline` (bundled, deduplicated, cached).
 
 ## Accessibility
