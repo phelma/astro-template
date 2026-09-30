@@ -47,11 +47,14 @@ const WIDTH = 1200
 const HEIGHT = 630
 const PAD = 80
 const FONT_CACHE = "node_modules/.cache/og-fonts"
+const FETCH_TIMEOUT = 15_000
 
 const root = fileURLToPath(new URL("../", import.meta.url))
 const at = (...parts) => resolve(root, ...parts)
 
 const { values: args } = parseArgs({
+  // pnpm passes on the `--` of `pnpm og -- --tagline ...`.
+  args: process.argv.slice(2).filter((arg) => arg !== "--"),
   options: {
     title: { type: "string" },
     tagline: { type: "string" },
@@ -351,7 +354,9 @@ async function fontsourceTtf(name, weight) {
     : undefined
   let file = cached && resolve(cache, cached)
   if (!file) {
-    const response = await fetch(`https://api.fontsource.org/v1/fonts/${id}`)
+    const response = await fetch(`https://api.fontsource.org/v1/fonts/${id}`, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT),
+    })
     if (!response.ok) throw new Error(`HTTP ${response.status} for ${id}`)
     const font = await response.json()
     const nearest = [...font.weights].sort(
@@ -360,7 +365,7 @@ async function fontsourceTtf(name, weight) {
     const variant = font.variants?.[nearest]?.normal ?? {}
     const url = (variant.latin ?? Object.values(variant)[0])?.url?.ttf
     if (!url) throw new Error(`it has no TTF of ${id} ${nearest}`)
-    const ttf = await fetch(url)
+    const ttf = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT) })
     if (!ttf.ok) throw new Error(`HTTP ${ttf.status} for ${url}`)
     await mkdir(cache, { recursive: true })
     file = resolve(cache, `${id}.${weight}.${nearest}.ttf`)
@@ -452,7 +457,14 @@ function toHex(value) {
       : s.endsWith("%")
         ? (Number.parseFloat(s) / 100) * percentOf
         : Number.parseFloat(s)
-  const degrees = (s) => num(s.replace(/deg$/, ""))
+  // A hue in degrees, 0 to 360; NaN (so no colour) for a unit it doesn't know.
+  const degrees = (s) => {
+    if (s === "none") return 0
+    const [, n, unit] = s.match(/^(-?[\d.]+)([a-z]*)$/) ?? []
+    const perUnit = { "": 1, deg: 1, grad: 0.9, rad: 180 / Math.PI, turn: 360 }
+    const deg = Number.parseFloat(n) * perUnit[unit]
+    return ((deg % 360) + 360) % 360
+  }
 
   let rgb
   if (fn[1].startsWith("rgb")) {
@@ -512,9 +524,7 @@ async function loadSiteConfig() {
     const config = pathToFileURL(at("src/site.config.ts")).href
     return (await import(config)).siteConfig
   } catch (error) {
-    fail(
-      `couldn't load src/site.config.ts (it needs Node 22.18 or later): ${error.message}`
-    )
+    fail(`couldn't load src/site.config.ts: ${error.message}`)
   }
 }
 
