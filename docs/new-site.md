@@ -59,7 +59,7 @@ The `default` and `bold` themes can stay: with `theme.available` set, visitors n
 ## 5. Icons and share image
 
 - Replace `public/icon.svg` with the site's mark, set `BACKGROUND` in `scripts/generate-icons.mjs` to its background colour, and run `pnpm icons` to regenerate the favicon and app icons.
-- Make the share image, `public/og-default.png` (1200×630), with `pnpm og` once the config, theme, fonts and icon are the site's: it draws the site's `name` in the theme's heading font on its colours, with the icon above. `pnpm og --tagline "..."` adds a line under the name, and `pnpm og --image <photo>` uses one of the business's photos instead, cropped to size; `pnpm og --help` lists the rest. Look at the result, describe it in `seo.ogImageAlt`, and build again so `dist/` has it.
+- Make the share image, `public/og-default.png` (1200×630), with `pnpm og` once the config, theme, fonts and icon are the site's: it draws the site's `name` in the theme's heading font on its colours, with the icon above. `pnpm og --tagline "..."` adds a line under the name, and `pnpm og --image <photo>` uses one of the business's photos instead, cropped to size and written as `public/og-default.jpg` (a photo is too big as a PNG): set `seo.ogImage` to `/og-default.jpg` and delete `public/og-default.png`, as it tells you. `pnpm og --help` lists the rest. Look at the result, describe it in `seo.ogImageAlt`, and build again so `dist/` has it.
 
 ## 6. Finish
 

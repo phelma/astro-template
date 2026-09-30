@@ -6,9 +6,15 @@
  *   pnpm og --tagline "Bakers since 1952"   with a line under the name
  *   pnpm og --image images/shopfront.jpg    a photo, cropped to 1200x630
  *
- * Writes a 1200x630 PNG to `public/` at `seo.ogImage` (`/og-default.png`) and
- * prints what it drew. Then describe it in `seo.ogImageAlt`, look at it, and
- * run `pnpm build` so `dist/` has it.
+ * Writes a 1200x630 image to `public/` at `seo.ogImage` (`/og-default.png`)
+ * and prints what it drew. Then describe it in `seo.ogImageAlt`, look at it,
+ * and run `pnpm build` so `dist/` has it.
+ *
+ * A card is a PNG, which keeps its flat colours and text sharp; a photo is a
+ * JPEG, a tenth of the size (a PNG photo is about 2 MB, too big for some link
+ * previews). If `seo.ogImage` has the other extension, it writes the file
+ * with the right one (`/og-default.jpg`) and says to point `seo.ogImage` at
+ * it. With `--out`, the extension picks the format.
  *
  * - Text: `name` from `src/site.config.ts` (or `--title`) in the theme's
  *   heading font, weight and tracking, and `--tagline` in its body font.
@@ -69,21 +75,30 @@ if (args.help) {
   --mode <mode>     light or dark (default: colorMode.default; light for system)
   --tone <tone>     default (on the background colour) or primary
   --no-icon         Leave out public/icon.svg
-  --out <path>      Where to write (default: public/ + seo.ogImage)`)
+  --out <path>      Where to write, .png or .jpg (default: public/ +
+                    seo.ogImage, as .jpg for --image and .png otherwise)`)
   process.exit(0)
 }
 
 const siteConfig = await loadSiteConfig()
-const out = args.out ? resolve(args.out) : defaultOut(siteConfig.seo.ogImage)
+const ogImage = args.out ? undefined : ogImagePath(siteConfig.seo.ogImage)
+const out = args.out ? resolve(args.out) : at("public", `.${ogImage}`)
+const jpeg = /\.jpe?g$/i.test(out)
+if (!jpeg && !/\.png$/i.test(out)) fail("--out is a .png or .jpg file")
+const encode = (pipeline) =>
+  jpeg
+    ? pipeline.jpeg({ quality: 82, mozjpeg: true })
+    : pipeline.png({ compressionLevel: 9 })
 
 let image
 let summary
 if (args.image) {
-  image = await sharp(resolve(args.image))
-    .rotate()
-    .resize(WIDTH, HEIGHT, { fit: "cover", position: sharp.strategy.attention })
-    .png({ compressionLevel: 9 })
-    .toBuffer()
+  image = await encode(
+    sharp(resolve(args.image)).rotate().resize(WIDTH, HEIGHT, {
+      fit: "cover",
+      position: sharp.strategy.attention,
+    })
+  ).toBuffer()
   summary = `${args.image}, cropped to fill it`
 } else {
   ;({ image, summary } = await drawCard())
@@ -92,6 +107,11 @@ if (args.image) {
 await mkdir(dirname(out), { recursive: true })
 await writeFile(out, image)
 console.log(`Wrote ${relative(root, out)} (${WIDTH}x${HEIGHT}): ${summary}.`)
+if (ogImage && ogImage !== siteConfig.seo.ogImage) {
+  const old = at("public", `.${siteConfig.seo.ogImage}`)
+  const remove = existsSync(old) ? `, and delete ${relative(root, old)}` : ""
+  console.log(`Set seo.ogImage in src/site.config.ts to "${ogImage}"${remove}.`)
+}
 console.log(
   `Look at it, describe it in seo.ogImageAlt (now "${siteConfig.seo.ogImageAlt}"), and run pnpm build.`
 )
@@ -183,11 +203,11 @@ async function drawCard() {
     })
   }
 
-  const image = await sharp(svgRect(WIDTH, HEIGHT, tone.background))
-    .composite(layers)
-    .flatten()
-    .png({ compressionLevel: 9 })
-    .toBuffer()
+  const image = await encode(
+    sharp(svgRect(WIDTH, HEIGHT, tone.background))
+      .composite(layers)
+      .flatten()
+  ).toBuffer()
 
   const families = [
     ...new Set([fonts.heading, fonts.body].filter(Boolean).map((f) => f.name)),
@@ -498,11 +518,17 @@ async function loadSiteConfig() {
   }
 }
 
-function defaultOut(ogImage) {
+/**
+ * Where in `public/` to write: `seo.ogImage`, with its extension changed to
+ * `.jpg` for a photo or `.png` for a card if it's the other.
+ */
+function ogImagePath(ogImage) {
   if (!ogImage.startsWith("/")) {
     fail(`seo.ogImage (${ogImage}) isn't a path in public/: pass --out`)
   }
-  return at("public", `.${ogImage}`)
+  const [, base, ext = ""] = ogImage.match(/^(.*?)(\.[^./]*)?$/)
+  if (args.image ? /^\.jpe?g$/i.test(ext) : /^\.png$/i.test(ext)) return ogImage
+  return `${base}${args.image ? ".jpg" : ".png"}`
 }
 
 function cssWeight(value, fallback) {
