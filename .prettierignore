@@ -11,3 +11,9 @@ yarn.lock
 .agents/
 .claude/
 skills-lock.json
+# Build inputs written into a site's workspace: read them, don't reformat them
+STYLE.md
+CONTENT.md
+DOSSIER.md
+images/
+.opencode/
