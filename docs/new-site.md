@@ -19,7 +19,7 @@ Otherwise, set `site` to the production origin.
 
 - `name`, `shortName` (max 12 characters), `description`, `titleTemplate`, `organisation`.
 - `locale` and `lang` for the site's audience (the template uses `en-GB` / `en`).
-- `business`: `type` (the closest entry in `localBusinessTypes`), `hours`, `specialHours`, `areaServed`, `priceRange`, `bookingUrl`, `googleMapsUrl`, and `geo` only from a known source.
+- `business`: `type` (the closest entry in `localBusinessTypes`; schema.org has no type for some trades, such as a gift or sweet shop, so use the nearest one above it, here `Store`, and never make one up), `hours`, `specialHours`, `areaServed`, `priceRange`, `bookingUrl`, `googleMapsUrl`, and `geo` only from a known source.
 - `contact`: phone, email, address. `contact.socials`: the business's own profiles only; the GitHub and LinkedIn entries are examples.
 - `nav`, `footer`, `footerOptions`, `header`, `mobileActions`, `announcement`: the site's navigation and chrome.
 - `seo.ogImageAlt`; `seo.twitterHandle` only if the business has one.

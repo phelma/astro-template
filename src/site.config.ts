@@ -54,6 +54,11 @@ const themeName = z.enum(themeNames)
  * schema.org LocalBusiness subtypes for `business.type`, picked for UK small
  * businesses. Every name must be a real schema.org type known to schema-dts
  * (`LocalBusinessType` in src/lib/seo.ts checks this at compile time).
+ *
+ * schema.org has no type for every trade: there is no GiftStore, CandyStore
+ * or Barber. Use the nearest type above it instead (`Store` for a gift or
+ * sweet shop, `HairSalon` for a barber, `ProfessionalService`,
+ * `HomeAndConstructionBusiness` or `LocalBusiness`); never make a name up.
  */
 export const localBusinessTypes = [
   "LocalBusiness",
@@ -69,6 +74,7 @@ export const localBusinessTypes = [
   "MovingCompany",
   "SelfStorage",
   "DryCleaningOrLaundry",
+  "RecyclingCenter",
   // Professional services
   "ProfessionalService",
   "LegalService",
@@ -76,10 +82,12 @@ export const localBusinessTypes = [
   "Notary",
   "AccountingService",
   "FinancialService",
+  "BankOrCreditUnion",
   "InsuranceAgency",
   "RealEstateAgent",
   "EmploymentAgency",
   "TravelAgency",
+  "InternetCafe",
   // Health and beauty
   "HealthAndBeautyBusiness",
   "HairSalon",
@@ -87,50 +95,92 @@ export const localBusinessTypes = [
   "NailSalon",
   "DaySpa",
   "TattooParlor",
+  "HealthClub",
+  "MedicalBusiness",
   "Dentist",
   "Physician",
   "MedicalClinic",
   "Optician",
+  "Optometric",
   "Physiotherapy",
+  "Podiatric",
+  "DietNutrition",
   "Pharmacy",
   // Food and drink
   "FoodEstablishment",
   "Restaurant",
+  "FastFoodRestaurant",
   "CafeOrCoffeeShop",
   "Bakery",
   "BarOrPub",
-  "FastFoodRestaurant",
   "IceCreamShop",
   "Brewery",
+  "Distillery",
   "Winery",
   // Motoring
   "AutomotiveBusiness",
   "AutoRepair",
   "AutoBodyShop",
   "AutoDealer",
+  "AutoPartsStore",
+  "AutoRental",
   "AutoWash",
+  "GasStation",
+  "MotorcycleDealer",
+  "MotorcycleRepair",
+  "TireShop",
   // Shops
   "Store",
+  "BikeStore",
+  "BookStore",
   "ClothingStore",
+  "MensClothingStore",
+  "ShoeStore",
+  "JewelryStore",
+  "ComputerStore",
+  "ElectronicsStore",
+  "MobilePhoneStore",
+  "ConvenienceStore",
+  "GroceryStore",
+  "LiquorStore",
   "Florist",
+  "FurnitureStore",
   "HomeGoodsStore",
   "HardwareStore",
   "GardenStore",
-  "FurnitureStore",
-  "BookStore",
+  "HobbyShop",
+  "ToyStore",
+  "MusicStore",
+  "SportingGoodsStore",
+  "OfficeEquipmentStore",
   "PetStore",
-  "JewelryStore",
-  "BikeStore",
-  // Leisure, care and accommodation
-  "ChildCare",
+  "PawnShop",
+  "OutletStore",
+  "WholesaleStore",
+  // Leisure and entertainment
+  "EntertainmentBusiness",
+  "ArtGallery",
+  "MovieTheater",
+  "ComedyClub",
+  "NightClub",
   "SportsActivityLocation",
   "ExerciseGym",
-  "EntertainmentBusiness",
+  "SportsClub",
+  "BowlingAlley",
+  "GolfCourse",
+  "TennisComplex",
+  // Care and animals
+  "ChildCare",
   "AnimalShelter",
+  // Accommodation
   "LodgingBusiness",
   "BedAndBreakfast",
   "Hotel",
+  "Motel",
+  "Hostel",
   "Campground",
+  "VacationRental",
+  "Resort",
 ] as const
 
 const siteConfigSchema = z
@@ -263,8 +313,8 @@ const siteConfigSchema = z
     business: z.object({
       /**
        * schema.org LocalBusiness subtype, e.g. "Plumber", "Restaurant",
-       * "HairSalon", "Dentist" (see `localBusinessTypes` above; add others
-       * from https://schema.org/LocalBusiness as needed).
+       * "HairSalon", "Dentist": the closest one in `localBusinessTypes` above,
+       * or the nearest type above it when schema.org has no exact match.
        */
       type: z.enum(localBusinessTypes).default("LocalBusiness"),
       /** e.g. "££" or "£50-£200". */
