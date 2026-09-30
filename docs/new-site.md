@@ -63,7 +63,7 @@ The `default` and `bold` themes can stay: with `theme.available` set, visitors n
 
 ## 6. Finish
 
-- Delete the demo pages: `src/pages/components/` and `src/pages/styleguide.astro`. `src/components/showcase/` (their layout) and the `/styleguide` and `/components` entries in `noindexPaths` (`src/lib/sitemap.ts`) can go with them.
+- Delete the demo pages: `src/pages/components/` and `src/pages/styleguide.astro`. `src/components/showcase/` (their layout) and the `/styleguide` and `/components` entries in `noindexPaths` (`src/lib/sitemap.ts`) can go with them; run `pnpm format` after removing the entries, as Prettier then puts what's left of the array on one line.
 - Search for the template's leftovers: example copy, Acme Studio and `example.com`, the example contact details, placeholder images. Check the footer, the 404 page, `src/site.config.ts`, `/llms.txt` and `/.well-known/security.txt`.
 - Every page has its own `title` and `description`, exactly one `<h1>`, and headings that descend without skipping.
 - Delete any template-only files that are still here: `.github/assets/` (screenshots of the template), `IDEAS.md` and `docs/spec-audit.md` (an audit of the template, not the site). The other files in `docs/` describe code the site keeps; delete them only if nobody will read them, and drop their pointers from `AGENTS.md` too.
