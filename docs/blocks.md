@@ -2,7 +2,7 @@
 
 ## Blocks
 
-`src/components/blocks/` holds reusable Astro components for local business sites. Browse them at [`/components`](http://localhost:4321/components) (noindex), where each block has a page showing every variant; switch theme and colour mode there to check them.
+`src/components/blocks/` holds reusable Astro components for local business sites. Browse them at [`/components`](http://localhost:4321/components) (noindex), where each block has a page showing every variant; switch theme and colour mode there to check them. These demo pages are for learning from while you build: a site deletes them before it's finished ([new-site.md](new-site.md)).
 
 | Group   | Blocks                                                                                          |
 | ------- | ----------------------------------------------------------------------------------------------- |

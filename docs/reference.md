@@ -39,7 +39,7 @@ What you get:
 - **AI usage signals**: `robots.contentSignals` adds `Content-Signal: search=…, ai-input=…, ai-train=…` to robots.txt; `tdm` emits `tdm-reservation` meta tags and `/.well-known/tdmrep.json`. Both are declarations, not blocks (use `allowAiCrawlers` for that); the config refuses a TDM reservation alongside `aiTrain: true`.
 - **/.well-known/security.txt** (RFC 9116). Caveat: `Expires` is computed at **build time** (build date + `expiresInMonths`, max 12). Rebuild and redeploy at least that often, or it goes stale.
 - `text-wrap: balance` on headings; dev-only console warning when a page doesn't have exactly one `<h1>`.
-- `/styleguide` and the `/components` showcase pages are `noindex` and excluded from the sitemap.
+- `/styleguide` and the `/components` showcase pages are `noindex` and excluded from the sitemap. They're demo pages: a site deletes them before it's finished.
 
 ## Security
 
