@@ -375,12 +375,19 @@ function ttfFamily(buf) {
 
 /**
  * Points fontconfig, which Pango uses to find fonts, at the downloaded fonts
- * as well as the system's. Must run before the first text is drawn.
+ * as well as the system's. Must run before the first text is drawn. On macOS
+ * Pango uses CoreText, which never reads fonts.conf, unless it's told to use
+ * fontconfig instead; macOS has no fontconfig of its own to say which font
+ * "sans-serif" is, so this says.
  */
 function useFonts() {
   const cache = at(FONT_CACHE)
   mkdirSync(cache, { recursive: true })
   const conf = resolve(cache, "fonts.conf")
+  const macSans =
+    process.platform === "darwin"
+      ? "\n  <alias><family>sans-serif</family><prefer><family>Helvetica Neue</family><family>Helvetica</family></prefer></alias>"
+      : ""
   writeFileSync(
     conf,
     `<?xml version="1.0"?>
@@ -390,11 +397,12 @@ function useFonts() {
   <dir>/System/Library/Fonts</dir>
   <dir>/Library/Fonts</dir>
   <cachedir>${escapeMarkup(resolve(cache, "fontconfig"))}</cachedir>
-  <include ignore_missing="yes">/etc/fonts/fonts.conf</include>
+  <include ignore_missing="yes">/etc/fonts/fonts.conf</include>${macSans}
 </fontconfig>
 `
   )
   process.env.FONTCONFIG_FILE = conf
+  process.env.PANGOCAIRO_BACKEND = "fc"
 }
 
 /**
