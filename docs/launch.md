@@ -16,7 +16,7 @@ The defaults in `src/site.config.ts` allow everything. Make these choices on pur
 Only if you add them. None needs a CSP change.
 
 - [ ] Analytics: add a consent banner if you need one.
-- [ ] Forms: pick a form service and pass its endpoint as `action` to `ContactForm` / `QuoteForm`, or handle the form yourself with [an adapter](#adding-an-adapter-later).
+- [ ] Forms: pick a form service and pass its endpoint as each `Form`'s `action`, or handle the form yourself with [an adapter](#adding-an-adapter-later).
 - [ ] Maps: set `PUBLIC_GOOGLE_MAPS_EMBED_KEY` in `.env` and in your host's build settings (see `.env.example`); without it maps use Google's unofficial keyless embed.
 - [ ] Embeds (maps, booking), analytics and form services: list the providers in your privacy policy, and update it whenever you add one.
 

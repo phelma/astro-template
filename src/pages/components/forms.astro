@@ -7,10 +7,15 @@ import FormErrorSummary from "@/components/blocks/form/FormErrorSummary.astro"
 import FormField from "@/components/blocks/form/FormField.astro"
 import FormSubmit from "@/components/blocks/form/FormSubmit.astro"
 import FormSuccess from "@/components/blocks/form/FormSuccess.astro"
-import ContactForm from "@/components/blocks/contact-form/ContactForm.astro"
-import QuoteForm from "@/components/blocks/quote-form/QuoteForm.astro"
+import {
+  formGridVariants,
+  formSurfaceVariants,
+} from "@/components/blocks/form/variants"
 import Demo from "@/components/showcase/Demo.astro"
 import Showcase from "@/components/showcase/Showcase.astro"
+import { telHref } from "@/lib/contact-links"
+import { cn } from "@/lib/utils"
+import { siteConfig } from "@/site.config"
 
 const plumbingServices: FormOption[] = [
   {
@@ -64,6 +69,17 @@ const treatments: FormOption[] = [
   { value: "emergency", label: "Emergency appointment", disabled: true },
 ]
 
+const budgets: FormOption[] = [
+  { value: "under-500", label: "Under £500" },
+  { value: "500-2000", label: "£500 to £2,000" },
+  { value: "over-2000", label: "Over £2,000" },
+]
+
+const contactMethods: FormOption[] = [
+  { value: "phone", label: "Phone" },
+  { value: "email", label: "Email" },
+]
+
 const timeSlots: FormOption[] = [
   {
     value: "morning",
@@ -86,7 +102,7 @@ const timeSlots: FormOption[] = [
 
 <Showcase
   title="Forms"
-  description="Native, token-styled form controls with inline validation, plus contact and quote form blocks. Tab through to see focus rings; submit the forms empty to see validation."
+  description="Native, token-styled form controls with inline validation, and two forms composed from them. Tab through to see focus rings; submit the forms empty to see validation."
 >
   <Demo
     title="Text inputs"
@@ -527,116 +543,190 @@ const timeSlots: FormOption[] = [
   </Demo>
 
   <Demo
-    title="Contact form: card, stacked"
-    description="ContactForm defaults: card surface, stacked layout, phone field, consent and a click-to-call note from siteConfig. Submitting it valid reloads with ?sent=contact-card to show the sent state (GET for the demo only; real forms POST)."
+    title="Composed: a contact form"
+    description="There are no ready-made forms: compose each one from these parts. A card surface, a two-column grid, consent and a click-to-call note. Submitting it valid reloads with ?sent=contact to show the sent state (GET for the demo only; real forms POST)."
   >
-    <div class="max-w-xl">
-      <ContactForm
-        id="contact-card"
+    <div class={cn(formSurfaceVariants(), "max-w-2xl")}>
+      <h3 id="contact-title" class="text-2xl">
+        Send us a message
+      </h3>
+      <Form
+        id="contact"
         action="/components/forms"
         method="get"
-        hiddenFields={{ sent: "contact-card" }}
+        hiddenFields={{ sent: "contact" }}
         honeypot={false}
-        title="Send us a message"
-        description="We usually reply within a working day."
-        headingLevel={3}
-      />
-    </div>
-  </Demo>
-
-  <Demo
-    title="Contact form: two-column, bare"
-    description="layout='two-column' surface='bare', error summary on, optional-field markers, and an extra field in the default slot."
-  >
-    <ContactForm
-      id="contact-bare"
-      layout="two-column"
-      surface="bare"
-      indicator="optional"
-      errorSummary
-      title="Book a table"
-      headingLevel={3}
-      submitLabel="Send booking request"
-    >
-      <FormField
-        id="contact-bare-guests"
-        name="guests"
-        type="number"
-        label="Number of guests"
-        min={1}
-        max={12}
-        size="lg"
-        indicator="optional"
-        messages={{ rangeOverflow: "For groups over 12, please call us" }}
-      />
-      <FormField
-        id="contact-bare-date"
-        name="date"
-        type="date"
-        label="Date"
-        size="lg"
-        indicator="optional"
-        controlProps={{ "data-min-today": "" }}
-      />
-    </ContactForm>
-  </Demo>
-
-  <Demo
-    title="Contact form: muted, minimal"
-    description="surface='muted', no phone field, no consent box, no call note, custom footer slot."
-  >
-    <div class="max-w-xl">
-      <ContactForm
-        id="contact-muted"
-        surface="muted"
-        showPhone={false}
-        consent={false}
-        phone={false}
-        submitLabel="Ask a question"
+        aria-labelledby="contact-title"
+        success={{
+          title: "Thanks, your message has been sent",
+          message: "We'll get back to you as soon as we can.",
+        }}
       >
-        <p slot="footer" class="text-sm text-muted-foreground">
-          We never share your details.
-        </p>
-      </ContactForm>
+        <div class={formGridVariants({ layout: "two-column" })}>
+          <FormField
+            id="contact-name"
+            name="name"
+            label="Name"
+            autocomplete="name"
+            required
+            size="lg"
+            messages={{ valueMissing: "Enter your name" }}
+          />
+          <FormField
+            id="contact-email"
+            name="email"
+            type="email"
+            label="Email"
+            autocomplete="email"
+            required
+            size="lg"
+            messages={{ valueMissing: "Enter your email address" }}
+          />
+          <FormField
+            id="contact-message"
+            name="message"
+            control="textarea"
+            label="Message"
+            required
+            rows={5}
+            size="lg"
+            span="full"
+            messages={{ valueMissing: "Enter your message" }}
+          />
+          <CheckboxField
+            id="contact-consent"
+            name="consent"
+            span="full"
+            required
+            messages={{ valueMissing: "Tick the box so we can reply to you" }}
+          >
+            I agree to {siteConfig.name} using my details to reply to this
+            enquiry. Read our <a href="/privacy">privacy policy</a>.
+          </CheckboxField>
+        </div>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <FormSubmit icon="lucide:send">Send message</FormSubmit>
+          {siteConfig.contact.phone && (
+            <p class="text-sm text-muted-foreground">
+              Prefer to talk? Call{" "}
+              <a
+                href={telHref(siteConfig.contact.phone)}
+                class="font-medium text-foreground underline underline-offset-4"
+              >
+                {siteConfig.contact.phone}
+              </a>
+            </p>
+          )}
+        </div>
+      </Form>
     </div>
   </Demo>
 
   <Demo
-    title="Quote form: card, stacked"
-    description="QuoteForm for a plumber: service cards, job details, photos, postcode (UK pattern), date, budget, contact details and contact method."
+    title="Composed: a quote request"
+    description="A plumber's quote form: service cards, job details, photos (multipart), a UK postcode pattern, a date no earlier than today, a budget, and how to get back in touch."
   >
-    <div class="max-w-2xl">
-      <QuoteForm
-        id="quote-card"
-        title="Get a free quote"
-        description="Tell us what you need and we'll reply with a price, usually the same day."
-        headingLevel={3}
-        services={plumbingServices}
-        postcodePattern="[A-Za-z]{1,2}[0-9][A-Za-z0-9]? ?[0-9][A-Za-z]{2}"
-      />
+    <div class={cn(formSurfaceVariants({ surface: "muted" }), "max-w-2xl")}>
+      <h3 id="quote-title" class="text-2xl">
+        Get a free quote
+      </h3>
+      <Form
+        id="quote"
+        enctype="multipart/form-data"
+        errorSummary
+        aria-labelledby="quote-title"
+      >
+        <div class={formGridVariants({ layout: "two-column" })}>
+          <ChoiceGroup
+            id="quote-service"
+            name="service"
+            type="radio"
+            legend="What do you need?"
+            options={plumbingServices}
+            variant="card"
+            layout="grid"
+            required
+            span="full"
+            legendClass="text-base"
+            messages={{ valueMissing: "Choose the service you need" }}
+          />
+          <FormField
+            id="quote-details"
+            name="details"
+            control="textarea"
+            label="Tell us about the job"
+            description="What needs doing, how big the job is and anything we should know about access."
+            required
+            rows={5}
+            size="lg"
+            span="full"
+            messages={{ valueMissing: "Tell us a little about the job" }}
+          />
+          <FormField
+            id="quote-photos"
+            name="photos"
+            control="file"
+            label="Photos"
+            description="Optional. Photos help us quote accurately."
+            accept="image/*"
+            multiple
+            span="full"
+          />
+          <FormField
+            id="quote-postcode"
+            name="postcode"
+            label="Postcode of the job"
+            autocomplete="postal-code"
+            required
+            size="lg"
+            pattern="[A-Za-z]{1,2}[0-9][A-Za-z0-9]? ?[0-9][A-Za-z]{2}"
+            controlClass="uppercase"
+            messages={{
+              valueMissing: "Enter the postcode of the job",
+              patternMismatch: "Enter a real postcode, like SW1A 1AA",
+            }}
+          />
+          <FormField
+            id="quote-date"
+            name="preferred_date"
+            type="date"
+            label="Preferred date"
+            size="lg"
+            controlProps={{ "data-min-today": "" }}
+            messages={{ rangeUnderflow: "Choose today or a later date" }}
+          />
+          <FormField
+            id="quote-budget"
+            name="budget"
+            control="select"
+            label="Budget"
+            placeholder="Choose a range"
+            options={budgets}
+            size="lg"
+          />
+          <FormField
+            id="quote-email"
+            name="email"
+            type="email"
+            label="Email"
+            autocomplete="email"
+            required
+            size="lg"
+            messages={{ valueMissing: "Enter your email address" }}
+          />
+          <ChoiceGroup
+            id="quote-contact-method"
+            name="contact_method"
+            type="radio"
+            legend="How should we get in touch?"
+            options={contactMethods}
+            value="phone"
+            layout="inline"
+            span="full"
+          />
+        </div>
+        <FormSubmit icon="lucide:arrow-right">Request my quote</FormSubmit>
+      </Form>
     </div>
-  </Demo>
-
-  <Demo
-    title="Quote form: two-column, bare, multiple services"
-    description="layout='two-column' surface='bare' for a salon, several services allowed, no photos or budget, posting to a provider with hidden fields."
-  >
-    <QuoteForm
-      id="quote-salon"
-      layout="two-column"
-      surface="bare"
-      title="Request an appointment"
-      headingLevel={3}
-      services={salonServices}
-      multipleServices
-      serviceLegend="Which services would you like?"
-      photos={false}
-      budgets={false}
-      postcode={false}
-      submitLabel="Request appointment"
-      action="/components/forms"
-      method="get"
-      hiddenFields={{ _subject: "New appointment request" }}
-    />
   </Demo>
 </Showcase>

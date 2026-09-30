@@ -9,7 +9,7 @@
 | Layout  | `section` (band + container + heading group), `navbar` (header parts), `announcement`, `footer` |
 | Heroes  | `hero`, `page-header`, `cta`, `features`                                                        |
 | Local   | `opening-hours` (live "Open now"), `map`, `booking`, `service-area`, `mobile-actions`           |
-| Forms   | `form` (native controls, field, validation, honeypot), `contact-form`, `quote-form`             |
+| Forms   | `form` (controls, fields, choice cards, validation, honeypot, sent state): compose any form     |
 | Content | `testimonials`, `faq`, `services`, `price-list`, `steps`, `stats`, `team`, `logo-strip`         |
 | Media   | `gallery` (lightbox), `before-after`, `embed` (lazy-loaded iframe, used by `map` and `booking`) |
 
