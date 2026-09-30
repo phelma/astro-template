@@ -58,6 +58,10 @@ What you get:
 - `/_astro/*` cached for a year (immutable, hashed); HTML revalidated on every request.
 - `scrollbar-gutter: stable`, `dvh` units, `prefers-reduced-motion` respected. Optional native view transitions (`viewTransitions: true`).
 
+## Share image
+
+`pnpm og` (`scripts/generate-og.mjs`) makes the default Open Graph image, `public/og-default.png` (`seo.ogImage`), 1200×630: the site's `name` from `src/site.config.ts` in the theme's heading font, weight and tracking, on its `--background` with a `--primary` bar (`--tone primary`: on `--primary`), in the light or dark colours `colorMode.default` picks, with `public/icon.svg` above. `--tagline` adds a line in the body font; `--image <path>` crops a photo to size instead. It reads colours in hex, `rgb()`, `hsl()`, `oklch()` or `oklab()`, and gets each font the theme uses as a TTF from Fontsource by its `name` in `astro.config.ts` (cached in `node_modules/.cache/og-fonts/`), because sharp can't read the site's WOFF2 files; a font it can't get falls back to a system sans-serif, with a warning. It needs Node 22.18 or later (`.nvmrc` pins 24), which runs the TypeScript config.
+
 ## Icons
 
 `pnpm icons` reads `public/icon.svg` (it can adapt to dark mode via `prefers-color-scheme`) and fills opaque icons with `BACKGROUND` from `scripts/generate-icons.mjs`. It regenerates `favicon.ico` (16 + 32), `apple-touch-icon.png` (180, opaque), `icon-192.png`, `icon-512.png` and `icon-maskable-512.png` (opaque, mark within the maskable safe zone).
