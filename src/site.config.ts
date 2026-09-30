@@ -59,6 +59,9 @@ const themeName = z.enum(themeNames)
  * or Barber. Use the nearest type above it instead (`Store` for a gift or
  * sweet shop, `HairSalon` for a barber, `ProfessionalService`,
  * `HomeAndConstructionBusiness` or `LocalBusiness`); never make a name up.
+ * `VeterinaryCare` isn't a LocalBusiness, so a vet is `LocalBusiness`, and
+ * schema-dts doesn't know `Audiology`, so a hearing centre is
+ * `MedicalBusiness`.
  */
 export const localBusinessTypes = [
   "LocalBusiness",
@@ -99,8 +102,10 @@ export const localBusinessTypes = [
   "MedicalBusiness",
   "Dentist",
   "Physician",
+  "IndividualPhysician",
   "MedicalClinic",
   "Optician",
+  "Dermatology",
   "Optometric",
   "Physiotherapy",
   "Podiatric",
@@ -155,11 +160,13 @@ export const localBusinessTypes = [
   "OfficeEquipmentStore",
   "PetStore",
   "PawnShop",
+  "DepartmentStore",
   "OutletStore",
   "WholesaleStore",
   // Leisure and entertainment
   "EntertainmentBusiness",
   "ArtGallery",
+  "AmusementPark",
   "MovieTheater",
   "ComedyClub",
   "NightClub",
@@ -169,6 +176,7 @@ export const localBusinessTypes = [
   "BowlingAlley",
   "GolfCourse",
   "TennisComplex",
+  "PublicSwimmingPool",
   // Care and animals
   "ChildCare",
   "AnimalShelter",
@@ -181,6 +189,7 @@ export const localBusinessTypes = [
   "Campground",
   "VacationRental",
   "Resort",
+  "TouristInformationCenter",
 ] as const
 
 const siteConfigSchema = z
