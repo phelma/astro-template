@@ -57,7 +57,7 @@ pnpm dev          # http://localhost:4321
 
 Open [`/styleguide`](http://localhost:4321/styleguide) to see every token, both themes in light and dark, and the installed components.
 
-Requires Node `>=22.12` (`.nvmrc` pins 24) and **pnpm**.
+Requires Node `>=22.18` (`.nvmrc` pins 24) and **pnpm**.
 
 ## Next steps
 
