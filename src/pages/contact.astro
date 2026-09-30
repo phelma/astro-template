@@ -2,7 +2,11 @@
 import { Icon } from "astro-icon/components"
 import type { ContactPage, WithContext } from "schema-dts"
 
-import ContactForm from "@/components/blocks/contact-form/ContactForm.astro"
+import CheckboxField from "@/components/blocks/form/CheckboxField.astro"
+import Form from "@/components/blocks/form/Form.astro"
+import FormField from "@/components/blocks/form/FormField.astro"
+import FormSubmit from "@/components/blocks/form/FormSubmit.astro"
+import { formSurfaceVariants } from "@/components/blocks/form/variants"
 import MapSection from "@/components/blocks/map/MapSection.astro"
 import OpeningHours from "@/components/blocks/opening-hours/OpeningHours.astro"
 import Section from "@/components/blocks/section/Section.astro"
@@ -11,6 +15,7 @@ import JsonLd from "@/components/seo/JsonLd.astro"
 import BaseLayout from "@/layouts/BaseLayout.astro"
 import { telHref } from "@/lib/nav"
 import { absoluteUrl, organizationId, pagePath, websiteId } from "@/lib/seo"
+import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
 const { email, phone, socials } = siteConfig.contact
@@ -42,9 +47,61 @@ const contactPageSchema: WithContext<ContactPage> = {
 
   <Section spacing="none" containerClass="pb-16" as="div">
     <div class="grid gap-12 lg:grid-cols-5">
-      {/* Posts to this page until a form provider is set: pass its endpoint
-          as `action`. */}
-      <ContactForm title="Send us a message" class="lg:col-span-3" />
+      <div class={cn(formSurfaceVariants(), "lg:col-span-3")}>
+        <h2 id="message-title" class="text-2xl">
+          Send us a message
+        </h2>
+        {/* Posts to this page until a form provider is set: pass its endpoint
+            as `action`. */}
+        <Form
+          id="message"
+          aria-labelledby="message-title"
+          success={{
+            title: "Thanks, your message has been sent",
+            message: "We'll get back to you as soon as we can.",
+          }}
+        >
+          <FormField
+            id="message-name"
+            name="name"
+            label="Name"
+            autocomplete="name"
+            required
+            size="lg"
+            messages={{ valueMissing: "Enter your name" }}
+          />
+          <FormField
+            id="message-email"
+            name="email"
+            type="email"
+            label="Email"
+            autocomplete="email"
+            required
+            size="lg"
+            messages={{ valueMissing: "Enter your email address" }}
+          />
+          <FormField
+            id="message-body"
+            name="message"
+            control="textarea"
+            label="Message"
+            required
+            rows={5}
+            size="lg"
+            messages={{ valueMissing: "Enter your message" }}
+          />
+          <CheckboxField
+            id="message-consent"
+            name="consent"
+            required
+            messages={{ valueMissing: "Tick the box so we can reply to you" }}
+          >
+            I agree to {siteConfig.name} using my details to reply to this
+            enquiry. Read our <a href="/privacy">privacy policy</a>.
+          </CheckboxField>
+          <FormSubmit icon="lucide:send">Send message</FormSubmit>
+        </Form>
+      </div>
       <aside aria-labelledby="contact-details-title" class="lg:col-span-2">
         <h2 id="contact-details-title" class="mb-6 text-2xl">
           Other ways to reach us

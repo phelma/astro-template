@@ -16,7 +16,7 @@
  * Embed URL: with `PUBLIC_GOOGLE_MAPS_EMBED_KEY` set (astro.config.ts
  * `env.schema`, see .env.example) the official Maps Embed API; without it
  * Google's keyless `/maps?q=...&output=embed` URL (unofficial, no place ID
- * support). The token-drawn MapPlaceholder shows while the iframe loads.
+ * support).
  *
  * Customise: `variant` (card | outline | bare), `aspect` (video | wide |
  * classic | square | portrait | tall | fill, or a `[--embed-aspect:5/2]` class),
@@ -46,7 +46,6 @@ import { cn } from "@/lib/utils"
 import { siteConfig } from "@/site.config"
 
 import { embedUrl, type EmbedOptions } from "./google-maps"
-import MapPlaceholder from "./MapPlaceholder.astro"
 import { mapActionsVariants } from "./variants"
 
 export type Props = Omit<HTMLAttributes<"div">, "title"> &
@@ -133,9 +132,7 @@ const title =
     variant={variant}
     aspect={aspect}
     class={frameClass}
-  >
-    <MapPlaceholder />
-  </Embed>
+  />
 
   {(showDirections || showOpenInMaps) && (
     <div

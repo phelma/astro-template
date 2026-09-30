@@ -106,7 +106,7 @@ export const choiceGroupVariants = cva("grid", {
 
 /**
  * Text-like controls (Input, Textarea, NativeSelect). `lg` gives 44px
- * controls and 16px text (no iOS zoom), the default for the form blocks.
+ * controls and 16px text (no iOS zoom), the size to use in a site's forms.
  */
 export const textControlVariants = cva(
   "w-full user-invalid:border-destructive",
@@ -147,7 +147,7 @@ export const formGridVariants = cva("grid gap-6", {
   defaultVariants: { layout: "stacked" },
 })
 
-/** Surface around a form block. */
+/** Surface around a form: card, muted panel or bare. */
 export const formSurfaceVariants = cva("flex w-full flex-col gap-6", {
   variants: {
     surface: {

@@ -47,8 +47,8 @@ The `default` and `bold` themes can stay: with `theme.available` set, visitors n
 - Blocks (`src/components/blocks/`, every variant shown at `/components`, catalogue in [blocks.md](blocks.md)) are parts to use where they fit. Customise each for the site: its variants and props, `class` and `data-slot` hooks, or its markup. Write the site's own components in `src/components/site/` when a design needs something the blocks don't do well.
 - The header, footer and `BaseLayout` are the site's to change or replace. Keep their SEO tags, JSON-LD, skip link and colour-mode handling working. The "change structure only by editing components" rule in `AGENTS.md` means exactly this: edit or replace the component.
 - Reuse the fiddly logic even when you restyle heavily: opening hours from `src/lib/hours.ts`, `tel:`, `mailto:`, WhatsApp and directions links from `src/lib/contact-links.ts`.
-- Third-party embeds: `Map` and `BookingEmbed` are iframes that load from Google or the booking provider as the visitor scrolls near them. A site that must load nothing from another origin uses `MapPlaceholder` with directions links instead of `Map`, and a booking link instead of `BookingEmbed`.
-- Forms: `ContactForm` and `QuoteForm` need a form service's endpoint as `action`; a site without one uses call, email and booking links.
+- Third-party embeds: `Map` and `BookingEmbed` are iframes that load from Google or the booking provider as the visitor scrolls near them. They work without an API key or a CSP change, so use them wherever a design shows a map or a booking widget.
+- Forms: there are no ready-made forms. Build whatever forms the design needs from the `form` blocks (`Form`, `FormField`, `ChoiceGroup`, `CheckboxField`, `FormSubmit` and the rest; every one is shown at `/components/forms`). A form sends to a form service's endpoint, set as `Form`'s `action`. Choosing the service is _(owner)_ (see [launch.md](launch.md)): until then, leave `action` unset. The form sends nothing until it's set.
 
 ## 4. Images
 
