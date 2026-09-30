@@ -2,7 +2,8 @@
  * Theme: default
  *
  * shadcn/ui "neutral" base colour, plus tweakcn-style extras (fonts, shadows,
- * tracking, spacing) and our heading tokens. All colours are oklch.
+ * tracking, spacing) and our heading tokens. Its colours are oklch; a theme
+ * can write them in any CSS colour format.
  *
  * Scope: `[data-theme="default"]` on <html> (light) and
  * `[data-theme="default"].dark` (dark). See ./index.ts for the registry entry.

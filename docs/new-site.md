@@ -34,7 +34,7 @@ Also set `name` in `package.json` to the project's name.
 A theme is tokens only: colours, radius, fonts, shadows, tracking, heading style. Make one per site: follow [Add a theme](themes.md#add-a-theme), then:
 
 - In `src/site.config.ts`, set `theme.default` to it, `theme.available` to just it, and `theme.switcher: false`.
-- Set `colorMode.default` (`light`, `dark` or `system`). Visitors can switch modes, so both must look designed and meet the contrast check in [Add a theme](themes.md#add-a-theme).
+- Set `colorMode.default` (`light`, `dark` or `system`). Visitors can switch modes, so both must look designed.
 
 The `default` and `bold` themes can stay: with `theme.available` set, visitors never see them. Removing one (so its fonts aren't built) is optional: see the end of [Add a theme](themes.md#add-a-theme).
 

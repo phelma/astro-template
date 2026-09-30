@@ -48,7 +48,7 @@ Rules for writing or changing a block. Blocks are reusable, themeable Astro comp
 - Colours, radius, shadows, fonts and tracking come from tokens via Tailwind utilities (`bg-primary`, `text-muted-foreground`, `border-border`, `rounded-lg`, `shadow-md`, `font-heading`). Use tokens for every colour; hex/rgb/oklch literals and Tailwind palette colours (`bg-blue-500`) belong only in `src/styles/themes/*.css`.
 - Theme = tokens (`src/styles/themes/<name>.css`, scoped to `[data-theme="<name>"]` and `[data-theme="<name>"].dark`). shadcn style (`components.json`) = component structure. Change the look via tokens; change structure only by editing components.
 - Structural per-theme tweaks: `theme-<name>:` variants (`theme-bold:uppercase`). Mode tweaks: `dark:`.
-- New theme: follow "Add a theme" in `docs/themes.md`. Every token the `default` theme defines is defined, text meets AA contrast in light and dark, and it's checked at `/styleguide`.
+- New theme: follow "Add a theme" in `docs/themes.md`. Every token the `default` theme defines is defined, and light and dark both look designed at `/styleguide`.
 
 ## Pages and SEO
 
