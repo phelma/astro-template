@@ -1,6 +1,6 @@
 # Reference
 
-What the template gives you out of the box, and why. For making a site from it see [`new-site.md`](new-site.md); for deploying see [`launch.md`](launch.md).
+What the template gives you out of the box, and why. For making a site from it see [`new-site.md`](new-site.md).
 
 ## Configuration
 

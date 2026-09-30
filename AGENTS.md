@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Static Astro 7 marketing site: Tailwind 4, shadcn/ui (Base UI) rendered at build time, token-based themes. Human docs: `README.md` and `docs/`. Astro API questions: use the `astro` skill (`.agents/skills/astro`) and docs.astro.build; Astro 7 differs from older training data.
+Static Astro 7 marketing site: Tailwind 4, shadcn/ui (Base UI) rendered at build time, token-based themes. Docs are in `docs/`. Astro API questions: use the `astro` skill (`.agents/skills/astro`) and docs.astro.build; Astro 7 differs from older training data.
 
 - Making a site for a business from this template (config, theme, pages, images, icons): follow `docs/new-site.md`.
 - Adding a theme: `docs/themes.md`.
