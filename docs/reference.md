@@ -1,6 +1,6 @@
 # Reference
 
-What the template gives you out of the box, and why. For making a site from it see [`new-site.md`](new-site.md); for deploying see [`launch.md`](launch.md).
+What the template gives you out of the box, and why. For making a site from it see [`new-site.md`](new-site.md).
 
 ## Configuration
 
@@ -39,7 +39,7 @@ What you get:
 - **AI usage signals**: `robots.contentSignals` adds `Content-Signal: search=…, ai-input=…, ai-train=…` to robots.txt; `tdm` emits `tdm-reservation` meta tags and `/.well-known/tdmrep.json`. Both are declarations, not blocks (use `allowAiCrawlers` for that); the config refuses a TDM reservation alongside `aiTrain: true`.
 - **/.well-known/security.txt** (RFC 9116). Caveat: `Expires` is computed at **build time** (build date + `expiresInMonths`, max 12). Rebuild and redeploy at least that often, or it goes stale.
 - `text-wrap: balance` on headings; dev-only console warning when a page doesn't have exactly one `<h1>`.
-- `/styleguide` and the `/components` showcase pages are `noindex` and excluded from the sitemap.
+- `/styleguide` and the `/components` showcase pages are `noindex` and excluded from the sitemap. They're demo pages: a site deletes them before it's finished.
 
 ## Security
 
@@ -57,6 +57,10 @@ What you get:
 - `No-Vary-Search` so URLs with UTM and click-ID parameters reuse cached and prefetched pages.
 - `/_astro/*` cached for a year (immutable, hashed); HTML revalidated on every request.
 - `scrollbar-gutter: stable`, `dvh` units, `prefers-reduced-motion` respected. Optional native view transitions (`viewTransitions: true`).
+
+## Share image
+
+`pnpm og` (`scripts/generate-og.mjs`) makes the default Open Graph image, `public/og-default.png` (`seo.ogImage`), 1200×630: the site's `name` from `src/site.config.ts` in the theme's heading font, weight and tracking, on its `--background` with a `--primary` bar (`--tone primary`: on `--primary`), in the light or dark colours `colorMode.default` picks, with `public/icon.svg` above. `--tagline` adds a line in the body font; `--image <path>` crops a photo to size instead, as a JPEG (`public/og-default.jpg`; the same photo as a PNG is about 2 MB, too big for some link previews), and says to point `seo.ogImage` at it. It reads colours in hex, `rgb()`, `hsl()`, `oklch()` or `oklab()`, and gets each font the theme uses as a TTF from Fontsource by its `name` in `astro.config.ts` (cached in `node_modules/.cache/og-fonts/`), because sharp can't read the site's WOFF2 files; a font it can't get falls back to a system sans-serif, with a warning. It needs Node 22.18 or later (`.nvmrc` pins 24), which runs the TypeScript config.
 
 ## Icons
 

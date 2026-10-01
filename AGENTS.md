@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Static Astro 7 marketing site: Tailwind 4, shadcn/ui (Base UI) rendered at build time, token-based themes. Human docs: `README.md` and `docs/`. Astro API questions: use the `astro` skill (`.agents/skills/astro`) and docs.astro.build; Astro 7 differs from older training data.
+Static Astro 7 marketing site: Tailwind 4, shadcn/ui (Base UI) rendered at build time, token-based themes. Docs are in `docs/`. Astro API questions: use the `astro` skill (`.agents/skills/astro`) and docs.astro.build; Astro 7 differs from older training data.
 
 - Making a site for a business from this template (config, theme, pages, images, icons): follow `docs/new-site.md`.
 - Adding a theme: `docs/themes.md`.
-- Choosing a block: the catalogue is `docs/blocks.md`, every variant rendered at `/components`.
+- Choosing a block: the catalogue is `docs/blocks.md`, every variant rendered at `/components`. The demo pages (`src/pages/components/` and `src/pages/styleguide.astro`) are there to learn from while you build; a site deletes them before it's finished (`docs/new-site.md`).
 - Why a default is the way it is (CSP, headers, SEO output): `docs/reference.md`.
 
 ## Verify
@@ -41,14 +41,14 @@ Rules for writing or changing a block. Blocks are reusable, themeable Astro comp
 - Coloured bands set `data-tone` (`Section` does it for you). Adjust children for a band with `in-data-[tone=primary]:`, not by matching `.bg-primary`.
 - Set fixed custom properties with classes (`[--gallery-gap:1rem]`): they work with breakpoints and `cn()` merging. `style` is fine for values computed from data.
 - A block's own JSON-LD builder may live in its folder (`blocks/faq/schema.ts`); site-wide nodes stay in `src/lib/seo.ts`.
-- Every block has a showcase page `src/pages/components/<block>.astro` using `Showcase` + `Demo` (`src/components/showcase`) showing each variant; nest block headings under the demo `<h2>` with `headingLevel={3}`. Check in both themes, light and dark.
+- In the template, every block has a showcase page `src/pages/components/<block>.astro` using `Showcase` + `Demo` (`src/components/showcase`) showing each variant; nest block headings under the demo `<h2>` with `headingLevel={3}`. Check in both themes, light and dark. A site made from the template deletes these pages before it's finished.
 
 ## Styling and themes
 
 - Colours, radius, shadows, fonts and tracking come from tokens via Tailwind utilities (`bg-primary`, `text-muted-foreground`, `border-border`, `rounded-lg`, `shadow-md`, `font-heading`). Use tokens for every colour; hex/rgb/oklch literals and Tailwind palette colours (`bg-blue-500`) belong only in `src/styles/themes/*.css`.
 - Theme = tokens (`src/styles/themes/<name>.css`, scoped to `[data-theme="<name>"]` and `[data-theme="<name>"].dark`). shadcn style (`components.json`) = component structure. Change the look via tokens; change structure only by editing components.
 - Structural per-theme tweaks: `theme-<name>:` variants (`theme-bold:uppercase`). Mode tweaks: `dark:`.
-- New theme: follow "Add a theme" in `docs/themes.md`. Every token the `default` theme defines is defined, text meets AA contrast in light and dark, and it's checked at `/styleguide`.
+- New theme: follow "Add a theme" in `docs/themes.md`. Every token the `default` theme defines is defined, and light and dark both look designed at `/styleguide`.
 
 ## Pages and SEO
 
